@@ -75,6 +75,9 @@ oculto ou com autonomia pausada. O tempo de suspensão do computador conta;
 conclusões vencidas são processadas uma vez após retomar. Sair da aplicação
 encerra a contagem: restaurar temporizadores entre execuções não é suportado.
 Uma conclusão permanece indicada em Ferramentas, mesmo se o Windows ocultar o aviso.
+Os avisos visuais da bandeja usam um pequeno balão Qt, sem som próprio; o áudio
+passa pelo AudioService e respeita volume, silenciamento e categorias. Tela cheia
+e suspensão ocultam esses avisos também.
 
 ## Dados e inicialização automática
 

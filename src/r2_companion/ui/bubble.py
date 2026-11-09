@@ -57,6 +57,22 @@ class Bubble(QFrame):
         point = clamp(QPointF(pet.x() + (pet.width() - self.width()) / 2, y), area, QSizeF(self.size()))
         self.move(round(point.x()), round(point.y()))
 
+    def present_corner(self, message, tray_geometry):
+        if self.anchor is not None:
+            self.anchor.geometry_changed.disconnect(self.reposition)
+            self.anchor = None
+        screen = QGuiApplication.screenAt(tray_geometry.center()) or QGuiApplication.primaryScreen()
+        if screen is None:
+            return
+        self.message.setText(message[:240])
+        self.adjustSize()
+        area = QRectF(screen.availableGeometry())
+        point = clamp(QPointF(area.right() - self.width() - 12, area.bottom() - self.height() - 12),
+                      area, QSizeF(self.size()))
+        self.move(round(point.x()), round(point.y()))
+        self.show()
+        self.timer.start(5000)
+
     def stop(self):
         self.timer.stop()
         self.hide()

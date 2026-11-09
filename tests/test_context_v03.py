@@ -175,6 +175,20 @@ def test_shutdown_stops_new_services_and_specific_task_sound(pet, monkeypatch):
     assert not pet.awareness.timer.isActive()
     assert not pet.productivity.timer.isActive()
     assert not pet.greeting_timer.isActive()
+    assert not pet.tray.notice.timer.isActive()
+
+
+def test_tray_notifications_are_visual_silent_and_suppressed_in_fullscreen(pet, monkeypatch):
+    monkeypatch.setattr(pet.tray, "isSystemTrayAvailable", lambda: True)
+    monkeypatch.setattr(pet.tray, "showMessage", lambda *args: pytest.fail("Native notification sound bypasses AudioService"))
+    pet.tray.notify("Temporizador concluído")
+    assert pet.tray.notice.isVisible() and pet.tray.notice.timer.isActive()
+    assert pet.positioning.screen.availableGeometry().contains(pet.tray.notice.geometry())
+    monkeypatch.setattr("r2_companion.app.foreground_fullscreen", lambda hwnd: True)
+    pet.check_desktop()
+    assert not pet.tray.notice.isVisible()
+    pet.tray.notify("Aviso adiado")
+    assert not pet.tray.notice.isVisible()
 
 
 def test_configured_weights_and_cooldowns_allow_single_expression(qapp, clock):

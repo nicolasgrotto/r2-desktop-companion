@@ -68,7 +68,8 @@ def main():
         report["active_timers_after_shutdown"] = sum(timer.isActive() for timer in
             (pet.animation.timer, pet.behavior.timer, pet.positioning.timer, pet.countdown.timer,
              pet.monitor.timer, pet.awareness.timer, pet.productivity.timer, pet.greeting_timer,
-             pet.idle_timer, pet.desktop_timer, pet.radial.dismiss_timer, pet.tools.clock_timer, store.timer))
+             pet.idle_timer, pet.desktop_timer, pet.radial.dismiss_timer, pet.tools.clock_timer,
+             pet.tray.notice.timer, store.timer))
         (store.directory / "features.json").write_text(json.dumps(report, indent=2), encoding="utf-8")
 
     QTimer.singleShot(1000, capture_tasks)

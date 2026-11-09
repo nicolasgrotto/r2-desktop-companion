@@ -322,6 +322,9 @@ class Companion(QObject):
         self.update_visibility()
 
     def update_visibility(self):
+        self.tray.notifications_enabled = not (self.fullscreen_active or self.session_hidden)
+        if not self.tray.notifications_enabled:
+            self.tray.notice.stop()
         hidden = self.user_hidden or self.fullscreen_hidden or self.session_hidden or not QGuiApplication.screens()
         self.controller.set_gate("hidden", hidden)
         if hidden:
@@ -603,7 +606,7 @@ def main(argv=None) -> int:
                  companion.countdown.timer, companion.monitor.timer, companion.idle_timer,
                  companion.desktop_timer, companion.tools.clock_timer, companion.bubble.timer,
                  companion.radial.dismiss_timer, companion.greeting_timer, companion.awareness.timer,
-                 companion.productivity.timer, store.timer])
+                 companion.productivity.timer, companion.tray.notice.timer, store.timer])
             (directory / "smoke.json").write_text(json.dumps(report, indent=2), encoding="utf-8")
         QTimer.singleShot(round(args.smoke_seconds * 1000), finish_smoke)
     return app.exec()

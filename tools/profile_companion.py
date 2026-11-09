@@ -77,7 +77,7 @@ def sample():
                     (companion.animation.timer, companion.behavior.timer, companion.positioning.timer,
                      companion.countdown.timer, companion.monitor.timer, companion.idle_timer,
                      companion.desktop_timer, companion.awareness.timer, companion.productivity.timer,
-                     companion.greeting_timer, companion.store.timer))}
+                     companion.greeting_timer, companion.tray.notice.timer, companion.store.timer))}
         (store.directory / "profile.json").write_text(json.dumps(output, indent=2), encoding="utf-8")
 
 

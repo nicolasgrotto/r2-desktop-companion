@@ -57,7 +57,8 @@ def main():
             report["active_timers_after_shutdown"] = sum(t.isActive() for t in
                 (companion.animation.timer, companion.behavior.timer, companion.positioning.timer,
                  companion.bubble.timer, companion.radial.dismiss_timer, companion.awareness.timer,
-                 companion.productivity.timer, companion.greeting_timer, companion.store.timer))
+                 companion.productivity.timer, companion.greeting_timer, companion.tray.notice.timer,
+                 companion.store.timer))
             (store.directory / "autonomy.json").write_text(json.dumps(report, indent=2), encoding="utf-8")
 
     companion.controller.state_changed.connect(changed)
