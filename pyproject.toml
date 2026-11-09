@@ -1,0 +1,23 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "r2-desktop-companion"
+version = "0.2.0"
+description = "Mascote desktop offline para Windows"
+requires-python = ">=3.12"
+dependencies = ["PySide6-Essentials==6.10.2", "psutil==7.2.2"]
+
+[project.scripts]
+r2-companion = "r2_companion.app:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+r2_companion = ["assets/**/*.json", "assets/**/*.png", "assets/**/*.wav", "assets/**/*.md"]
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
+testpaths = ["tests"]
