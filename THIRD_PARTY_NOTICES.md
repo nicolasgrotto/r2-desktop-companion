@@ -1,12 +1,13 @@
 # Componentes de terceiros
 
-Este é um build de desenvolvimento offline. Os assets provisórios originais
+Este é um build de desenvolvimento com mascote offline e atualizador manual. Os assets provisórios originais
 estão descritos em `src/r2_companion/assets/LICENSES.md`.
 
 | Componente | Versão testada | Referência de licença/proveniência |
 | --- | --- | --- |
 | CPython | 3.13.12 | Python Software Foundation e licenças incorporadas; LICENSE.txt do runtime |
 | PySide6-Essentials / Qt | 6.10.2 | Licenças Qt/PySide6 e seus componentes nos arquivos da distribuição |
+| PySide6-Addons / Qt Multimedia | 6.10.2 | Licenças Qt/PySide6 e dependências multimídia incluídas pela distribuição |
 | Shiboken6 | 6.10.2 | Licenças da distribuição Shiboken |
 | psutil | 7.2.2 | BSD-3-Clause, licença da distribuição psutil |
 | PyInstaller | 6.19.0 | GPL com exceção de distribuição do bootloader; licença do empacotador |
