@@ -76,7 +76,8 @@ def sample():
                   "active_core_timers_after_shutdown": sum(timer.isActive() for timer in
                     (companion.animation.timer, companion.behavior.timer, companion.positioning.timer,
                      companion.countdown.timer, companion.monitor.timer, companion.idle_timer,
-                     companion.desktop_timer, companion.store.timer))}
+                     companion.desktop_timer, companion.awareness.timer, companion.productivity.timer,
+                     companion.greeting_timer, companion.store.timer))}
         (store.directory / "profile.json").write_text(json.dumps(output, indent=2), encoding="utf-8")
 
 
