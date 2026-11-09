@@ -8,7 +8,7 @@ from pathlib import Path
 import sys
 import time
 
-from PySide6.QtCore import QObject, QPointF, QStandardPaths, QTimer, QUrl, Qt, qVersion
+from PySide6.QtCore import QObject, QPointF, QRectF, QSizeF, QStandardPaths, QTimer, QUrl, Qt, qVersion
 from PySide6.QtGui import QDesktopServices, QGuiApplication, QIcon
 from PySide6.QtWidgets import QApplication, QMessageBox, QSystemTrayIcon
 
@@ -17,16 +17,19 @@ from .features.launcher import launch
 from .features.locations import validate_location
 from .features.system_monitor import SystemMonitor
 from .features.timer import Countdown
+from .features.productivity import ProductivityStore
 from .pet.animation import AnimationManager, load_clips
 from .pet.behavior import BehaviorManager
 from .pet.controller import PetController
-from .pet.positioning import Positioner
+from .pet.positioning import Positioner, detect_corner, fingerprint
+from .pet.awareness import ContextReactions, fullscreen_policy
 from .pet.state import State
 from .pet.window import PetWindow
 from .services.audio import AudioService
 from .services.storage import ConfigStore
 from .services.system_info import SystemInfo
 from .services.tasks import LocalTasks
+from .services.updates import UpdateService
 from .services.windows import (SessionEvents, StartupService, foreground_fullscreen, idle_seconds,
                                packaged_executable, uptime)
 from .ui.bubble import Bubble
@@ -47,13 +50,17 @@ class Companion(QObject):
         super().__init__()
         self.qt_app, self.store = qt_app, store
         self.closed = False
+        self.initializing = True
         self.user_hidden = False
         self.fullscreen_hidden = False
+        self.fullscreen_active = False
+        self.fullscreen_action = ""
         self.session_hidden = False
         self.pass_through = False
         self.last_activity = time.monotonic()
         self.settings_dialog = None
         self.warning_history: set[str] = set()
+        self.event_audio = False
         self.window = PetWindow()
         self.positioning = Positioner(self.window)
         self.animation = AnimationManager(load_clips(ASSETS / "characters/default/manifest.json"))
@@ -65,10 +72,13 @@ class Companion(QObject):
         self.locations_panel = LaunchpadDialog("locations")
         self.countdown = Countdown(uptime)
         self.monitor = SystemMonitor(SystemInfo())
-        self.audio = AudioService(ASSETS / "sounds/completion.wav")
+        self.audio = AudioService(ASSETS / "sounds")
+        self.productivity = ProductivityStore(store.directory, store.read_only)
+        self.awareness = ContextReactions(self.controller, self.positioning, store, self.audio)
+        self.updates = UpdateService(store.directory)
         self.tasks = LocalTasks()
         self.startup = StartupService(packaged_executable())
-        self.tools = ToolsDialog(self.countdown, self.monitor, store.settings.timer_seconds)
+        self.tools = ToolsDialog(self.countdown, self.monitor, store.settings.timer_seconds, self.productivity)
         self.icon = QIcon(str(ASSETS / "icons/companion.png"))
         self.qt_app.setWindowIcon(self.icon)
         self.tray = Tray(self.icon)
@@ -79,7 +89,8 @@ class Companion(QObject):
         self.session_events.signals.ending.connect(self.shutdown)
         self.window.clicked.connect(self.left_click)
         self.window.context_requested.connect(self.show_menu)
-        self.window.drag_started.connect(lambda: self.controller.set_gate("drag", True))
+        self.window.drag_started.connect(self.drag_started)
+        self.window.double_clicked.connect(self.double_click)
         self.window.dragged.connect(self.positioning.drag)
         self.window.drag_finished.connect(self.drag_finished)
         self.window.exit_requested.connect(self.shutdown)
@@ -98,6 +109,9 @@ class Companion(QObject):
         self.tools.duration_selected.connect(self.save_duration)
         self.store.changed.connect(self.apply_preferences)
         self.store.warning.connect(self.warning)
+        self.productivity.warning.connect(self.warning)
+        self.productivity.warning.connect(self.tools.completion.setText)
+        self.productivity.task_completed.connect(self.task_completed)
         self.tray.activated.connect(self.tray_activated)
         self.idle_timer = QTimer(self)
         self.idle_timer.setInterval(5000)
@@ -112,6 +126,8 @@ class Companion(QObject):
         self.positioning.settle()
         self.controller.start()
         self.window.show()
+        self.initializing = False
+        self.check_desktop()
         if self.window.windowHandle() is not None:
             self.window.windowHandle().screenChanged.connect(lambda screen: self.positioning.reconcile())
         self.session_events.bind(int(self.window.winId()))
@@ -119,7 +135,11 @@ class Companion(QObject):
         self.idle_timer.start()
         self.desktop_timer.start()
         self.refresh_menu()
-        for notice in store.notices:
+        self.greeting_timer = QTimer(self)
+        self.greeting_timer.setSingleShot(True)
+        self.greeting_timer.timeout.connect(self.awareness.greet)
+        self.greeting_timer.start(750)
+        for notice in store.notices + self.productivity.notices:
             QTimer.singleShot(100, lambda message=notice: self.warning(message))
 
     def apply_preferences(self, settings):
@@ -127,7 +147,7 @@ class Companion(QObject):
         self.positioning.display_size = settings.visual_scale
         self.window.set_topmost(settings.window.topmost)
         self.positioning.reconcile()
-        self.audio.enabled = settings.sound_enabled
+        self.audio.configure(settings.sound_enabled, deepcopy(settings.audio))
         self.tools.set_duration(settings.timer_seconds)
         self.apps_panel.set_settings(settings)
         self.locations_panel.set_settings(settings)
@@ -135,7 +155,8 @@ class Companion(QObject):
         self.controller.update_inactivity(0)
         self.session_events.bind(int(self.window.winId()))
         self.refresh_menu()
-        self.check_desktop()
+        if not self.initializing:
+            self.check_desktop()
 
     def save_position(self, saved):
         if self.closed:
@@ -150,6 +171,22 @@ class Companion(QObject):
         self.store.apply(settings, notify=False)
 
     def state_changed(self, state):
+        previous_sleep = self.audio.sleeping
+        self.audio.set_context(bool(self.controller.gates - {"radial"}) or self.fullscreen_active, state == State.SLEEP)
+        if state == State.SLEEP and not previous_sleep:
+            self.audio.play("sleep", "enter")
+        elif state in {State.WAKE, State.GREETING}:
+            self.audio.play("sleep", "wake") if state == State.WAKE else self.audio.play("reactions", "celebrate")
+        elif state == State.WALK:
+            self.audio.play("movement", "servo")
+        elif state == State.INTERACT:
+            self.audio.play("reactions", "click")
+        elif state == State.CONFUSED:
+            self.audio.play("reactions", "confused")
+        elif state == State.SURPRISED:
+            self.audio.play("reactions", "surprise")
+        elif state in {State.HAPPY, State.CURIOUS, State.WORK} and not self.event_audio:
+            self.audio.play("idle")
         if state == State.INTERACT:
             self.present_bubble("Bip! Pronto para acompanhar você.")
 
@@ -171,11 +208,21 @@ class Companion(QObject):
         self.controller.interact()
 
     def left_click(self):
+        if self.awareness.click():
+            self.radial.hide()
+            self.controller.react(State.CONFUSED)
+            return
         if self.radial.isVisible():
             self.radial.hide()
             return
         self.interact()
         self.radial.popup_near(self.window, self.controller.paused)
+
+    def double_click(self):
+        self.radial.hide()
+        self.last_activity = time.monotonic()
+        self.controller.update_inactivity(0)
+        self.controller.react(State.GREETING)
 
     def radial_action(self, action):
         if action == "tools":
@@ -212,10 +259,23 @@ class Companion(QObject):
             if self.controller.request(State.WALK):
                 self.behavior.accepted(State.WALK)
 
+    def drag_started(self):
+        self.controller.set_gate("drag", True)
+        self.controller.enter(State.DRAG)
+
     def drag_finished(self):
         self.last_activity = time.monotonic()
         self.positioning.settle()
+        saved = self.positioning.snapshot()
+        if saved is not None:
+            saved.corner = detect_corner(QPointF(self.window.pos()),
+                QRectF(self.positioning.screen.availableGeometry()), QSizeF(self.window.size()))
+            settings = deepcopy(self.store.settings)
+            settings.manual_position = saved
+            self.store.apply(settings, notify=False)
+            self.store.flush()
         self.controller.set_gate("drag", False)
+        self.controller.react(State.RECOVER)
 
     def check_idle(self):
         seconds = idle_seconds()
@@ -224,13 +284,28 @@ class Companion(QObject):
     def check_desktop(self):
         if self.closed:
             return
-        self.fullscreen_hidden = (self.store.settings.suppress_fullscreen
-                                  and foreground_fullscreen(int(self.window.winId())))
+        active = (self.store.settings.suppress_fullscreen
+                  and foreground_fullscreen(int(self.window.winId())))
+        screen_name = "" if self.positioning.screen is None else fingerprint(self.positioning.screen)
+        action = fullscreen_policy(self.store.settings.fullscreen_mode,
+                                   self.store.settings.manual_position, screen_name) if active else ""
+        self.fullscreen_active = active
+        if active:
+            self.radial.hide()
+            self.bubble.stop()
+        self.controller.set_gate("fullscreen", active)
+        if action == "corner" and self.fullscreen_action != action and not self.window.dragging:
+            self.positioning.restore(self.store.settings.manual_position)
+            self.positioning.settle()
+        self.fullscreen_action = action
+        self.fullscreen_hidden = action == "hide"
+        self.audio.set_context(active or bool(self.controller.gates - {"radial"}), self.controller.state == State.SLEEP)
         if not QSystemTrayIcon.isSystemTrayAvailable() and self.user_hidden:
             self.user_hidden = False
         if not QSystemTrayIcon.isSystemTrayAvailable() and self.pass_through:
             self.set_pass_through(False)
         self.update_visibility()
+        self.awareness.observe()
 
     def set_suspended(self, active):
         self.session_hidden = active
@@ -280,6 +355,9 @@ class Companion(QObject):
         settings = replace(self.store.settings.window, screen="", u=0.85, v=0.9)
         self.positioning.restore(settings)
         self.positioning.settle()
+        preferences = deepcopy(self.store.settings)
+        preferences.manual_position = None
+        self.store.apply(preferences, notify=False)
         self.show_pet()
 
     def move_screen(self, screen):
@@ -309,6 +387,8 @@ class Companion(QObject):
                    "pass_through": lambda: self.set_pass_through(not self.pass_through),
                    "passing": lambda: self.pass_through,
                    "screen": self.move_screen, "exit": self.shutdown, "target": self.open_target}
+        actions.update(tasks=lambda: self.show_tools_page(3), notes=lambda: self.show_tools_page(4),
+                       updates=self.check_updates)
         self.menu = create_menu(self.window, actions, self.store.settings, QGuiApplication.screens(),
                                 QSystemTrayIcon.isSystemTrayAvailable())
         self.menu.aboutToShow.connect(self.menu_opened)
@@ -320,6 +400,8 @@ class Companion(QObject):
     def menu_opened(self):
         self.radial.hide()
         self.controller.set_gate("menu", True)
+        if not self.fullscreen_active and not self.controller.inactive:
+            self.controller.enter(State.LOOK_AROUND)
         self.bubble.stop()
 
     def show_menu(self, point):
@@ -338,6 +420,24 @@ class Companion(QObject):
         self.tools.show()
         self.tools.raise_()
         self.tools.activateWindow()
+
+    def show_tools_page(self, index):
+        self.tools.tabs.setCurrentIndex(index)
+        self.show_tools()
+
+    def task_completed(self, entry_id):
+        self.event_audio = True
+        try:
+            if self.controller.react(State.HAPPY):
+                self.audio.play("reactions", "celebrate")
+        finally:
+            self.event_audio = False
+
+    def check_updates(self):
+        try:
+            self.updates.launch()
+        except (OSError, ValueError) as error:
+            QMessageBox.information(self.tools if self.tools.isVisible() else None, "Atualizações do R2", str(error))
 
     def show_settings(self):
         self.radial.hide()
@@ -373,6 +473,7 @@ class Companion(QObject):
     def save_settings(self, settings, startup_request):
         try:
             settings.window = replace(self.store.settings.window, topmost=settings.window.topmost)
+            settings.manual_position = deepcopy(self.store.settings.manual_position)
             if startup_request is not None:
                 self.startup.set_enabled(startup_request)
                 settings.startup = startup_request
@@ -402,8 +503,9 @@ class Companion(QObject):
         if self.closed:
             return
         message = f"Temporizador #{run_id} concluído."
-        self.tray.notify(message)
-        self.audio.play()
+        if not self.fullscreen_active:
+            self.tray.notify(message)
+        self.audio.play("notifications", "timer")
         self.controller.notify(f"timer-{run_id}", message)
 
     def shutdown(self):
@@ -413,6 +515,9 @@ class Companion(QObject):
         self.closed = True
         self.idle_timer.stop()
         self.desktop_timer.stop()
+        self.greeting_timer.stop()
+        self.awareness.close()
+        self.productivity.close()
         self.controller.close()
         self.radial.stop()
         self.apps_panel.hide()
@@ -497,7 +602,8 @@ def main(argv=None) -> int:
                 [companion.animation.timer, companion.behavior.timer, companion.positioning.timer,
                  companion.countdown.timer, companion.monitor.timer, companion.idle_timer,
                  companion.desktop_timer, companion.tools.clock_timer, companion.bubble.timer,
-                 companion.radial.dismiss_timer, store.timer])
+                 companion.radial.dismiss_timer, companion.greeting_timer, companion.awareness.timer,
+                 companion.productivity.timer, store.timer])
             (directory / "smoke.json").write_text(json.dumps(report, indent=2), encoding="utf-8")
         QTimer.singleShot(round(args.smoke_seconds * 1000), finish_smoke)
     return app.exec()

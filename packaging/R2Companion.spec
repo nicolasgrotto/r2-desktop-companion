@@ -5,8 +5,9 @@ import sys
 root = Path(SPECPATH).parent
 assets = root / "src/r2_companion/assets"
 data = [(str(assets), "r2_companion/assets"),
+        (str(root / "scripts/update-r2-companion.ps1"), "scripts"),
         (str(root / "THIRD_PARTY_NOTICES.md"), ".")]
-for name in ("PySide6-Essentials", "shiboken6", "psutil", "pyinstaller"):
+for name in ("PySide6-Essentials", "PySide6-Addons", "shiboken6", "psutil", "pyinstaller"):
     dist = distribution(name)
     for entry in dist.files or []:
         if "licenses" in str(entry).lower() or Path(str(entry)).name.lower().startswith(("license", "copying", "notice")):
@@ -19,7 +20,7 @@ if python_license.is_file():
 
 a = Analysis([str(root / "run_companion.py")], pathex=[str(root / "src")],
              binaries=[], datas=data, hiddenimports=[],
-             excludes=["PySide6.QtQml", "PySide6.QtQuick", "PySide6.QtNetwork",
+             excludes=["PySide6.QtQml", "PySide6.QtQuick",
                        "PySide6.QtTest", "PySide6.QtSvg", "tkinter", "pytest"],
              noarchive=False)
 pyz = PYZ(a.pure)
