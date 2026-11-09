@@ -8,6 +8,7 @@ psutil==7.2.2
 Pygments==2.21.0
 pyinstaller==6.19.0
 pyinstaller-hooks-contrib==2026.9
+PySide6_Addons==6.10.2
 PySide6_Essentials==6.10.2
 pytest==9.0.2
 pywin32-ctypes==0.2.3
