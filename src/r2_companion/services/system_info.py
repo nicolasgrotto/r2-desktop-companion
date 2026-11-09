@@ -10,7 +10,7 @@ class SystemInfo:
         self.source.cpu_percent(interval=None)
         self.primed = True
 
-    def sample(self, battery: bool = False) -> dict:
+    def sample(self, battery: bool = False, charging: bool = False) -> dict:
         result = {"cpu": None, "ram": None}
         try:
             value = self.source.cpu_percent(interval=None)
@@ -27,6 +27,10 @@ class SystemInfo:
             try:
                 value = self.source.sensors_battery()
                 result["battery"] = None if value is None else value.percent
+                if charging:
+                    result["charging"] = None if value is None else value.power_plugged
             except (OSError, psutil.Error, NotImplementedError):
                 result["battery"] = None
+                if charging:
+                    result["charging"] = None
         return result

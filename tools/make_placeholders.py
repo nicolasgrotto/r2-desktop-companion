@@ -11,6 +11,8 @@ from PySide6.QtSvg import QSvgRenderer
 
 ROOT = Path(__file__).resolve().parents[1] / "src/r2_companion/assets"
 STATES = ["IDLE", "BLINK", "LOOK_AROUND", "WALK", "HAPPY", "CURIOUS", "SLEEP", "INTERACT", "NOTIFICATION"]
+STATES += ["SURPRISED", "WORK", "CONFUSED", "DRAG", "RECOVER", "WAKE", "GREETING",
+           "WORRIED", "OVERHEAT", "LOOK_LEFT", "LOOK_RIGHT"]
 
 
 def frame_svg(state, index):
@@ -23,15 +25,19 @@ def frame_svg(state, index):
               rect(22, 26, 8, 5, blue), rect(32, 26, 10, 3, shade),
               rect(22, 34, 20, 3, blue), rect(22, 40, 7, 7, shade),
               rect(32, 40, 10, 7, blue)]
-    lift = -2 if state == "HAPPY" and index % 2 else 0
+    lift = -2 if state in {"HAPPY", "GREETING", "SURPRISED", "DRAG", "NOTIFICATION"} and index % 2 else 0
     pieces += [rect(18, 13 + lift, 28, 9, dark), rect(22, 8 + lift, 20, 6, dark),
                rect(24, 6 + lift, 16, 3, dark), rect(20, 15 + lift, 24, 5, shade),
                rect(24, 10 + lift, 16, 5, white), rect(26, 8 + lift, 12, 3, white)]
     eye_x = 30 + ((index - 1) * 3 if state == "LOOK_AROUND" else 0)
+    if state in {"LOOK_LEFT", "LOOK_RIGHT", "WORK", "CONFUSED", "RECOVER"}:
+        eye_x += (-4 if state == "LOOK_LEFT" else 4 if state == "LOOK_RIGHT" else (index % 3 - 1) * 4)
     eye_h = 2 if state in {"BLINK", "SLEEP"} and index % 2 == 0 else 6
     pieces += [rect(eye_x - 1, 12 + lift, 8, 8, dark), rect(eye_x, 13 + lift, 6, eye_h, blue),
                rect(eye_x + 1, 13 + lift, 2, min(2, eye_h), light)]
     led = "#50c691" if state in {"HAPPY", "INTERACT"} else ("#ffcc61" if state == "NOTIFICATION" else blue)
+    if state in {"WORRIED", "OVERHEAT", "CONFUSED"}:
+        led = "#ed8755" if index % 2 else "#ffcc61"
     pieces += [rect(22, 23, 3, 2, led), rect(39, 23, 3, 2, led),
                rect(10, 50, 13, 6, dark), rect(41, 50, 13, 6, dark),
                rect(12, 50 - (index % 2 if state == "WALK" else 0), 9, 3, blue),
@@ -41,6 +47,11 @@ def frame_svg(state, index):
         pieces += [rect(48, 8, 3, 8, light), rect(48, 18, 3, 3, blue)]
     if state == "SLEEP":
         pieces += [rect(46, 5, 7, 2, shade), rect(50, 7, 3, 2, shade), rect(46, 9, 7, 2, shade)]
+    if state in {"GREETING", "WAKE", "SURPRISED"}:
+        pieces += [rect(49, 8 + index, 2, 6, light), rect(54, 14 + index, 4, 2, blue)]
+    if state in {"WORK", "OVERHEAT", "DRAG", "RECOVER"}:
+        color = light if state == "WORK" else "#ed8755" if state == "OVERHEAT" else shade
+        pieces += [rect(5 + index, 30 - index * 2, 3, 2, color), rect(54 - index, 26 + index, 3, 2, color)]
     return '<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" shape-rendering="crispEdges">' + ''.join(pieces) + '</svg>'
 
 

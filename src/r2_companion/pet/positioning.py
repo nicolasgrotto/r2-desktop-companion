@@ -44,6 +44,13 @@ def fingerprint(screen) -> str:
     return "|".join((screen.manufacturer(), screen.model(), screen.serialNumber(), screen.name()))
 
 
+def detect_corner(point: QPointF, area: QRectF, size: QSizeF, threshold=48) -> str:
+    left, right, top, bottom = legal_bounds(area, size)
+    horizontal = "left" if abs(point.x() - left) <= threshold else "right" if abs(point.x() - right) <= threshold else ""
+    vertical = "top" if abs(point.y() - top) <= threshold else "bottom" if abs(point.y() - bottom) <= threshold else ""
+    return f"{vertical}_{horizontal}" if horizontal and vertical else ""
+
+
 class Positioner(QObject):
     settled = Signal(object)
     movement_finished = Signal(int)
@@ -127,12 +134,19 @@ class Positioner(QObject):
         self.screens_changed.emit()
 
     def walk(self, distance: float, duration: float, token: int) -> bool:
+        return self.walk_toward(QPointF(self.window.pos()) + QPointF(distance, 0), duration, token)
+
+    def walk_toward(self, destination: QPointF, duration: float, token: int) -> bool:
         self.stop()
         if self.screen not in QGuiApplication.screens():
             return False
         self.origin = QPointF(self.window.pos())
-        self.destination = clamp(self.origin + QPointF(distance, 0), QRectF(self.screen.availableGeometry()), QSizeF(self.window.size()))
-        if abs(self.destination.x() - self.origin.x()) < 4:
+        delta = destination - self.origin
+        length = (delta.x() ** 2 + delta.y() ** 2) ** 0.5
+        if length > 110:
+            destination = self.origin + delta * (110 / length)
+        self.destination = clamp(destination, QRectF(self.screen.availableGeometry()), QSizeF(self.window.size()))
+        if (self.destination - self.origin).manhattanLength() < 4:
             return False
         self.token = token
         self.duration = duration

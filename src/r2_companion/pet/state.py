@@ -11,9 +11,21 @@ class State(str, Enum):
     SLEEP = "SLEEP"
     INTERACT = "INTERACT"
     NOTIFICATION = "NOTIFICATION"
+    SURPRISED = "SURPRISED"
+    WORK = "WORK"
+    CONFUSED = "CONFUSED"
+    DRAG = "DRAG"
+    RECOVER = "RECOVER"
+    WAKE = "WAKE"
+    GREETING = "GREETING"
+    WORRIED = "WORRIED"
+    OVERHEAT = "OVERHEAT"
+    LOOK_LEFT = "LOOK_LEFT"
+    LOOK_RIGHT = "LOOK_RIGHT"
 
 
-AUTONOMOUS = {State.BLINK, State.LOOK_AROUND, State.WALK, State.CURIOUS, State.HAPPY}
+AUTONOMOUS = {State.BLINK, State.LOOK_AROUND, State.WALK, State.CURIOUS, State.HAPPY,
+              State.SURPRISED, State.WORK, State.LOOK_LEFT, State.LOOK_RIGHT}
 
 
 def can_request(current: State, requested: State, blocked: bool = False) -> bool:

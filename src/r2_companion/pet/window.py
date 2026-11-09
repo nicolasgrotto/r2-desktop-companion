@@ -5,6 +5,7 @@ from PySide6.QtWidgets import QApplication, QWidget
 
 class PetWindow(QWidget):
     clicked = Signal()
+    double_clicked = Signal()
     context_requested = Signal(object)
     drag_started = Signal()
     dragged = Signal(object, object)
@@ -27,6 +28,13 @@ class PetWindow(QWidget):
         self.anchor = QPointF()
         self.dragging = False
         self.resizing = False
+        self.double_click = False
+
+    def mouseDoubleClickEvent(self, event):
+        if event.button() == Qt.MouseButton.LeftButton:
+            self.double_click = True
+            self.double_clicked.emit()
+            event.accept()
 
     def set_frame(self, frame: QPixmap) -> None:
         self.frame = frame
@@ -84,8 +92,9 @@ class PetWindow(QWidget):
             self.dragging = False
             if was_dragging:
                 self.drag_finished.emit()
-            else:
+            elif not self.double_click:
                 self.clicked.emit()
+            self.double_click = False
             event.accept()
 
     def contextMenuEvent(self, event):

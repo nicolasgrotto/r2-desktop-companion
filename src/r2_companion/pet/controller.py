@@ -10,6 +10,7 @@ from .state import State, can_request
 class PetController(QObject):
     state_changed = Signal(object)
     notification_presented = Signal(str)
+    woke = Signal(float)
 
     def __init__(self, animation, positioning, behavior: BehaviorManager, clock=time.monotonic):
         super().__init__()
@@ -27,6 +28,8 @@ class PetController(QObject):
         self.closed = False
         self.paused = False
         self.last_click = -1000.0
+        self.sleep_started = None
+        self.next_destination = None
         self.animation.clip_finished.connect(self.finished)
         self.positioning.movement_finished.connect(self.finished)
         self.behavior.action_requested.connect(self.autonomous)
@@ -37,6 +40,12 @@ class PetController(QObject):
     def enter(self, state: State):
         if self.closed:
             return
+        previous = self.state
+        if state == State.WALK and self.gates:
+            self.next_destination = None
+            return
+        if state == State.SLEEP and self.sleep_started is None:
+            self.sleep_started = self.clock()
         self.token += 1
         self.animation.stop()
         self.positioning.stop()
@@ -45,7 +54,18 @@ class PetController(QObject):
             self.animation.play(state, self.token)
         self.behavior.schedule(state == State.IDLE and not self.gates and not self.paused)
         self.state_changed.emit(state)
+        if previous == State.SLEEP and state == State.IDLE and not self.inactive:
+            duration = 0 if self.sleep_started is None else self.clock() - self.sleep_started
+            self.sleep_started = None
+            self.woke.emit(duration)
         if state == State.WALK:
+            if self.next_destination is not None:
+                destination = self.next_destination
+                self.next_destination = None
+                if self.positioning.walk_toward(destination, 4, self.token):
+                    return
+                self.enter(State.IDLE)
+                return
             direction = self.behavior.rng.choice((-1, 1))
             distance = direction * self.behavior.rng.uniform(45, 110)
             duration = self.behavior.rng.uniform(2, 4)
@@ -61,8 +81,17 @@ class PetController(QObject):
         elif self.request(state):
             self.behavior.accepted(state)
 
+    def react(self, state: State) -> bool:
+        if self.closed or self.gates or self.inactive or self.state == State.SLEEP:
+            return False
+        self.behavior.defer_walk()
+        self.enter(state)
+        return True
+
     def request(self, state: State) -> bool:
         if self.closed or not can_request(self.state, state, bool(self.gates)):
+            if state == State.WALK:
+                self.next_destination = None
             return False
         self.enter(state)
         return True
@@ -100,10 +129,12 @@ class PetController(QObject):
     def finished(self, token: int):
         if self.closed or token != self.token or self.gates - {"radial"}:
             return
-        if self.state == State.INTERACT:
+        if self.state == State.WALK:
+            self.enter(State.LOOK_AROUND)
+        elif self.state == State.INTERACT:
             self.enter(State.HAPPY)
         elif self.state not in {State.IDLE, State.SLEEP}:
-            self.enter(State.SLEEP if self.inactive and self.state == State.NOTIFICATION else State.IDLE)
+            self.enter(State.SLEEP if self.inactive else State.IDLE)
             self.drain()
 
     def set_gate(self, name: str, active: bool):
@@ -139,6 +170,7 @@ class PetController(QObject):
                          and self.behavior.settings.frequency != "off" and not self.paused)
         if not self.gates and not self.closed:
             if self.inactive and self.state == State.IDLE:
+                self.sleep_started = self.clock() - seconds
                 self.enter(State.SLEEP)
             elif not self.inactive and self.state == State.SLEEP:
                 self.enter(State.IDLE)

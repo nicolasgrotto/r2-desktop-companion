@@ -58,7 +58,7 @@ def foreground_fullscreen(pet_handle: int) -> bool:
                     ("rcWork", wintypes.RECT), ("dwFlags", wintypes.DWORD)]
 
     foreground = user32.GetForegroundWindow()
-    if not foreground or user32.IsZoomed(foreground):
+    if not foreground:
         return False
     class_name = ctypes.create_unicode_buffer(256)
     user32.GetClassNameW(foreground, class_name, len(class_name))
@@ -77,8 +77,8 @@ def foreground_fullscreen(pet_handle: int) -> bool:
     if not user32.GetMonitorInfoW(monitor, ctypes.byref(info)) or not user32.GetWindowRect(foreground, ctypes.byref(rect)):
         return False
     area = info.rcMonitor
-    return (abs(rect.left - area.left) <= 1 and abs(rect.top - area.top) <= 1
-            and abs(rect.right - area.right) <= 1 and abs(rect.bottom - area.bottom) <= 1)
+    return (rect.left <= area.left + 1 and rect.top <= area.top + 1
+            and rect.right >= area.right - 1 and rect.bottom >= area.bottom - 1)
 
 
 class SessionSignals(QObject):

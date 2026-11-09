@@ -7,8 +7,8 @@ from PySide6.QtCore import QObject, QTimer, Signal
 from ..core.config import BehaviorSettings
 from .state import State
 
-WEIGHTS = {State.IDLE: 60, State.BLINK: 20, State.LOOK_AROUND: 12, State.CURIOUS: 6, State.WALK: 2}
-COOLDOWNS = {State.BLINK: 10, State.LOOK_AROUND: 45, State.CURIOUS: 60, State.WALK: 75}
+COOLDOWNS = {State.BLINK: 10, State.LOOK_AROUND: 45, State.CURIOUS: 60, State.WALK: 75,
+             State.HAPPY: 180, State.SURPRISED: 240, State.WORK: 150}
 
 
 class BehaviorManager(QObject):
@@ -23,6 +23,7 @@ class BehaviorManager(QObject):
         self.history: dict[State, float] = {}
         self.last = State.IDLE
         self.eligible = False
+        self.last_reaction = -1000000.0
         self.timer = QTimer(self)
         self.timer.setSingleShot(True)
         self.timer.timeout.connect(self.decide)
@@ -33,16 +34,20 @@ class BehaviorManager(QObject):
         now = self.clock()
         if self.settings.movement and now >= self.next_walk_at:
             return State.WALK
-        options = [state for state in WEIGHTS if
-                   (state == State.IDLE or state != self.last)
-                   and state != State.WALK
+        weights = {State(key): value for key, value in self.settings.weights.items()}
+        options = [state for state in weights if state != State.WALK
+                   and (state in {State.IDLE, State.BLINK} or now - self.last_reaction >= self.settings.reaction_interval)
                    and now - self.history.get(state, -1000000) >= COOLDOWNS.get(state, 0)]
-        return self.rng.choices(options, weights=[WEIGHTS[state] for state in options], k=1)[0]
+        if not options or not any(weights[state] for state in options):
+            return State.IDLE
+        return self.rng.choices(options, weights=[weights[state] for state in options], k=1)[0]
 
     def accepted(self, state: State) -> None:
         if state != State.IDLE:
             self.history[state] = self.clock()
             self.last = state
+            if state not in {State.BLINK, State.WALK}:
+                self.last_reaction = self.clock()
             if state == State.WALK:
                 interval = (150, 240) if self.settings.frequency == "quiet" else (75, 120)
                 self.next_walk_at = self.clock() + self.rng.uniform(*interval)
