@@ -8,6 +8,7 @@ from PySide6.QtWidgets import (QAbstractSpinBox, QDialog, QHBoxLayout, QProgress
 from ..features.clock import local_clock
 from ..features.timer import TimerState
 from .theme import BLUE, MUTED, apply_theme, card, header, icon, label
+from .productivity import NotesPage, TasksPage
 
 
 def timer_text(seconds: float) -> str:
@@ -45,7 +46,7 @@ class TimerDial(QWidget):
 class ToolsDialog(QDialog):
     duration_selected = Signal(int)
 
-    def __init__(self, countdown, monitor, duration: int):
+    def __init__(self, countdown, monitor, duration: int, productivity=None):
         super().__init__()
         self.setWindowTitle("Central de ferramentas · R2 Companion")
         self.resize(760, 650)
@@ -60,6 +61,11 @@ class ToolsDialog(QDialog):
         self.tabs.addTab(self.overview(), icon("clock"), "Relógio")
         self.tabs.addTab(self.timer_page(), icon("play"), "Temporizador")
         self.tabs.addTab(self.system_page(), icon("system"), "Sistema")
+        if productivity is not None:
+            self.tasks_page = TasksPage(productivity)
+            self.notes_page = NotesPage(productivity)
+            self.tabs.addTab(self.tasks_page, "Tarefas")
+            self.tabs.addTab(self.notes_page, "Notas")
         layout.addWidget(self.tabs, 1)
         self.completion = label("Tudo pronto. Escolha uma ferramenta para começar.", "muted")
         self.completion.setWordWrap(True)

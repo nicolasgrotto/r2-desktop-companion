@@ -61,12 +61,31 @@ class SettingsDialog(QDialog):
         for caption, key, value in (("Caminhar sozinho", "movement", settings.behavior.movement),
                                   ("Sempre acima de janelas normais", "topmost", settings.window.topmost),
                                   ("Balões de diálogo", "bubbles", settings.bubbles),
-                                  ("Som de conclusão", "sound_enabled", settings.sound_enabled),
-                                  ("Ocultar sobre tela cheia", "suppress_fullscreen", settings.suppress_fullscreen)):
+                                  ("Efeitos sonoros do R2", "sound_enabled", settings.sound_enabled),
+                                  ("Observar o cursor", "cursor_attention", settings.behavior.cursor_attention),
+                                  ("Reagir a bateria e CPU", "system_reactions", settings.behavior.system_reactions),
+                                  ("Comemorar uma hora de atividade", "hourly_reaction", settings.behavior.hourly_reaction)):
             control = QCheckBox(caption)
             control.setChecked(value)
             self.controls[key] = control
             form.addRow(control)
+        self.fullscreen = QComboBox()
+        for title, value in (("Automático: canto escolhido ou ocultar", "auto"),
+                             ("Sempre ocultar temporariamente", "hide"),
+                             ("Permanecer no canto escolhido", "corner"),
+                             ("Ficar na posição atual, em silêncio", "quiet")):
+            self.fullscreen.addItem(title, value)
+        self.fullscreen.setCurrentIndex(self.fullscreen.findData(settings.fullscreen_mode))
+        form.addRow("Durante tela cheia", self.fullscreen)
+        corner_info = label("Arraste o R2 até um canto para guardar sua preferência. Sem canto escolhido, o modo Automático oculta o mascote durante jogos.", "muted")
+        corner_info.setWordWrap(True)
+        form.addRow(corner_info)
+        self.reaction_interval = QSpinBox()
+        self.reaction_interval.setButtonSymbols(QAbstractSpinBox.ButtonSymbols.NoButtons)
+        self.reaction_interval.setRange(10, 600)
+        self.reaction_interval.setSuffix(" s")
+        self.reaction_interval.setValue(settings.behavior.reaction_interval)
+        form.addRow("Pausa entre reações", self.reaction_interval)
         self.startup = QCheckBox("Iniciar com o Windows (somente este usuário)")
         self.startup.setEnabled(startup_available)
         self.startup.setChecked(startup_enabled)
@@ -118,6 +137,35 @@ class SettingsDialog(QDialog):
             self.selection_buttons.append(button)
         target_layout.addLayout(second)
         self.tabs.addTab(targets, icon("apps"), "Aplicativos e atalhos")
+        audio_page = QWidget()
+        audio_form = QFormLayout(audio_page)
+        self.muted = QCheckBox("Modo silencioso")
+        self.muted.setChecked(settings.audio.muted)
+        audio_form.addRow(self.muted)
+        self.volume = QSpinBox()
+        self.volume.setButtonSymbols(QAbstractSpinBox.ButtonSymbols.NoButtons)
+        self.volume.setRange(0, 100)
+        self.volume.setSuffix(" %")
+        self.volume.setValue(round(settings.audio.volume * 100))
+        audio_form.addRow("Volume dos efeitos", self.volume)
+        self.audio_interval = QDoubleSpinBox()
+        self.audio_interval.setButtonSymbols(QAbstractSpinBox.ButtonSymbols.NoButtons)
+        self.audio_interval.setRange(0.1, 60)
+        self.audio_interval.setSuffix(" s")
+        self.audio_interval.setValue(settings.audio.min_interval)
+        audio_form.addRow("Intervalo mínimo entre sons", self.audio_interval)
+        self.audio_categories = {}
+        for key, title in (("idle", "Reações espontâneas"), ("movement", "Movimentos"),
+                           ("reactions", "Interações"), ("sleep", "Dormir e despertar"),
+                           ("notifications", "Notificações e temporizador")):
+            control = QCheckBox(title)
+            control.setChecked(settings.audio.categories[key])
+            self.audio_categories[key] = control
+            audio_form.addRow(control)
+        info = label("O volume é exclusivo do R2. Tela cheia e repouso suspendem sons; o sono permite apenas seu efeito de entrada ou saída.", "muted")
+        info.setWordWrap(True)
+        audio_form.addRow(info)
+        self.tabs.addTab(audio_page, "Áudio")
         layout.addWidget(self.tabs, 1)
         self.error = label("", "error")
         self.error.setWordWrap(True)
@@ -218,8 +266,17 @@ class SettingsDialog(QDialog):
         self.draft.behavior.sleep_seconds = round(self.sleep.value() * 60)
         self.draft.behavior.movement = self.controls["movement"].isChecked()
         self.draft.window.topmost = self.controls["topmost"].isChecked()
-        for key in ("bubbles", "sound_enabled", "suppress_fullscreen"):
+        for key in ("bubbles", "sound_enabled"):
             setattr(self.draft, key, self.controls[key].isChecked())
+        for key in ("cursor_attention", "system_reactions", "hourly_reaction"):
+            setattr(self.draft.behavior, key, self.controls[key].isChecked())
+        self.draft.behavior.reaction_interval = self.reaction_interval.value()
+        self.draft.fullscreen_mode = self.fullscreen.currentData()
+        self.draft.suppress_fullscreen = True
+        self.draft.audio.volume = self.volume.value() / 100
+        self.draft.audio.muted = self.muted.isChecked()
+        self.draft.audio.min_interval = self.audio_interval.value()
+        self.draft.audio.categories = {key: control.isChecked() for key, control in self.audio_categories.items()}
         try:
             checked = Settings.parse(self.draft.to_dict())
         except ValueError as error:

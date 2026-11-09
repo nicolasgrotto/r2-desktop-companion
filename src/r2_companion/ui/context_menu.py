@@ -21,7 +21,12 @@ def create_menu(parent, actions: dict, settings, screens, tray_available: bool) 
     if not settings.locations and not settings.shortcuts:
         shortcuts.addAction("Configure em Configurações…", actions["settings"])
     menu.addAction("Ferramentas · relógio, temporizador e sistema", actions["tools"])
+    if "tasks" in actions:
+        menu.addAction("Lista de tarefas", actions["tasks"])
+        menu.addAction("Bloco de notas rápido", actions["notes"])
     menu.addAction("Configurações…", actions["settings"])
+    if "updates" in actions:
+        menu.addAction("Verificar atualizações", actions["updates"])
     menu.addSeparator()
     menu.addAction("Mostrar mascote", actions["show"])
     hide = menu.addAction("Ocultar mascote", actions["hide"])
