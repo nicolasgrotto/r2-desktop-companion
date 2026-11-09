@@ -1,0 +1,235 @@
+from copy import deepcopy
+from uuid import uuid4
+
+from PySide6.QtCore import Qt, Signal
+from PySide6.QtWidgets import (QAbstractSpinBox, QCheckBox, QComboBox, QDialog, QDialogButtonBox, QDoubleSpinBox, QFileDialog,
+                              QFormLayout, QHBoxLayout, QInputDialog, QLineEdit, QListWidget,
+                              QPushButton, QScrollArea, QSpinBox, QTabWidget, QVBoxLayout, QWidget)
+
+from ..core.config import Settings, Shortcut, Target
+from ..features.launcher import validate_executable
+from ..features.locations import validate_location
+from .targets import TargetDelegate, filter_targets, target_item
+from .theme import apply_theme, card, header, icon, label
+
+
+class SettingsDialog(QDialog):
+    applied = Signal(object, object)
+
+    def __init__(self, settings: Settings, startup_available: bool, startup_enabled: bool, startup_status: str):
+        super().__init__()
+        self.setWindowTitle("Configurações · R2 Companion")
+        self.resize(720, 740)
+        apply_theme(self)
+        self.draft = deepcopy(settings)
+        self.startup_original = startup_enabled
+        layout = QVBoxLayout(self)
+        layout.setContentsMargins(26, 24, 26, 20)
+        layout.setSpacing(14)
+        layout.addWidget(header("Do seu jeito", "Ajuste a personalidade do R2 e organize seus favoritos."))
+        self.tabs = QTabWidget()
+        general = QWidget()
+        general_layout = QVBoxLayout(general)
+        general_layout.setContentsMargins(0, 16, 0, 0)
+        panel, panel_layout = card()
+        panel_layout.addWidget(label("PERSONALIDADE E PRESENÇA", "eyebrow"))
+        form = QFormLayout()
+        form.setSpacing(12)
+        form.setFieldGrowthPolicy(QFormLayout.FieldGrowthPolicy.AllNonFixedFieldsGrow)
+        panel_layout.addLayout(form)
+        general_layout.addWidget(panel)
+        self.scale = QSpinBox()
+        self.scale.setRange(64, 256)
+        self.scale.setValue(settings.visual_scale)
+        self.scale.setSuffix(" DIP")
+        self.scale.setButtonSymbols(QAbstractSpinBox.ButtonSymbols.NoButtons)
+        form.addRow("Tamanho do mascote", self.scale)
+        self.frequency = QComboBox()
+        for caption, value in (("Desativado", "off"), ("Discreto", "quiet"), ("Normal", "normal")):
+            self.frequency.addItem(caption, value)
+        self.frequency.setCurrentIndex(self.frequency.findData(settings.behavior.frequency))
+        form.addRow("Comportamento autônomo", self.frequency)
+        self.sleep = QDoubleSpinBox()
+        self.sleep.setRange(0.5, 120)
+        self.sleep.setSingleStep(0.5)
+        self.sleep.setDecimals(1)
+        self.sleep.setButtonSymbols(QAbstractSpinBox.ButtonSymbols.NoButtons)
+        self.sleep.setSuffix(" min sem atividade")
+        self.sleep.setValue(settings.behavior.sleep_seconds / 60)
+        form.addRow("Entrar em repouso após", self.sleep)
+        self.controls = {}
+        for caption, key, value in (("Caminhar sozinho", "movement", settings.behavior.movement),
+                                  ("Sempre acima de janelas normais", "topmost", settings.window.topmost),
+                                  ("Balões de diálogo", "bubbles", settings.bubbles),
+                                  ("Som de conclusão", "sound_enabled", settings.sound_enabled),
+                                  ("Ocultar sobre tela cheia", "suppress_fullscreen", settings.suppress_fullscreen)):
+            control = QCheckBox(caption)
+            control.setChecked(value)
+            self.controls[key] = control
+            form.addRow(control)
+        self.startup = QCheckBox("Iniciar com o Windows (somente este usuário)")
+        self.startup.setEnabled(startup_available)
+        self.startup.setChecked(startup_enabled)
+        form.addRow(self.startup)
+        startup_info = label(startup_status, "muted")
+        startup_info.setWordWrap(True)
+        form.addRow(startup_info)
+        tip = label("No modo Normal, o primeiro passeio acontece em cerca de 15–25 segundos de disponibilidade. Desative Caminhar sozinho se preferir o R2 parado.", "muted")
+        tip.setWordWrap(True)
+        general_layout.addWidget(tip)
+        general_layout.addStretch()
+        general_scroll = QScrollArea()
+        general_scroll.setWidgetResizable(True)
+        general_scroll.setWidget(general)
+        self.tabs.addTab(general_scroll, icon("settings"), "Preferências")
+        targets = QWidget()
+        target_layout = QVBoxLayout(targets)
+        target_layout.setContentsMargins(0, 16, 0, 0)
+        target_layout.setSpacing(12)
+        note = label("Seus favoritos, sempre à mão. Adicione um aplicativo, pasta ou arquivo e escolha um nome fácil de reconhecer.", "muted")
+        note.setWordWrap(True)
+        target_layout.addWidget(note)
+        self.search = QLineEdit()
+        self.search.setPlaceholderText("Buscar nos seus favoritos…")
+        self.search.addAction(icon("search"), QLineEdit.ActionPosition.LeadingPosition)
+        self.search.textChanged.connect(self.filter)
+        target_layout.addWidget(self.search)
+        self.targets = QListWidget()
+        self.targets.setItemDelegate(TargetDelegate(self.targets))
+        self.targets.itemSelectionChanged.connect(self.selection_changed)
+        target_layout.addWidget(self.targets, 1)
+        self.empty = label("Você ainda não adicionou favoritos.\nComece pelos botões abaixo.", "muted")
+        self.empty.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.empty.setWordWrap(True)
+        target_layout.addWidget(self.empty)
+        first = QHBoxLayout()
+        for title, kind in (("Aplicativo", "app"), ("Pasta", "folder"), ("Arquivo", "file")):
+            button = QPushButton("+ " + title)
+            button.setIcon(icon("apps" if kind == "app" else "folder" if kind == "folder" else "file"))
+            button.clicked.connect(lambda checked=False, k=kind: self.add_target(k))
+            first.addWidget(button)
+        target_layout.addLayout(first)
+        second = QHBoxLayout()
+        self.selection_buttons = []
+        for title, callback in (("Criar atalho", self.add_alias), ("Renomear", self.rename), ("Remover", self.remove)):
+            button = QPushButton(title)
+            button.clicked.connect(callback)
+            second.addWidget(button)
+            self.selection_buttons.append(button)
+        target_layout.addLayout(second)
+        self.tabs.addTab(targets, icon("apps"), "Aplicativos e atalhos")
+        layout.addWidget(self.tabs, 1)
+        self.error = label("", "error")
+        self.error.setWordWrap(True)
+        layout.addWidget(self.error)
+        buttons = QDialogButtonBox(QDialogButtonBox.StandardButton.Apply | QDialogButtonBox.StandardButton.Cancel
+                                  | QDialogButtonBox.StandardButton.Ok)
+        buttons.button(QDialogButtonBox.StandardButton.Apply).clicked.connect(lambda: self.apply(False))
+        buttons.button(QDialogButtonBox.StandardButton.Apply).setText("Aplicar")
+        buttons.button(QDialogButtonBox.StandardButton.Cancel).setText("Cancelar")
+        buttons.button(QDialogButtonBox.StandardButton.Ok).setText("Salvar e fechar")
+        buttons.button(QDialogButtonBox.StandardButton.Ok).setProperty("role", "primary")
+        buttons.accepted.connect(lambda: self.apply(True))
+        buttons.rejected.connect(self.reject)
+        layout.addWidget(buttons)
+        self.render_targets()
+
+    def render_targets(self):
+        self.targets.clear()
+        for target in self.draft.applications + self.draft.locations:
+            self.targets.addItem(target_item(target))
+        targets = {t.id: t for t in self.draft.applications + self.draft.locations}
+        for alias in self.draft.shortcuts:
+            item = target_item(targets[alias.target_id], label_override=alias.label, alias=True)
+            item.setData(Qt.ItemDataRole.UserRole, alias.id)
+            self.targets.addItem(item)
+        self.filter()
+
+    def filter(self, *_):
+        count = filter_targets(self.targets, self.search.text())
+        self.empty.setVisible(count == 0)
+        self.empty.setText("Nenhum resultado para essa busca." if self.search.text().strip() else
+                           "Você ainda não adicionou favoritos.\nComece pelos botões abaixo.")
+        self.selection_changed()
+
+    def selection_changed(self):
+        item = self.targets.currentItem()
+        enabled = item is not None and not item.isHidden()
+        for button in getattr(self, "selection_buttons", []):
+            button.setEnabled(enabled)
+
+    def add_target(self, kind):
+        if kind == "folder":
+            path = QFileDialog.getExistingDirectory(self, "Escolher pasta local")
+        else:
+            pattern = "Aplicativos (*.exe)" if kind == "app" else "Arquivos permitidos (*.txt *.pdf *.png *.jpg *.jpeg *.wav *.mp3)"
+            path, _ = QFileDialog.getOpenFileName(self, "Escolher destino local", "", pattern)
+        if not path:
+            return
+        try:
+            resolved = validate_executable(path) if kind == "app" else validate_location(path, kind)
+            entry = Target(uuid4().hex, resolved.stem or resolved.name, str(resolved), kind)
+            collection = self.draft.applications if kind == "app" else self.draft.locations
+            if len(collection) >= 100:
+                raise ValueError("Limite de 100 destinos por lista.")
+            collection.append(entry)
+            self.error.clear()
+            self.render_targets()
+        except (OSError, ValueError) as error:
+            self.error.setText(str(error))
+
+    def add_alias(self):
+        item = self.targets.currentItem()
+        if item is None:
+            self.error.setText("Selecione primeiro um aplicativo ou local.")
+            return
+        target_id = item.data(Qt.ItemDataRole.UserRole)
+        if not any(t.id == target_id for t in self.draft.applications + self.draft.locations):
+            return
+        label, accepted = QInputDialog.getText(self, "Criar atalho", "Nome do atalho:")
+        if accepted and label.strip():
+            self.draft.shortcuts.append(Shortcut(uuid4().hex, label.strip(), target_id))
+            self.render_targets()
+
+    def rename(self):
+        item = self.targets.currentItem()
+        if item is None:
+            return
+        entry = next(t for t in self.draft.applications + self.draft.locations + self.draft.shortcuts
+                     if t.id == item.data(Qt.ItemDataRole.UserRole))
+        label, accepted = QInputDialog.getText(self, "Renomear", "Nome:", text=entry.label)
+        if accepted and label.strip():
+            entry.label = label.strip()
+            self.render_targets()
+
+    def remove(self):
+        item = self.targets.currentItem()
+        if item is None:
+            return
+        entry_id = item.data(Qt.ItemDataRole.UserRole)
+        self.draft.applications = [t for t in self.draft.applications if t.id != entry_id]
+        self.draft.locations = [t for t in self.draft.locations if t.id != entry_id]
+        self.draft.shortcuts = [t for t in self.draft.shortcuts if t.id != entry_id and t.target_id != entry_id]
+        self.render_targets()
+
+    def apply(self, close: bool):
+        self.draft.visual_scale = self.scale.value()
+        self.draft.behavior.frequency = self.frequency.currentData()
+        self.draft.behavior.sleep_seconds = round(self.sleep.value() * 60)
+        self.draft.behavior.movement = self.controls["movement"].isChecked()
+        self.draft.window.topmost = self.controls["topmost"].isChecked()
+        for key in ("bubbles", "sound_enabled", "suppress_fullscreen"):
+            setattr(self.draft, key, self.controls[key].isChecked())
+        try:
+            checked = Settings.parse(self.draft.to_dict())
+        except ValueError as error:
+            self.error.setText(str(error))
+            return
+        request = self.startup.isChecked() if self.startup.isEnabled() and self.startup.isChecked() != self.startup_original else None
+        self.error.clear()
+        self.applied.emit(checked, request)
+        if self.error.text():
+            return
+        self.startup_original = self.startup.isChecked()
+        if close:
+            self.accept()
