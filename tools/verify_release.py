@@ -6,6 +6,7 @@ from pathlib import Path
 import shutil
 import subprocess
 import time
+import tomllib
 
 import psutil
 
@@ -17,16 +18,17 @@ def ps_quote(value):
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--data-dir", type=Path, default=Path(".runtime-release-v03"))
+    parser.add_argument("--previous-install", type=Path)
     args = parser.parse_args()
     root = Path(__file__).resolve().parents[1]
+    version = tomllib.loads((root / "pyproject.toml").read_text(encoding="utf-8"))["project"]["version"]
     workspace = args.data_dir.resolve()
     workspace.mkdir(parents=True, exist_ok=True)
     installed = workspace / "installed"
     if installed.exists():
         parser.error("Use um diretorio de teste novo para preservar evidencias anteriores.")
-    shutil.copytree(root / "dist/0.2.0/R2Companion", installed)
-    metadata = json.loads((root / "dist/0.3.0/R2Companion/release.json").read_text())
-    metadata["version"] = "0.2.0"
+    shutil.copytree(args.previous_install or root / "dist/0.3.0/R2Companion", installed)
+    metadata = json.loads((installed / "release.json").read_text())
     (installed / "release.json").write_text(json.dumps(metadata), encoding="utf-8")
     data = workspace / "dados com espaço"
     data.mkdir()
@@ -35,13 +37,13 @@ def main():
     (data / "tools.json").write_text(json.dumps(tools, ensure_ascii=False), encoding="utf-8")
     original_tools = (data / "tools.json").read_bytes()
     archive = root / "dist/R2Companion-Windows-x64.zip"
-    updater = root / "dist/0.3.0/R2Companion/_internal/scripts/update-r2-companion.ps1"
+    updater = root / "dist" / version / "R2Companion/_internal/scripts/update-r2-companion.ps1"
     if updater.read_bytes() != (root / "scripts/update-r2-companion.ps1").read_bytes():
         raise RuntimeError("O script empacotado difere do fonte; gere o build novamente.")
     checksum = archive.with_suffix(".zip.sha256")
-    response = {"draft": False, "prerelease": False, "tag_name": "v0.3.0", "assets": [
+    response = {"draft": False, "prerelease": False, "tag_name": f"v{version}", "assets": [
         {"name": path.name, "size": path.stat().st_size,
-         "browser_download_url": f"https://github.com/{metadata['repository']}/releases/download/v0.3.0/{path.name}"}
+         "browser_download_url": f"https://github.com/{metadata['repository']}/releases/download/v{version}/{path.name}"}
         for path in (archive, checksum)]}
     fixture = workspace / "release.json"
     fixture.write_text(json.dumps(response), encoding="utf-8")
@@ -85,7 +87,7 @@ Invoke-R2Update
         with archive.open("rb") as handle:
             report["package_sha256"] = hashlib.file_digest(handle, "sha256").hexdigest()
         report["passed"] = (result.returncode == 0 and report["old_exited"] and report["tools_preserved"]
-                            and report["installed_version"] == "0.3.0" and report["backup_count"] == 1)
+                            and report["installed_version"] == version and report["backup_count"] == 1)
     finally:
         close = workspace / "close.ps1"
         close.write_text(f". {ps_quote(updater)}\nStop-R2Installation {ps_quote(installed)}", encoding="utf-8-sig")
