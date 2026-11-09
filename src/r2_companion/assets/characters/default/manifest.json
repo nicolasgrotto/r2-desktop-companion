@@ -1,0 +1,360 @@
+{
+  "manifest_version": 1,
+  "character_id": "original-development-placeholder",
+  "placeholder": true,
+  "canvas": [
+    64,
+    64
+  ],
+  "anchor": [
+    32,
+    56
+  ],
+  "clips": {
+    "IDLE": {
+      "loop": true,
+      "frames": [
+        {
+          "image": "placeholder.png",
+          "rect": [
+            0,
+            0,
+            64,
+            64
+          ],
+          "duration_ms": 180
+        }
+      ]
+    },
+    "BLINK": {
+      "loop": false,
+      "frames": [
+        {
+          "image": "placeholder.png",
+          "rect": [
+            0,
+            64,
+            64,
+            64
+          ],
+          "duration_ms": 100
+        },
+        {
+          "image": "placeholder.png",
+          "rect": [
+            64,
+            64,
+            64,
+            64
+          ],
+          "duration_ms": 100
+        },
+        {
+          "image": "placeholder.png",
+          "rect": [
+            128,
+            64,
+            64,
+            64
+          ],
+          "duration_ms": 100
+        },
+        {
+          "image": "placeholder.png",
+          "rect": [
+            192,
+            64,
+            64,
+            64
+          ],
+          "duration_ms": 100
+        }
+      ]
+    },
+    "LOOK_AROUND": {
+      "loop": false,
+      "frames": [
+        {
+          "image": "placeholder.png",
+          "rect": [
+            0,
+            128,
+            64,
+            64
+          ],
+          "duration_ms": 180
+        },
+        {
+          "image": "placeholder.png",
+          "rect": [
+            64,
+            128,
+            64,
+            64
+          ],
+          "duration_ms": 180
+        },
+        {
+          "image": "placeholder.png",
+          "rect": [
+            128,
+            128,
+            64,
+            64
+          ],
+          "duration_ms": 180
+        },
+        {
+          "image": "placeholder.png",
+          "rect": [
+            192,
+            128,
+            64,
+            64
+          ],
+          "duration_ms": 180
+        }
+      ]
+    },
+    "WALK": {
+      "loop": true,
+      "frames": [
+        {
+          "image": "placeholder.png",
+          "rect": [
+            0,
+            192,
+            64,
+            64
+          ],
+          "duration_ms": 180
+        },
+        {
+          "image": "placeholder.png",
+          "rect": [
+            64,
+            192,
+            64,
+            64
+          ],
+          "duration_ms": 180
+        },
+        {
+          "image": "placeholder.png",
+          "rect": [
+            128,
+            192,
+            64,
+            64
+          ],
+          "duration_ms": 180
+        },
+        {
+          "image": "placeholder.png",
+          "rect": [
+            192,
+            192,
+            64,
+            64
+          ],
+          "duration_ms": 180
+        }
+      ]
+    },
+    "HAPPY": {
+      "loop": false,
+      "frames": [
+        {
+          "image": "placeholder.png",
+          "rect": [
+            0,
+            256,
+            64,
+            64
+          ],
+          "duration_ms": 180
+        },
+        {
+          "image": "placeholder.png",
+          "rect": [
+            64,
+            256,
+            64,
+            64
+          ],
+          "duration_ms": 180
+        },
+        {
+          "image": "placeholder.png",
+          "rect": [
+            128,
+            256,
+            64,
+            64
+          ],
+          "duration_ms": 180
+        },
+        {
+          "image": "placeholder.png",
+          "rect": [
+            192,
+            256,
+            64,
+            64
+          ],
+          "duration_ms": 180
+        }
+      ]
+    },
+    "CURIOUS": {
+      "loop": false,
+      "frames": [
+        {
+          "image": "placeholder.png",
+          "rect": [
+            0,
+            320,
+            64,
+            64
+          ],
+          "duration_ms": 180
+        },
+        {
+          "image": "placeholder.png",
+          "rect": [
+            64,
+            320,
+            64,
+            64
+          ],
+          "duration_ms": 180
+        },
+        {
+          "image": "placeholder.png",
+          "rect": [
+            128,
+            320,
+            64,
+            64
+          ],
+          "duration_ms": 180
+        },
+        {
+          "image": "placeholder.png",
+          "rect": [
+            192,
+            320,
+            64,
+            64
+          ],
+          "duration_ms": 180
+        }
+      ]
+    },
+    "SLEEP": {
+      "loop": true,
+      "frames": [
+        {
+          "image": "placeholder.png",
+          "rect": [
+            0,
+            384,
+            64,
+            64
+          ],
+          "duration_ms": 180
+        }
+      ]
+    },
+    "INTERACT": {
+      "loop": false,
+      "frames": [
+        {
+          "image": "placeholder.png",
+          "rect": [
+            0,
+            448,
+            64,
+            64
+          ],
+          "duration_ms": 180
+        },
+        {
+          "image": "placeholder.png",
+          "rect": [
+            64,
+            448,
+            64,
+            64
+          ],
+          "duration_ms": 180
+        },
+        {
+          "image": "placeholder.png",
+          "rect": [
+            128,
+            448,
+            64,
+            64
+          ],
+          "duration_ms": 180
+        },
+        {
+          "image": "placeholder.png",
+          "rect": [
+            192,
+            448,
+            64,
+            64
+          ],
+          "duration_ms": 180
+        }
+      ]
+    },
+    "NOTIFICATION": {
+      "loop": false,
+      "frames": [
+        {
+          "image": "placeholder.png",
+          "rect": [
+            0,
+            512,
+            64,
+            64
+          ],
+          "duration_ms": 180
+        },
+        {
+          "image": "placeholder.png",
+          "rect": [
+            64,
+            512,
+            64,
+            64
+          ],
+          "duration_ms": 180
+        },
+        {
+          "image": "placeholder.png",
+          "rect": [
+            128,
+            512,
+            64,
+            64
+          ],
+          "duration_ms": 180
+        },
+        {
+          "image": "placeholder.png",
+          "rect": [
+            192,
+            512,
+            64,
+            64
+          ],
+          "duration_ms": 180
+        }
+      ]
+    }
+  }
+}
