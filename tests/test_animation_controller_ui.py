@@ -171,7 +171,8 @@ def test_hidden_and_shutdown_stop_work(controller):
 
 
 @pytest.fixture
-def companion(qapp, tmp_path):
+def companion(qapp, tmp_path, monkeypatch):
+    monkeypatch.setattr("r2_companion.pet.awareness.QCursor.pos", lambda: QPoint(-100000, -100000))
     store = ConfigStore(tmp_path)
     assert store.acquire()
     store.load()

@@ -115,7 +115,15 @@ function Test-R2Checksum([string]$Archive, [string]$Checksum) {
         throw 'Formato de checksum invalido.'
     }
     $expected = $Matches[1]
-    if ((Get-FileHash -LiteralPath $Archive -Algorithm SHA256).Hash -ine $expected) {
+    $algorithm = [Security.Cryptography.SHA256]::Create()
+    $stream = [IO.File]::OpenRead($Archive)
+    try {
+        $actual = [BitConverter]::ToString($algorithm.ComputeHash($stream)).Replace('-', '')
+    } finally {
+        $stream.Dispose()
+        $algorithm.Dispose()
+    }
+    if ($actual -ine $expected) {
         throw 'SHA-256 incorreto. A instalacao anterior foi preservada.'
     }
 }

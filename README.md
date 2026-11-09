@@ -8,7 +8,7 @@ offline; somente o atualizador manual consulta o GitHub por solicitação do usu
 Esta versão funcional usa **arte provisória original**, não os sprites HD finais.
 O Companion é independente do casemod e não executa nem altera seus scripts de som.
 
-**Versão 1.0.0:** 15 efeitos originais com volume e silenciamento, novas expressões,
+**Versão 1.0.1:** 15 efeitos originais com volume e silenciamento, novas expressões,
 observação do cursor, sono/despertar, reações ao sistema, permanência no canto em
 tela cheia, tarefas e notas locais. Distribuição por GitHub Releases com checksum,
 backup e recuperação. Preferências e favoritos anteriores continuam compatíveis.
@@ -141,19 +141,19 @@ Para conferir os painéis novos e a reprodução Qt com dados isolados, execute
 `tools\verify_features.py` pelo mesmo Python do ambiente virtual. Esse ensaio
 reproduz um efeito a 5% de volume e salva capturas/diagnóstico em `.runtime-features-v03`.
 Depois do build, `tools\verify_package.py` verifica ZIP/hash e abre o EXE com PATH
-restrito ao Windows. `tools\verify_release.py` ensaia a migração real 0.3.0 → 1.0.0
+restrito ao Windows. `tools\verify_release.py` ensaia a migração real 0.3.0 → 1.0.1
 em cópias locais; requer também o build anterior preservado em dist/0.3.0.
 
 ## Gerar o executável
 
 ```powershell
 .\.venv\Scripts\python.exe tools\build_windows.py
-.\dist\1.0.0\R2Companion\R2Companion.exe
+.\dist\1.0.1\R2Companion\R2Companion.exe
 ```
 
 O build é Windows x64, one-folder, sem console e sem solicitação de elevação.
 O script mantém o cache do empacotador no projeto. Distribua **toda a pasta**
-`dist\1.0.0\R2Companion`, incluindo `_internal`, assets, `release.json` e licenças.
+`dist\1.0.1\R2Companion`, incluindo `_internal`, assets, `release.json` e licenças.
 O ZIP e SHA-256 são gerados em `dist\R2Companion-Windows-x64.zip` e `.zip.sha256`.
 Não copie somente o EXE. O spec inclui Qt Multimedia, seus plugins e dependências;
 exclui QML/Quick/Test e outros módulos não utilizados.
@@ -164,7 +164,7 @@ das bibliotecas incluídas em [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
 Diagnóstico do executável, sem usar o diretório normal de dados:
 
 ```powershell
-.\dist\1.0.0\R2Companion\R2Companion.exe --data-dir .runtime-exe --smoke-test
+.\dist\1.0.1\R2Companion\R2Companion.exe --data-dir .runtime-exe --smoke-test
 ```
 
 Se não abrir, consulte `companion.log` no diretório escolhido. Configuração inválida
@@ -222,7 +222,7 @@ continuam no perfil do usuário. Backups e possíveis pastas `.failed-*` são ma
 para diagnóstico; podem ser removidos manualmente depois da validação.
 
 A versão 0.2.0 não incluía metadata nem atualizador. Para migrar dela, instale
-manualmente a pasta 1.0.0 completa uma vez; os dados normais serão reutilizados.
+manualmente a pasta 1.0.1 completa uma vez; os dados normais serão reutilizados.
 Mantenha `release.json` e o diretório `_internal` junto ao executável.
 
 Para iniciar com o Windows, copie a instalação para um local estável e marque
@@ -252,4 +252,4 @@ Windows, persistência e updates), features (ferramentas) e ui (menus e painéis
 A documentação interna fica apenas no diretório local_docs, ignorado pelo Git.
 
 Continuam pendentes validações físicas em Windows 11, monitores com DPI misto,
-suspensão real e teste prolongado. A versão 1.0.0 mantém a arte original provisória.
+suspensão real e teste prolongado. A versão 1.0.1 mantém a arte original provisória.
