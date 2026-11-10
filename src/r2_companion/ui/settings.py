@@ -1,14 +1,15 @@
 from copy import deepcopy
 from uuid import uuid4
 
-from PySide6.QtCore import Qt, Signal
+from PySide6.QtCore import Qt, QTime, Signal
 from PySide6.QtWidgets import (QAbstractSpinBox, QCheckBox, QComboBox, QDialog, QDialogButtonBox, QDoubleSpinBox, QFileDialog,
                               QFormLayout, QHBoxLayout, QInputDialog, QLineEdit, QListWidget,
-                              QPushButton, QScrollArea, QSpinBox, QTabWidget, QVBoxLayout, QWidget)
+                              QPushButton, QScrollArea, QSpinBox, QTabWidget, QTimeEdit, QVBoxLayout, QWidget)
 
 from ..core.config import Settings, Shortcut, Target
 from ..features.launcher import validate_executable
 from ..features.locations import validate_location
+from ..pet.personality import apply_profile
 from .targets import TargetDelegate, filter_targets, target_item
 from .theme import apply_theme, card, header, icon, label
 
@@ -44,6 +45,16 @@ class SettingsDialog(QDialog):
         self.scale.setSuffix(" DIP")
         self.scale.setButtonSymbols(QAbstractSpinBox.ButtonSymbols.NoButtons)
         form.addRow("Tamanho do mascote", self.scale)
+        self.personality = QComboBox()
+        for title, value in (("Personalizado", "custom"), ("Calmo", "calm"), ("Curioso", "curious"), ("Comunicativo", "talkative")):
+            self.personality.addItem(title, value)
+        self.personality.setCurrentIndex(self.personality.findData(settings.personality))
+        form.addRow("Personalidade", self.personality)
+        self.appearance = QComboBox()
+        for title, value in (("Azul original", "blue"), ("Verde oceano", "teal"), ("Violeta", "violet"), ("Âmbar", "amber")):
+            self.appearance.addItem(title, value)
+        self.appearance.setCurrentIndex(self.appearance.findData(settings.appearance))
+        form.addRow("Detalhes do robô", self.appearance)
         self.frequency = QComboBox()
         for caption, value in (("Desativado", "off"), ("Discreto", "quiet"), ("Normal", "normal")):
             self.frequency.addItem(caption, value)
@@ -86,6 +97,19 @@ class SettingsDialog(QDialog):
         self.reaction_interval.setSuffix(" s")
         self.reaction_interval.setValue(settings.behavior.reaction_interval)
         form.addRow("Pausa entre reações", self.reaction_interval)
+        self.personality.currentIndexChanged.connect(self.select_profile)
+        self.quiet = QCheckBox("Horário de silêncio")
+        self.quiet.setChecked(settings.quiet_enabled)
+        form.addRow(self.quiet)
+        self.quiet_start, self.quiet_end = QTimeEdit(), QTimeEdit()
+        for widget, minutes in ((self.quiet_start, settings.quiet_start), (self.quiet_end, settings.quiet_end)):
+            widget.setDisplayFormat("HH:mm")
+            widget.setTime(QTime(minutes // 60, minutes % 60))
+        form.addRow("Silêncio a partir de", self.quiet_start)
+        form.addRow("Retomar às", self.quiet_end)
+        self.holograms = QCheckBox("Pequenas projeções nas ferramentas")
+        self.holograms.setChecked(settings.holograms)
+        form.addRow(self.holograms)
         self.startup = QCheckBox("Iniciar com o Windows (somente este usuário)")
         self.startup.setEnabled(startup_available)
         self.startup.setChecked(startup_enabled)
@@ -193,6 +217,11 @@ class SettingsDialog(QDialog):
             self.targets.addItem(item)
         self.filter()
 
+    def select_profile(self):
+        self.draft = apply_profile(self.draft, self.personality.currentData())
+        self.frequency.setCurrentIndex(self.frequency.findData(self.draft.behavior.frequency))
+        self.reaction_interval.setValue(self.draft.behavior.reaction_interval)
+
     def filter(self, *_):
         count = filter_targets(self.targets, self.search.text())
         self.empty.setVisible(count == 0)
@@ -261,6 +290,12 @@ class SettingsDialog(QDialog):
         self.render_targets()
 
     def apply(self, close: bool):
+        self.draft.personality = self.personality.currentData()
+        self.draft.appearance = self.appearance.currentData()
+        self.draft.quiet_enabled = self.quiet.isChecked()
+        self.draft.quiet_start = self.quiet_start.time().hour() * 60 + self.quiet_start.time().minute()
+        self.draft.quiet_end = self.quiet_end.time().hour() * 60 + self.quiet_end.time().minute()
+        self.draft.holograms = self.holograms.isChecked()
         self.draft.visual_scale = self.scale.value()
         self.draft.behavior.frequency = self.frequency.currentData()
         self.draft.behavior.sleep_seconds = round(self.sleep.value() * 60)
