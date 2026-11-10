@@ -70,6 +70,7 @@ class AudioSettings:
     volume: float = 0.35
     muted: bool = False
     min_interval: float = 2.0
+    idle_interval: float = 90.0
     categories: dict[str, bool] = field(default_factory=lambda: {
         name: True for name in ("idle", "movement", "reactions", "sleep", "notifications")})
 
@@ -91,6 +92,12 @@ class Settings:
     audio: AudioSettings = field(default_factory=AudioSettings)
     fullscreen_mode: str = "auto"
     manual_position: WindowSettings | None = None
+    personality: str = "custom"
+    appearance: str = "blue"
+    quiet_enabled: bool = False
+    quiet_start: int = 1320
+    quiet_end: int = 480
+    holograms: bool = True
 
     def to_dict(self) -> dict:
         return asdict(self)
@@ -137,9 +144,14 @@ class Settings:
         a = data["audio"]
         if not isinstance(a["categories"], dict) or set(a["categories"]) - set(defaults["audio"]["categories"]):
             raise ValueError("Categorias de áudio inválidas.")
-        audio = AudioSettings(number(a["volume"], 0, 1), boolean(a["muted"]),
-                              number(a["min_interval"], 0.1, 60),
-                              {key: boolean(a["categories"].get(key, True)) for key in defaults["audio"]["categories"]})
+        audio = AudioSettings(volume=number(a["volume"], 0, 1), muted=boolean(a["muted"]),
+                              min_interval=number(a["min_interval"], 0.1, 60),
+                              idle_interval=number(a["idle_interval"], 15, 600),
+                              categories={key: boolean(a["categories"].get(key, True)) for key in defaults["audio"]["categories"]})
+        if data["personality"] not in ("custom", "calm", "curious", "talkative"):
+            raise ValueError("Personalidade inválida.")
+        if data["appearance"] not in ("blue", "teal", "violet", "amber"):
+            raise ValueError("Aparência inválida.")
         mode = data["fullscreen_mode"] if "fullscreen_mode" in raw else ("auto" if data["suppress_fullscreen"] else "quiet")
         if mode not in ("auto", "hide", "corner", "quiet"):
             raise ValueError("Modo de tela cheia inválido.")
@@ -179,4 +191,7 @@ class Settings:
                    sound_enabled=boolean(data["sound_enabled"]), bubbles=boolean(data["bubbles"]),
                    suppress_fullscreen=boolean(data["suppress_fullscreen"]),
                    timer_seconds=int(number(data["timer_seconds"], 1, 86400)), startup=boolean(data["startup"]),
-                   shortcuts=shortcuts, audio=audio, fullscreen_mode=mode, manual_position=manual_position, **collections)
+                   shortcuts=shortcuts, audio=audio, fullscreen_mode=mode, manual_position=manual_position,
+                   personality=data["personality"], appearance=data["appearance"],
+                   quiet_enabled=boolean(data["quiet_enabled"]), quiet_start=int(number(data["quiet_start"], 0, 1439)),
+                   quiet_end=int(number(data["quiet_end"], 0, 1439)), holograms=boolean(data["holograms"]), **collections)

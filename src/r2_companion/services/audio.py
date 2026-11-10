@@ -2,11 +2,13 @@ import logging
 from pathlib import Path
 import random
 import time
+import tempfile
 
 from PySide6.QtCore import QObject, QUrl
 from PySide6.QtMultimedia import QMediaDevices, QSoundEffect
 
 from ..core.config import AudioSettings
+from .vocalizations import compose_phrases
 
 log = logging.getLogger(__name__)
 CATEGORY_INTERVALS = {"idle": 90, "movement": 12, "reactions": 3, "sleep": 3, "notifications": 1}
@@ -28,6 +30,8 @@ class AudioService(QObject):
         self.suppressed = False
         self.sleeping = False
         self.closed = False
+        self.voices = {}
+        self.voice_directory = None
         for category in CATEGORY_INTERVALS:
             for path in sorted(directory.glob(f"{category}/*.wav")):
                 try:
@@ -39,6 +43,23 @@ class AudioService(QObject):
                     self.effects.setdefault(category, []).append((path.stem, effect))
                 except (OSError, RuntimeError):
                     log.warning("Não foi possível carregar efeito %s", path.name)
+        source = directory.parent / "voice"
+        if source.is_dir():
+            try:
+                self.voice_directory = tempfile.TemporaryDirectory(prefix="r2-voice-")
+                for emotion, paths in compose_phrases(source, Path(self.voice_directory.name)).items():
+                    self.voices[emotion] = []
+                    for path in paths:
+                        effect = factory(self)
+                        effect.setLoopCount(1)
+                        effect.setVolume(self.settings.volume)
+                        effect.setSource(QUrl.fromLocalFile(str(path)))
+                        self.voices[emotion].append((path.stem, effect))
+            except (OSError, ValueError, RuntimeError):
+                log.warning("Vocalizações indisponíveis; efeitos básicos preservados")
+
+    def all_effects(self):
+        return [effect for values in (*self.effects.values(), *self.voices.values()) for _, effect in values]
 
     def check_status(self, effect, path):
         if effect.status() == QSoundEffect.Status.Error:
@@ -46,9 +67,8 @@ class AudioService(QObject):
 
     def configure(self, enabled: bool, settings: AudioSettings):
         self.enabled, self.settings = enabled, settings
-        for effects in self.effects.values():
-            for _, effect in effects:
-                effect.setVolume(settings.volume)
+        for effect in self.all_effects():
+            effect.setVolume(settings.volume)
         if not enabled or settings.muted:
             self.stop()
 
@@ -58,15 +78,23 @@ class AudioService(QObject):
             self.stop()
 
     def play(self, category="notifications", cue=None) -> bool:
+        options = [(name, effect) for name, effect in self.effects.get(category, [])
+                   if cue is None or name.startswith(cue)]
+        return self.play_options(category, options)
+
+    def vocalize(self, emotion, category="reactions"):
+        options = self.voices.get(emotion, [])
+        return self.play_options(category, options) if options else self.play(category)
+
+    def play_options(self, category, options):
         if (self.closed or not self.enabled or self.settings.muted or self.suppressed
                 or self.sleeping and category != "sleep" or not self.settings.categories.get(category, False)):
             return False
         now = self.clock()
         if (now - self.last_play < self.settings.min_interval
-                or now - self.history.get(category, -1000000) < CATEGORY_INTERVALS.get(category, 3)):
+                or now - self.history.get(category, -1000000) < (self.settings.idle_interval if category == "idle" else CATEGORY_INTERVALS.get(category, 3))):
             return False
-        options = [(name, effect) for name, effect in self.effects.get(category, [])
-                   if (cue is None or name.startswith(cue)) and effect.status() == QSoundEffect.Status.Ready]
+        options = [(name, effect) for name, effect in options if effect.status() == QSoundEffect.Status.Ready]
         options = [(n, e) for n, e in options if n != self.previous.get(category)] or options
         try:
             if not options or not self.available():
@@ -83,10 +111,14 @@ class AudioService(QObject):
             return False
 
     def stop(self):
-        for effects in self.effects.values():
-            for _, effect in effects:
-                effect.stop()
+        for effect in self.all_effects():
+            effect.stop()
 
     def close(self):
         self.closed = True
         self.stop()
+        if self.voice_directory is not None:
+            try:
+                self.voice_directory.cleanup()
+            except OSError:
+                log.warning("Cache de voz será limpo pelo Windows")

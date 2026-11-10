@@ -24,3 +24,16 @@ O atlas original foi ampliado por `tools/make_placeholders.py` para as novas
 expressões, sem recursos externos. O desenho continua sendo a pixel art original
 provisória branca, azul e cinza do projeto. A proveniência é local; a escolha da
 licença de distribuição do projeto e desses assets continua a cargo do proprietário.
+
+## Voz e ícones 1.1.0
+
+`voice/*.wav` contém 12 sílabas originais geradas por `tools/generate_voice.py`.
+São sínteses PCM mono 22.050 Hz/16 bits com glissandos, trilos, modulação, envelopes
+e ruído determinístico. Não utilizam gravações, samples ou áudios de filmes.
+`services/vocalizations.py` combina as sílabas em 30 frases curtas para dez emoções,
+em cache temporário por execução. Os 15 efeitos anteriores foram preservados.
+
+O símbolo de duelo em `ui/theme.py` é um desenho vetorial original do projeto.
+Nenhuma imagem, trilha ou recurso do Duel of Fates foi copiado ou empacotado;
+o catálogo abre somente a URL informada no navegador padrão. As variações de cor
+reutilizam o atlas original, preservando forma, transparência e animações.
