@@ -9,6 +9,8 @@ from ..features.clock import local_clock
 from ..features.timer import TimerState
 from .theme import BLUE, MUTED, apply_theme, card, header, icon, label
 from .productivity import NotesPage, TasksPage
+from .minigames import MinigamesPage
+from .diagnostics import DiagnosticsPage
 
 
 def timer_text(seconds: float) -> str:
@@ -66,6 +68,11 @@ class ToolsDialog(QDialog):
             self.notes_page = NotesPage(productivity)
             self.tabs.addTab(self.tasks_page, "Tarefas")
             self.tabs.addTab(self.notes_page, "Notas")
+        self.minigames_page = MinigamesPage()
+        self.diagnostics_page = DiagnosticsPage()
+        self.tabs.addTab(self.minigames_page, "Minigames")
+        self.tabs.addTab(self.diagnostics_page, "Diagnóstico")
+        self.tabs.setUsesScrollButtons(True)
         layout.addWidget(self.tabs, 1)
         self.completion = label("Tudo pronto. Escolha uma ferramenta para começar.", "muted")
         self.completion.setWordWrap(True)
@@ -296,5 +303,6 @@ class ToolsDialog(QDialog):
         super().hideEvent(event)
 
     def stop(self):
+        self.diagnostics_page.stop()
         self.clock_timer.stop()
         self.hide()

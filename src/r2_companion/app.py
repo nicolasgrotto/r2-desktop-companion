@@ -18,11 +18,15 @@ from .features.locations import validate_location
 from .features.system_monitor import SystemMonitor
 from .features.timer import Countdown
 from .features.productivity import ProductivityStore
+from .features.minigames import open_game
+from .features.diagnostics import collect_diagnostics
 from .pet.animation import AnimationManager, load_clips
 from .pet.behavior import BehaviorManager
 from .pet.controller import PetController
 from .pet.positioning import Positioner, detect_corner, fingerprint
 from .pet.awareness import ContextReactions, fullscreen_policy
+from .pet.reactions import ReactionDirector
+from .pet.personality import quiet_now
 from .pet.state import State
 from .pet.window import PetWindow
 from .services.audio import AudioService
@@ -39,7 +43,7 @@ from .ui.tools import ToolsDialog
 from .ui.tray import Tray
 from .ui.radial import RadialMenu
 from .ui.targets import LaunchpadDialog
-from .ui.theme import fit_dialog
+from .ui.theme import fit_dialog, icon
 
 ASSETS = Path(__file__).resolve().parent / "assets"
 log = logging.getLogger(__name__)
@@ -60,7 +64,7 @@ class Companion(QObject):
         self.last_activity = time.monotonic()
         self.settings_dialog = None
         self.warning_history: set[str] = set()
-        self.event_audio = False
+        self.quiet_active = False
         self.window = PetWindow()
         self.positioning = Positioner(self.window)
         self.animation = AnimationManager(load_clips(ASSETS / "characters/default/manifest.json"))
@@ -104,6 +108,11 @@ class Companion(QObject):
         self.positioning.screens_changed.connect(self.display_changed)
         self.animation.frame_changed.connect(self.window.set_frame)
         self.controller.state_changed.connect(self.state_changed)
+        self.reactions = ReactionDirector(self.controller, self.audio)
+        self.window.petted.connect(lambda: self.reactions.start("affection"))
+        self.tools.minigames_page.game_requested.connect(self.launch_minigame)
+        self.tools.diagnostics_page.provider = lambda: collect_diagnostics(self.awareness.info, self.audio)
+        self.tools.diagnostics_page.scan_requested.connect(lambda: self.reactions.start("diagnosis"))
         self.controller.notification_presented.connect(self.present_bubble)
         self.countdown.completed.connect(self.timer_completed)
         self.tools.duration_selected.connect(self.save_duration)
@@ -145,6 +154,7 @@ class Companion(QObject):
     def apply_preferences(self, settings):
         self.behavior.settings = deepcopy(settings.behavior)
         self.positioning.display_size = settings.visual_scale
+        self.window.set_appearance(settings.appearance)
         self.window.set_topmost(settings.window.topmost)
         self.positioning.reconcile()
         self.audio.configure(settings.sound_enabled, deepcopy(settings.audio))
@@ -171,22 +181,8 @@ class Companion(QObject):
         self.store.apply(settings, notify=False)
 
     def state_changed(self, state):
-        previous_sleep = self.audio.sleeping
-        self.audio.set_context(bool(self.controller.gates - {"radial"}) or self.fullscreen_active, state == State.SLEEP)
-        if state == State.SLEEP and not previous_sleep:
-            self.audio.play("sleep", "enter")
-        elif state in {State.WAKE, State.GREETING}:
-            self.audio.play("sleep", "wake") if state == State.WAKE else self.audio.play("reactions", "celebrate")
-        elif state == State.WALK:
-            self.audio.play("movement", "servo")
-        elif state == State.INTERACT:
-            self.audio.play("reactions", "click")
-        elif state == State.CONFUSED:
-            self.audio.play("reactions", "confused")
-        elif state == State.SURPRISED:
-            self.audio.play("reactions", "surprise")
-        elif state in {State.HAPPY, State.CURIOUS, State.WORK} and not self.event_audio:
-            self.audio.play("idle")
+        self.audio.set_context(bool(self.controller.gates - {"radial"}) or self.fullscreen_active,
+                               state == State.SLEEP or self.controller.inactive)
         if state == State.INTERACT:
             self.present_bubble("Bip! Pronto para acompanhar você.")
 
@@ -284,6 +280,8 @@ class Companion(QObject):
     def check_desktop(self):
         if self.closed:
             return
+        self.quiet_active = quiet_now(self.store.settings)
+        self.controller.set_gate("quiet_hours", self.quiet_active)
         active = (self.store.settings.suppress_fullscreen
                   and foreground_fullscreen(int(self.window.winId())))
         screen_name = "" if self.positioning.screen is None else fingerprint(self.positioning.screen)
@@ -291,6 +289,7 @@ class Companion(QObject):
                                    self.store.settings.manual_position, screen_name) if active else ""
         self.fullscreen_active = active
         if active:
+            self.window.stop_effects()
             self.radial.hide()
             self.bubble.stop()
         self.controller.set_gate("fullscreen", active)
@@ -322,7 +321,7 @@ class Companion(QObject):
         self.update_visibility()
 
     def update_visibility(self):
-        self.tray.notifications_enabled = not (self.fullscreen_active or self.session_hidden)
+        self.tray.notifications_enabled = not (self.fullscreen_active or self.session_hidden or self.quiet_active)
         if not self.tray.notifications_enabled:
             self.tray.notice.stop()
         hidden = self.user_hidden or self.fullscreen_hidden or self.session_hidden or not QGuiApplication.screens()
@@ -391,7 +390,8 @@ class Companion(QObject):
                    "passing": lambda: self.pass_through,
                    "screen": self.move_screen, "exit": self.shutdown, "target": self.open_target}
         actions.update(tasks=lambda: self.show_tools_page(3), notes=lambda: self.show_tools_page(4),
-                       updates=self.check_updates)
+                       updates=self.check_updates, minigames=lambda: self.show_tools_page(self.tools.tabs.indexOf(self.tools.minigames_page)),
+                       diagnostics=lambda: self.show_tools_page(self.tools.tabs.indexOf(self.tools.diagnostics_page)))
         self.menu = create_menu(self.window, actions, self.store.settings, QGuiApplication.screens(),
                                 QSystemTrayIcon.isSystemTrayAvailable())
         self.menu.aboutToShow.connect(self.menu_opened)
@@ -423,22 +423,34 @@ class Companion(QObject):
         self.tools.show()
         self.tools.raise_()
         self.tools.activateWindow()
+        self.project_tool("clock")
+
+    def project_tool(self, glyph):
+        if self.store.settings.holograms and not self.controller.gates and not self.quiet_active:
+            self.window.project(icon(glyph).pixmap(32, 32))
 
     def show_tools_page(self, index):
         self.tools.tabs.setCurrentIndex(index)
         self.show_tools()
 
     def task_completed(self, entry_id):
-        self.event_audio = True
+        self.reactions.start("task")
+
+    def launch_minigame(self, game_id):
         try:
-            if self.controller.react(State.HAPPY):
-                self.audio.play("reactions", "celebrate")
-        finally:
-            self.event_audio = False
+            if not open_game(game_id):
+                self.warning("O Windows não aceitou abrir o jogo no navegador.")
+                return False
+        except (ValueError, OSError) as error:
+            self.warning(str(error))
+            return False
+        self.reactions.start("game")
+        self.project_tool("play")
+        return True
 
     def check_updates(self):
         try:
-            self.updates.launch()
+            self.updates.launch_center()
         except (OSError, ValueError) as error:
             QMessageBox.information(self.tools if self.tools.isVisible() else None, "Atualizações do R2", str(error))
 
@@ -508,7 +520,6 @@ class Companion(QObject):
         message = f"Temporizador #{run_id} concluído."
         if not self.fullscreen_active:
             self.tray.notify(message)
-        self.audio.play("notifications", "timer")
         self.controller.notify(f"timer-{run_id}", message)
 
     def shutdown(self):
@@ -516,6 +527,8 @@ class Companion(QObject):
             return
         self.positioning.settle()
         self.closed = True
+        self.reactions.close()
+        self.window.stop_effects()
         self.idle_timer.stop()
         self.desktop_timer.stop()
         self.greeting_timer.stop()
@@ -560,7 +573,16 @@ def main(argv=None) -> int:
     parser.add_argument("--data-dir", type=Path, help="Diretório alternativo de dados, útil para testes isolados")
     parser.add_argument("--smoke-test", action="store_true", help="Executa brevemente, grava diagnóstico e encerra")
     parser.add_argument("--smoke-seconds", type=float, default=3)
+    parser.add_argument("--update-center", action="store_true")
+    parser.add_argument("--install-dir", type=Path)
+    parser.add_argument("--owner-pid", type=int, default=0)
+    parser.add_argument("--owner-start", type=int, default=0)
+    parser.add_argument("--resume-update", type=Path)
     args = parser.parse_args(argv)
+    if args.update_center:
+        from .ui.updates import run_update_center
+        return run_update_center(args.data_dir or Path.home() / "AppData/Local/R2DesktopCompanion/R2Companion",
+                                 args.install_dir, args.owner_pid, args.owner_start, args.resume_update)
     if not 1 <= args.smoke_seconds <= 3600:
         parser.error("--smoke-seconds deve estar entre 1 e 3600")
     if args.smoke_test and args.data_dir is None:
@@ -606,7 +628,8 @@ def main(argv=None) -> int:
                  companion.countdown.timer, companion.monitor.timer, companion.idle_timer,
                  companion.desktop_timer, companion.tools.clock_timer, companion.bubble.timer,
                  companion.radial.dismiss_timer, companion.greeting_timer, companion.awareness.timer,
-                 companion.productivity.timer, companion.tray.notice.timer, store.timer])
+                 companion.productivity.timer, companion.tray.notice.timer, companion.window.affection_timer,
+                 companion.window.hologram_timer, companion.tools.diagnostics_page.timer, store.timer])
             (directory / "smoke.json").write_text(json.dumps(report, indent=2), encoding="utf-8")
         QTimer.singleShot(round(args.smoke_seconds * 1000), finish_smoke)
     return app.exec()

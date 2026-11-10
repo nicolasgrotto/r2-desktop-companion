@@ -156,6 +156,12 @@ def icon(name: str, color: str = BLUE) -> QIcon:
             path.lineTo(10, 26)
             path.closeSubpath()
             p.drawPath(path)
+        elif name == "duel":
+            p.drawLine(QPointF(7, 5), QPointF(25, 27))
+            p.drawLine(QPointF(25, 5), QPointF(7, 27))
+            p.drawLine(QPointF(5, 22), QPointF(13, 27))
+            p.drawLine(QPointF(19, 27), QPointF(27, 22))
+            p.drawEllipse(QRectF(13, 12, 6, 6))
         elif name == "system":
             p.drawRoundedRect(QRectF(5, 4, 22, 20), 3, 3)
             p.drawLine(QPointF(16, 24), QPointF(16, 28))
