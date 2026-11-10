@@ -8,10 +8,10 @@ offline; somente o atualizador manual consulta o GitHub por solicitação do usu
 Esta versão funcional usa **arte provisória original**, não os sprites HD finais.
 O Companion é independente do casemod e não executa nem altera seus scripts de som.
 
-**Versão 1.0.1:** 15 efeitos originais com volume e silenciamento, novas expressões,
-observação do cursor, sono/despertar, reações ao sistema, permanência no canto em
-tela cheia, tarefas e notas locais. Distribuição por GitHub Releases com checksum,
-backup e recuperação. Preferências e favoritos anteriores continuam compatíveis.
+**Versão 1.1.0:** vocalizações originais combinadas por emoção, central de atualização
+Qt com progresso real, perfis de personalidade, carinho, cores, diagnóstico e
+Minigames com Duel of Fates. Preferências, tarefas, notas e favoritos anteriores
+continuam compatíveis. O mascote preserva as regras de silêncio, sono e tela cheia.
 
 ## Executar pelo código
 
@@ -37,11 +37,17 @@ Para isolar os dados dentro do projeto:
 - Clique esquerdo: reação, fala e roda de ações essenciais. Use o centro R2 ou Esc para fechar a roda; clicar fora também fecha. Arraste com o botão esquerdo para reposicionar — o balão acompanha o personagem.
 - Botão direito: Interagir, Aplicativos, Atalhos, Ferramentas, Configurações e Sair.
 - Ferramentas: relógio/data em destaque, temporizador com minutos/segundos e atalhos de 1/5/25 minutos, CPU/RAM e bateria quando disponível.
+- Ferramentas → Minigames: catálogo com Duel of Fates. Jogar abre `https://nicolasgrotto.github.io/duel-of-fates/` via QDesktopServices/QUrl no navegador padrão. Não há navegador incorporado, WebEngine ou download do jogo pelo Companion. Para ampliar o catálogo, acrescente um Minigame em `features/minigames.py`.
+- Ferramentas → Diagnóstico: verifica CPU, memória, bateria e áudio sob demanda, com uma pequena cena de inspeção.
+- Segure o botão esquerdo sobre a cabeça por 650 ms para fazer carinho. Arrastar cancela o carinho; a reação não abre a roda de ações.
 - Tarefas: adicionar, concluir, reabrir, filtrar pendentes e excluir. Notas: criar, editar, excluir e copiar, com salvamento automático local. Ambas também estão no menu de contexto.
 - Clique duplo: cumprimento. Cliques repetidos: confusão. Arrasto: esforço e recuperação. Bateria baixa, carregamento e CPU elevada podem gerar reações discretas com cooldown.
 - Na roda, Aplicativos e Meus locais abrem painéis com busca e seleção. Use Gerenciar favoritos para editar destinos. Explorar faz o R2 dar um passeio imediatamente, quando houver espaço.
 - Configurações: tamanho, frequência, caminhada, inatividade, som, balões, prioridade da janela, aplicativos e locais favoritos.
 - Áudio: habilite Efeitos sonoros do R2 em Preferências; ajuste volume, modo silencioso, intervalo e categorias na aba Áudio. O som começa desativado e não modifica o volume do Windows.
+- Personalidade: Calmo, Curioso e Comunicativo ajustam pesos, frequência e vocalizações. O perfil não liga o som nem altera seu volume ou modo silencioso. As preferências continuam ajustáveis.
+- Aparência: detalhes em azul original, verde oceano, violeta ou âmbar. Ative pequenas projeções nas ferramentas se quiser os ícones luminosos de curta duração.
+- Horário de silêncio: use horas locais em HH:mm; é possível atravessar a meia-noite. Início e fim iguais significam silêncio o dia inteiro. Durante o período, autonomia, sons e avisos ficam suspensos; ferramentas continuam disponíveis.
 - Para adicionar um aplicativo/pasta/arquivo, use a aba Aplicativos e atalhos. Selecione um destino e use Criar atalho para um nome adicional no menu Atalhos.
 - Somente `.exe` local sem argumentos; scripts e interpretadores conhecidos são bloqueados. Arquivos favoritos: TXT, PDF, PNG, JPG/JPEG, WAV e MP3. Pastas locais também são aceitas. Não importamos `.lnk`/`.url` nem comandos.
 - Bandeja: botão direito abre o mesmo menu; clique simples mostra o mascote; clique duplo abre Ferramentas.
@@ -80,6 +86,11 @@ passa pelo AudioService e respeita volume, silenciamento e categorias. Tela chei
 e suspensão ocultam esses avisos também.
 
 ## Dados e inicialização automática
+
+As vocalizações combinam 12 sílabas originais em três frases para cada uma de dez
+emoções. O cache temporário é criado ao iniciar e removido ao encerrar. Há somente
+uma voz ativa, respeitando os intervalos globais e de categoria. Pequenas cenas
+coordenam animações e a vocalização no momento da comemoração, carinho ou saudação.
 
 Por padrão, a configuração JSON, backup, lock e logs ficam no caminho retornado
 por `QStandardPaths.AppLocalDataLocation`, normalmente
@@ -137,23 +148,29 @@ balão durante o movimento (dados isolados, sessão mantida acordada para o ensa
 .\.venv\Scripts\python.exe tools\verify_autonomy.py
 ```
 
+O roteiro `tools/verify_v11.py` captura as telas, testa vocalização a 5% de volume
+e usa uma release fictícia apenas para validar a interface. O roteiro
+`tools/verify_update_center.py` exercita download, cópia independente da central,
+encerramento, backup e reinício com executáveis e transporte local de teste.
+Os relatórios ficam em pastas `.runtime-*`, sem alterar os dados normais.
+
 Para conferir os painéis novos e a reprodução Qt com dados isolados, execute
 `tools\verify_features.py` pelo mesmo Python do ambiente virtual. Esse ensaio
 reproduz um efeito a 5% de volume e salva capturas/diagnóstico em `.runtime-features-v03`.
 Depois do build, `tools\verify_package.py` verifica ZIP/hash e abre o EXE com PATH
-restrito ao Windows. `tools\verify_release.py` ensaia a migração real 0.3.0 → 1.0.1
-em cópias locais; requer também o build anterior preservado em dist/0.3.0.
+restrito ao Windows. `tools\verify_release.py` ensaia a migração real 1.0.1 → 1.1.0
+em cópias locais; requer também o build anterior preservado em dist/1.0.1.
 
 ## Gerar o executável
 
 ```powershell
 .\.venv\Scripts\python.exe tools\build_windows.py
-.\dist\1.0.1\R2Companion\R2Companion.exe
+.\dist\1.1.0\R2Companion\R2Companion.exe
 ```
 
 O build é Windows x64, one-folder, sem console e sem solicitação de elevação.
 O script mantém o cache do empacotador no projeto. Distribua **toda a pasta**
-`dist\1.0.1\R2Companion`, incluindo `_internal`, assets, `release.json` e licenças.
+`dist\1.1.0\R2Companion`, incluindo `_internal`, assets, `release.json` e licenças.
 O ZIP e SHA-256 são gerados em `dist\R2Companion-Windows-x64.zip` e `.zip.sha256`.
 Não copie somente o EXE. O spec inclui Qt Multimedia, seus plugins e dependências;
 exclui QML/Quick/Test e outros módulos não utilizados.
@@ -164,7 +181,7 @@ das bibliotecas incluídas em [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
 Diagnóstico do executável, sem usar o diretório normal de dados:
 
 ```powershell
-.\dist\1.0.1\R2Companion\R2Companion.exe --data-dir .runtime-exe --smoke-test
+.\dist\1.1.0\R2Companion\R2Companion.exe --data-dir .runtime-exe --smoke-test
 ```
 
 Se não abrir, consulte `companion.log` no diretório escolhido. Configuração inválida
@@ -182,7 +199,11 @@ para consultar e baixar atualizações. Python, PyInstaller e Git não são nece
 Extraia o ZIP completo em uma pasta do usuário com permissão de gravação, como
 `%LOCALAPPDATA%\Programs\R2Companion`, e execute `R2Companion.exe`.
 
-No menu, escolha **Verificar atualizações**. A consulta não fecha o mascote.
+No menu, escolha **Verificar atualizações**. Uma central Qt azul/ciano mostra
+consulta, versão atual, novidades da release, download, integridade e instalação.
+A consulta e o download rodam em worker separado. A barra usa bytes recebidos e
+o tamanho publicado; fases sem porcentagem conhecida usam indicador indeterminado.
+A consulta não fecha o mascote.
 Se houver versão mais nova, confirme o download e a instalação. O atualizador
 consulta a última release estável do repositório registrado em `release.json`,
 verifica SHA-256, extrai em staging validado e somente então encerra o R2 de forma
@@ -221,8 +242,14 @@ o backup para o caminho original da instalação. Tarefas, notas e preferências
 continuam no perfil do usuário. Backups e possíveis pastas `.failed-*` são mantidos
 para diagnóstico; podem ser removidos manualmente depois da validação.
 
+Durante a instalação, a central cria uma cópia temporária do bundle em
+`updates/center-*`, fora da pasta substituída, para continuar visível enquanto o
+R2 reinicia. Downloads e logs ficam em `updates/download-*`. Essas pastas podem
+ser removidas com a central fechada. O instalador reconsulta a release e verifica
+novamente o checksum publicado, além da validação feita no download pela interface.
+
 A versão 0.2.0 não incluía metadata nem atualizador. Para migrar dela, instale
-manualmente a pasta 1.0.1 completa uma vez; os dados normais serão reutilizados.
+manualmente a pasta 1.1.0 completa uma vez; os dados normais serão reutilizados.
 Mantenha `release.json` e o diretório `_internal` junto ao executável.
 
 Para iniciar com o Windows, copie a instalação para um local estável e marque
@@ -252,4 +279,4 @@ Windows, persistência e updates), features (ferramentas) e ui (menus e painéis
 A documentação interna fica apenas no diretório local_docs, ignorado pelo Git.
 
 Continuam pendentes validações físicas em Windows 11, monitores com DPI misto,
-suspensão real e teste prolongado. A versão 1.0.1 mantém a arte original provisória.
+suspensão real e teste prolongado. A versão 1.1.0 mantém a arte original provisória.

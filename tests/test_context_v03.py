@@ -168,14 +168,19 @@ def test_battery_unavailable_and_failure_are_nonfatal():
 
 def test_shutdown_stops_new_services_and_specific_task_sound(pet, monkeypatch):
     calls = []
-    monkeypatch.setattr(pet.audio, "play", lambda category, cue=None: calls.append((category, cue)))
+    monkeypatch.setattr(pet.audio, "vocalize", lambda emotion, category="reactions": calls.append((emotion, category)))
     pet.task_completed("one")
-    assert calls == [("reactions", "celebrate")]
+    assert pet.controller.state == State.LOOK_AROUND and not calls
+    pet.controller.finished(pet.controller.token)
+    assert calls == [("celebrate", "reactions")]
     pet.shutdown()
     assert not pet.awareness.timer.isActive()
     assert not pet.productivity.timer.isActive()
     assert not pet.greeting_timer.isActive()
     assert not pet.tray.notice.timer.isActive()
+    assert not pet.window.affection_timer.isActive()
+    assert not pet.window.hologram_timer.isActive()
+    assert not pet.tools.diagnostics_page.timer.isActive()
 
 
 def test_tray_notifications_are_visual_silent_and_suppressed_in_fullscreen(pet, monkeypatch):
