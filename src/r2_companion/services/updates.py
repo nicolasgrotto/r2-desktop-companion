@@ -31,6 +31,21 @@ class UpdateService:
         self.process_factory = process_factory
         self.process = None
 
+    def launch_center(self):
+        if self.process is not None and self.process.poll() is None:
+            raise ValueError("A central de atualizações já está aberta.")
+        if self.executable is not None:
+            executable = Path(self.executable).resolve(strict=True)
+            read_release(executable.parent / "release.json")
+            command = [str(executable), "--update-center", "--install-dir", str(executable.parent)]
+        else:
+            root = Path(__file__).resolve().parents[3]
+            command = [sys.executable, str(root / "run_companion.py"), "--update-center"]
+        command += ["--data-dir", str(self.directory), "--owner-pid", str(os.getpid()),
+                    "--owner-start", str(int(psutil.Process().create_time()))]
+        self.process = self.process_factory(command, cwd=str(self.directory), creationflags=subprocess.CREATE_NO_WINDOW)
+        return self.process
+
     def launch(self):
         if self.executable is None or os.name != "nt":
             raise ValueError("Atualizações estão disponíveis no executável instalado. Pelo código, use o processo de build documentado.")

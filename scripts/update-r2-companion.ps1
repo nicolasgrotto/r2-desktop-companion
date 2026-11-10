@@ -3,6 +3,9 @@ param(
     [string]$DataDirectory = '',
     [int]$ExpectedProcessId = 0,
     [long]$ProcessStarted = 0,
+    [string]$PreparedDirectory = '',
+    [string]$PreparedVersion = '',
+    [string]$StatusPath = '',
     [switch]$CheckOnly,
     [switch]$Yes,
     [switch]$NoRestart,
@@ -12,7 +15,22 @@ param(
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
 $script:LogFile = $null
+$script:StatusRoot = $null
 $script:AssetName = 'R2Companion-Windows-x64.zip'
+
+function Write-R2Status([string]$State, [string]$Message) {
+    if ($StatusPath) {
+        $statusFile = Get-R2FullPath $StatusPath
+        if (-not $script:StatusRoot -or -not (Test-R2Within $statusFile $script:StatusRoot) -or [IO.Path]::GetFileName($statusFile) -cne 'status.json') {
+            throw 'Caminho de status invalido.'
+        }
+        Assert-R2NoLinks ([IO.Path]::GetDirectoryName($statusFile))
+        if ((Test-Path -LiteralPath $statusFile) -and ((Get-Item -LiteralPath $statusFile).Attributes -band [IO.FileAttributes]::ReparsePoint)) {
+            throw 'Arquivo de status nao pode ser um link.'
+        }
+        @{ state = $State; message = $Message } | ConvertTo-Json -Compress | Set-Content -LiteralPath $statusFile -Encoding UTF8
+    }
+}
 
 function Write-R2Log([string]$Message) {
     $line = '{0} {1}' -f [DateTime]::Now.ToString('s'), $Message
@@ -327,11 +345,13 @@ function Invoke-R2Update {
     $logs = Join-Path $data 'updates'
     $null = New-Item -Path $logs -ItemType Directory -Force
     $script:LogFile = Join-Path $logs 'update.log'
+    $script:StatusRoot = Get-R2FullPath $logs
     $lock = $null
     $stage = $null
     try {
         $lock = [IO.File]::Open(($install + '.update.lock'), [IO.FileMode]::OpenOrCreate, [IO.FileAccess]::ReadWrite, [IO.FileShare]::None)
         Write-R2Log "Verificando $($metadata.repository), versao $current."
+        Write-R2Status 'checking' 'Conferindo a release antes da instalacao.'
         $release = Get-R2LatestRelease $metadata.repository
         if ($release.draft -or $release.prerelease -or $release.tag_name -cnotmatch '^v(.+)$') {
             throw 'A resposta nao identifica uma release estavel.'
@@ -341,6 +361,7 @@ function Invoke-R2Update {
         if ($latest -le $current) {
             Write-R2Log 'Nenhuma atualizacao disponivel.'
             Show-R2Message "O R2 esta atualizado ($current)."
+            Write-R2Status 'current' "O R2 esta atualizado ($current)."
             return
         }
         $zipAsset = Get-R2Asset $release $metadata.repository $script:AssetName
@@ -360,15 +381,26 @@ function Invoke-R2Update {
         $zip = Join-Path $stage $script:AssetName
         $hash = $zip + '.sha256'
         Write-R2Log 'Baixando pacote e checksum.'
-        Get-R2Download $zipAsset.browser_download_url $zip
-        Get-R2Download $hashAsset.browser_download_url $hash
+        if ($PreparedDirectory) {
+            if ($PreparedVersion -cne $version) { throw 'A release mudou durante o download. Verifique novamente.' }
+            $prepared = Get-R2FullPath $PreparedDirectory
+            Assert-R2NoLinks $prepared -Recurse
+            Copy-Item -LiteralPath (Join-Path $prepared $script:AssetName) -Destination $zip
+            Get-R2Download $hashAsset.browser_download_url $hash
+        } else {
+            Get-R2Download $zipAsset.browser_download_url $zip
+            Get-R2Download $hashAsset.browser_download_url $hash
+        }
+        Write-R2Status 'integrity' 'Verificando SHA-256 e estrutura do pacote.'
         if ((Get-Item -LiteralPath $zip).Length -ne $zipAsset.size) { throw 'Tamanho do download incorreto.' }
         Test-R2Checksum $zip $hash
         $package = Expand-R2Package $zip (Join-Path $stage 'extracted')
         Assert-R2Package $package $metadata.repository $version
+        Write-R2Status 'installing' 'Encerrando o R2 e criando backup da instalacao.'
         Stop-R2Installation $install $ExpectedProcessId $ProcessStarted
         $backup = Install-R2Package $install $package $metadata.repository $version $data -Restart:(-not $NoRestart)
         Show-R2Message "R2 atualizado para $version. Backup preservado em $backup."
+        Write-R2Status 'done' "R2 atualizado para $version. Backup: $backup"
     } finally {
         if ($lock) { $lock.Dispose() }
         if ($stage -and (Test-Path -LiteralPath $stage)) {
@@ -393,6 +425,7 @@ if ($MyInvocation.InvocationName -ne '.') {
         exit 0
     } catch {
         $message = "Nao foi possivel atualizar: $($_.Exception.Message)"
+        try { Write-R2Status 'error' $message } catch { Write-Host $message }
         try { Write-R2Log $message } catch { Write-Host $message }
         Show-R2Message $message
         exit 1
