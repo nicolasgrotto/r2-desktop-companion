@@ -66,6 +66,8 @@ class Positioner(QObject):
         self.timer.timeout.connect(self.tick)
         self.token = 0
         self.screen = None
+        self.movement = None
+        self.aspect = 1.0
         app = QGuiApplication.instance()
         app.screenAdded.connect(self.add_screen)
         app.screenRemoved.connect(self.reconcile)
@@ -81,8 +83,9 @@ class Positioner(QObject):
     def fit(self, screen) -> None:
         area = screen.availableGeometry()
         side = max(1, min(self.display_size, area.width(), area.height()))
-        if self.window.size().width() != side or self.window.size().height() != side:
-            self.window.setFixedSize(side, side)
+        width, height = round(side * min(1, self.aspect)), round(side * min(1, 1 / self.aspect))
+        if self.window.width() != width or self.window.height() != height:
+            self.window.setFixedSize(width, height)
 
     def place(self, point: QPointF, screen=None) -> None:
         screens = QGuiApplication.screens()
@@ -100,7 +103,10 @@ class Positioner(QObject):
             return
         screen = screens[nearest_index(pointer, [QRectF(s.availableGeometry()) for s in screens])]
         self.fit(screen)
+        previous = self.window.pos()
         self.place(pointer - QPointF(anchor.x() * self.window.width(), anchor.y() * self.window.height()), screen)
+        if self.movement:
+            self.movement.displaced(self.window.x() - previous.x(), self.window.y() - previous.y(), manual=True)
 
     def restore(self, saved: WindowSettings) -> None:
         screens = QGuiApplication.screens()
@@ -149,14 +155,18 @@ class Positioner(QObject):
         if (self.destination - self.origin).manhattanLength() < 4:
             return False
         self.token = token
-        self.duration = duration
+        self.duration = duration / (self.movement.speed if self.movement else 1)
         self.started = self.clock()
         self.timer.start()
         return True
 
     def tick(self):
         progress = min(1.0, max(0.0, (self.clock() - self.started) / self.duration))
-        self.place(self.origin + (self.destination - self.origin) * progress, self.screen)
+        eased = self.movement.progress(progress) if self.movement else progress
+        previous = self.window.pos()
+        self.place(self.origin + (self.destination - self.origin) * eased, self.screen)
+        if self.movement:
+            self.movement.displaced(self.window.x() - previous.x(), self.window.y() - previous.y())
         if progress >= 1:
             self.timer.stop()
             self.settle()
@@ -164,3 +174,5 @@ class Positioner(QObject):
 
     def stop(self):
         self.timer.stop()
+        if self.movement:
+            self.movement.stop()

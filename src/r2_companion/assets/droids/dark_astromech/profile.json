@@ -1,0 +1,241 @@
+{
+  "profile_version": 1,
+  "id": "dark_astromech",
+  "name": "Vesper",
+  "description": "Sentinela de manutenção em grafite e bronze. Observa em silêncio e responde com pulsos graves.",
+  "manifest": "droids/dark_astromech/animations/manifest.json",
+  "renderer": "atlas",
+  "animations": {
+    "IDLE": "Repouso",
+    "BLINK": "Expressões",
+    "LOOK_AROUND": "Expressões",
+    "WALK": "Locomoção",
+    "HAPPY": "Expressões",
+    "CURIOUS": "Expressões",
+    "SLEEP": "Repouso",
+    "INTERACT": "Interações",
+    "NOTIFICATION": "Interações",
+    "SURPRISED": "Expressões",
+    "WORK": "Inspeção",
+    "CONFUSED": "Expressões",
+    "DRAG": "Locomoção",
+    "RECOVER": "Locomoção",
+    "WAKE": "Repouso",
+    "GREETING": "Interações",
+    "WORRIED": "Inspeção",
+    "OVERHEAT": "Inspeção",
+    "LOOK_LEFT": "Expressões",
+    "LOOK_RIGHT": "Expressões"
+  },
+  "audio": {
+    "voice": "droids/dark_astromech/audio/voice",
+    "sounds": "sounds",
+    "phrases": {
+      "curious": [
+        [
+          "rise",
+          "trill"
+        ],
+        [
+          "question",
+          "chirp",
+          "trill"
+        ],
+        [
+          "servo",
+          "rise",
+          "warble"
+        ]
+      ],
+      "happy": [
+        [
+          "low",
+          "trill"
+        ],
+        [
+          "answer",
+          "warble"
+        ],
+        [
+          "soft",
+          "rise"
+        ]
+      ],
+      "confused": [
+        [
+          "answer",
+          "question",
+          "fall"
+        ],
+        [
+          "warble",
+          "answer",
+          "low"
+        ],
+        [
+          "question",
+          "warble",
+          "fall"
+        ]
+      ],
+      "surprised": [
+        [
+          "spark",
+          "question"
+        ],
+        [
+          "bright",
+          "spark"
+        ],
+        [
+          "spark",
+          "rise"
+        ]
+      ],
+      "worried": [
+        [
+          "low",
+          "fall"
+        ],
+        [
+          "warble",
+          "low"
+        ],
+        [
+          "answer",
+          "fall",
+          "low"
+        ]
+      ],
+      "greeting": [
+        [
+          "low",
+          "answer"
+        ],
+        [
+          "servo",
+          "low",
+          "rise"
+        ],
+        [
+          "answer",
+          "soft"
+        ]
+      ],
+      "sleep": [
+        [
+          "soft",
+          "low"
+        ],
+        [
+          "soft",
+          "soft"
+        ],
+        [
+          "answer",
+          "soft"
+        ]
+      ],
+      "wake": [
+        [
+          "low",
+          "rise",
+          "chirp"
+        ],
+        [
+          "soft",
+          "question",
+          "bright"
+        ],
+        [
+          "rise",
+          "answer"
+        ]
+      ],
+      "celebrate": [
+        [
+          "rise",
+          "trill",
+          "spark",
+          "bright"
+        ],
+        [
+          "bright",
+          "chirp",
+          "trill",
+          "spark"
+        ],
+        [
+          "chirp",
+          "rise",
+          "bright"
+        ]
+      ],
+      "affection": [
+        [
+          "soft",
+          "warble",
+          "chirp"
+        ],
+        [
+          "warble",
+          "soft"
+        ],
+        [
+          "soft",
+          "answer",
+          "chirp"
+        ]
+      ]
+    }
+  },
+  "personality": "calm",
+  "movement": "astromech",
+  "canvas": [
+    64,
+    64
+  ],
+  "speed": 0.8,
+  "theme": {
+    "name": "Oficina de bronze",
+    "radius": 8,
+    "colors": {
+      "primary": "#bd824c",
+      "secondary": "#513928",
+      "accent": "#ff6957",
+      "background": "#11151b",
+      "panel": "#1e252d",
+      "border": "#896d52",
+      "text": "#f3e8db",
+      "muted": "#bdaf9f",
+      "hero": "#15191f",
+      "hero_text": "#fff1dc",
+      "hero_muted": "#d7bc98",
+      "selected": "#513928",
+      "focus": "#f0b16e",
+      "button_text": "#17120f",
+      "error": "#ff9383",
+      "disabled": "#aca297",
+      "notification": "#231c18",
+      "hologram": "#ffb65e",
+      "decoration": "#9e7350"
+    }
+  },
+  "customization": {
+    "illumination": {
+      "label": "Iluminação",
+      "default": "amber",
+      "options": {
+        "amber": {
+          "label": "Âmbar",
+          "color": "#ffb95b"
+        },
+        "red": {
+          "label": "Vermelho",
+          "color": "#ff6654"
+        }
+      }
+    }
+  },
+  "art_status": "Pixel art original procedural · validação artística pendente"
+}

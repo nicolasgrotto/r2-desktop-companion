@@ -85,6 +85,7 @@ class ConfigStore(QObject):
             raise OSError(output.errorString())
 
     def apply(self, settings: Settings, notify: bool = True) -> None:
+        settings.capture_droid()
         checked = Settings.parse(settings.to_dict())
         if checked == self.settings:
             return

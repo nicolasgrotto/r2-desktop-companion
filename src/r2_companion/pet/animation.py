@@ -17,6 +17,7 @@ log = logging.getLogger(__name__)
 class Frame:
     pixmap: QPixmap
     milliseconds: int
+    visual: object = None
 
 
 @dataclass(frozen=True)
@@ -29,13 +30,13 @@ class Clip:
         return sum(frame.milliseconds for frame in self.frames)
 
 
-def load_clips(manifest: Path) -> dict[State, Clip]:
+def load_clips(manifest: Path, fill_missing=True, resource_root=None) -> dict[State, Clip]:
     if manifest.stat().st_size > 1024 * 1024:
         raise ValueError("Manifesto muito grande.")
     data = json.loads(manifest.read_text(encoding="utf-8"))
     if not isinstance(data, dict) or data.get("manifest_version") != 1 or not isinstance(data.get("clips"), dict):
         raise ValueError("Manifesto de animação inválido.")
-    root = manifest.parent.resolve()
+    root = (resource_root or manifest.parent).resolve()
     images = {}
     clips = {}
     byte_count = 0
@@ -54,7 +55,7 @@ def load_clips(manifest: Path) -> dict[State, Clip]:
             if not isinstance(item.get("image"), str) or not item["image"]:
                 raise ValueError("Referência de imagem inválida.")
             relative = Path(item["image"])
-            path = (root / relative).resolve()
+            path = (manifest.parent / relative).resolve()
             if relative.is_absolute() or not path.is_relative_to(root) or path.suffix.lower() != ".png":
                 raise ValueError("Imagem deve ser PNG dentro do diretório do personagem.")
             if path not in images:
@@ -89,7 +90,7 @@ def load_clips(manifest: Path) -> dict[State, Clip]:
     canvas = clips[State.IDLE].frames[0].pixmap.size()
     if any(frame.pixmap.size() != canvas for clip in clips.values() for frame in clip.frames):
         raise ValueError("Todos os frames devem usar o mesmo canvas e âncora.")
-    for state in State:
+    for state in State if fill_missing else ():
         if state not in clips:
             log.warning("Estado %s usa placeholder IDLE", state.value)
             idle = clips[State.IDLE].frames[0]
@@ -138,7 +139,7 @@ class AnimationManager(QObject):
             if elapsed < boundary:
                 if index != self.last_frame:
                     self.last_frame = index
-                    self.frame_changed.emit(frame.pixmap)
+                    self.frame_changed.emit(frame.visual if frame.visual is not None else frame.pixmap)
                 if self.clip is clip and self.token == token and not (clip.loop and len(clip.frames) == 1):
                     self.timer.start(max(1, boundary - elapsed))
                 return

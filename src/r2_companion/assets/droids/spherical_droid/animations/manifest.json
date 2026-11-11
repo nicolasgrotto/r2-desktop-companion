@@ -1,0 +1,1279 @@
+{
+  "manifest_version": 2,
+  "canvas": [
+    64,
+    64
+  ],
+  "body": "../sprites/body.png",
+  "head": "../sprites/head.png",
+  "clips": {
+    "IDLE": {
+      "loop": true,
+      "frames": [
+        {
+          "duration_ms": 120,
+          "head_tilt": 0.0,
+          "head_x": 0,
+          "head_y": 0,
+          "lift": 0,
+          "body_angle": 0
+        }
+      ]
+    },
+    "BLINK": {
+      "loop": false,
+      "frames": [
+        {
+          "duration_ms": 75,
+          "head_tilt": 0.0,
+          "head_x": 0,
+          "head_y": 0,
+          "lift": 0,
+          "body_angle": 0
+        },
+        {
+          "duration_ms": 75,
+          "head_tilt": 7.04,
+          "head_x": 0,
+          "head_y": 0,
+          "lift": 0,
+          "body_angle": 0
+        },
+        {
+          "duration_ms": 75,
+          "head_tilt": 8.77,
+          "head_x": 0,
+          "head_y": 0,
+          "lift": 0,
+          "body_angle": 0
+        },
+        {
+          "duration_ms": 75,
+          "head_tilt": 3.9,
+          "head_x": 0,
+          "head_y": 0,
+          "lift": 0,
+          "body_angle": 0
+        },
+        {
+          "duration_ms": 75,
+          "head_tilt": -3.9,
+          "head_x": 0,
+          "head_y": 0,
+          "lift": 0,
+          "body_angle": 0
+        },
+        {
+          "duration_ms": 75,
+          "head_tilt": -8.77,
+          "head_x": 0,
+          "head_y": 0,
+          "lift": 0,
+          "body_angle": 0
+        },
+        {
+          "duration_ms": 75,
+          "head_tilt": -7.04,
+          "head_x": 0,
+          "head_y": 0,
+          "lift": 0,
+          "body_angle": 0
+        },
+        {
+          "duration_ms": 75,
+          "head_tilt": -0.0,
+          "head_x": 0,
+          "head_y": 0,
+          "lift": 0,
+          "body_angle": 0
+        }
+      ]
+    },
+    "LOOK_AROUND": {
+      "loop": false,
+      "frames": [
+        {
+          "duration_ms": 120,
+          "head_tilt": 0.0,
+          "head_x": 0.0,
+          "head_y": 0,
+          "lift": 0,
+          "body_angle": 0
+        },
+        {
+          "duration_ms": 120,
+          "head_tilt": 7.04,
+          "head_x": 1.56,
+          "head_y": 0,
+          "lift": 0,
+          "body_angle": 0
+        },
+        {
+          "duration_ms": 120,
+          "head_tilt": 8.77,
+          "head_x": 1.95,
+          "head_y": 0,
+          "lift": 0,
+          "body_angle": 0
+        },
+        {
+          "duration_ms": 120,
+          "head_tilt": 3.9,
+          "head_x": 0.87,
+          "head_y": 0,
+          "lift": 0,
+          "body_angle": 0
+        },
+        {
+          "duration_ms": 120,
+          "head_tilt": -3.9,
+          "head_x": -0.87,
+          "head_y": 0,
+          "lift": 0,
+          "body_angle": 0
+        },
+        {
+          "duration_ms": 120,
+          "head_tilt": -8.77,
+          "head_x": -1.95,
+          "head_y": 0,
+          "lift": 0,
+          "body_angle": 0
+        },
+        {
+          "duration_ms": 120,
+          "head_tilt": -7.04,
+          "head_x": -1.56,
+          "head_y": 0,
+          "lift": 0,
+          "body_angle": 0
+        },
+        {
+          "duration_ms": 120,
+          "head_tilt": -0.0,
+          "head_x": -0.0,
+          "head_y": 0,
+          "lift": 0,
+          "body_angle": 0
+        }
+      ]
+    },
+    "WALK": {
+      "loop": true,
+      "frames": [
+        {
+          "duration_ms": 120,
+          "head_tilt": 0.0,
+          "head_x": 0,
+          "head_y": 0,
+          "lift": 0,
+          "body_angle": 0
+        },
+        {
+          "duration_ms": 120,
+          "head_tilt": 7.04,
+          "head_x": 0,
+          "head_y": 0,
+          "lift": 0,
+          "body_angle": 0
+        },
+        {
+          "duration_ms": 120,
+          "head_tilt": 8.77,
+          "head_x": 0,
+          "head_y": 0,
+          "lift": 0,
+          "body_angle": 0
+        },
+        {
+          "duration_ms": 120,
+          "head_tilt": 3.9,
+          "head_x": 0,
+          "head_y": 0,
+          "lift": 0,
+          "body_angle": 0
+        },
+        {
+          "duration_ms": 120,
+          "head_tilt": -3.9,
+          "head_x": 0,
+          "head_y": 0,
+          "lift": 0,
+          "body_angle": 0
+        },
+        {
+          "duration_ms": 120,
+          "head_tilt": -8.77,
+          "head_x": 0,
+          "head_y": 0,
+          "lift": 0,
+          "body_angle": 0
+        },
+        {
+          "duration_ms": 120,
+          "head_tilt": -7.04,
+          "head_x": 0,
+          "head_y": 0,
+          "lift": 0,
+          "body_angle": 0
+        },
+        {
+          "duration_ms": 120,
+          "head_tilt": -0.0,
+          "head_x": 0,
+          "head_y": 0,
+          "lift": 0,
+          "body_angle": 0
+        }
+      ]
+    },
+    "HAPPY": {
+      "loop": false,
+      "frames": [
+        {
+          "duration_ms": 120,
+          "head_tilt": 0.0,
+          "head_x": 0,
+          "head_y": 0,
+          "lift": -0.0,
+          "body_angle": 0
+        },
+        {
+          "duration_ms": 120,
+          "head_tilt": 7.04,
+          "head_x": 0,
+          "head_y": 0,
+          "lift": -1.56,
+          "body_angle": 0
+        },
+        {
+          "duration_ms": 120,
+          "head_tilt": 8.77,
+          "head_x": 0,
+          "head_y": 0,
+          "lift": -1.95,
+          "body_angle": 0
+        },
+        {
+          "duration_ms": 120,
+          "head_tilt": 3.9,
+          "head_x": 0,
+          "head_y": 0,
+          "lift": -0.87,
+          "body_angle": 0
+        },
+        {
+          "duration_ms": 120,
+          "head_tilt": -3.9,
+          "head_x": 0,
+          "head_y": 0,
+          "lift": -0.87,
+          "body_angle": 0
+        },
+        {
+          "duration_ms": 120,
+          "head_tilt": -8.77,
+          "head_x": 0,
+          "head_y": 0,
+          "lift": -1.95,
+          "body_angle": 0
+        },
+        {
+          "duration_ms": 120,
+          "head_tilt": -7.04,
+          "head_x": 0,
+          "head_y": 0,
+          "lift": -1.56,
+          "body_angle": 0
+        },
+        {
+          "duration_ms": 120,
+          "head_tilt": -0.0,
+          "head_x": 0,
+          "head_y": 0,
+          "lift": -0.0,
+          "body_angle": 0
+        }
+      ]
+    },
+    "CURIOUS": {
+      "loop": false,
+      "frames": [
+        {
+          "duration_ms": 120,
+          "head_tilt": 0.0,
+          "head_x": 0.0,
+          "head_y": 0,
+          "lift": 0,
+          "body_angle": 0
+        },
+        {
+          "duration_ms": 120,
+          "head_tilt": 7.04,
+          "head_x": 1.56,
+          "head_y": 0,
+          "lift": 0,
+          "body_angle": 0
+        },
+        {
+          "duration_ms": 120,
+          "head_tilt": 8.77,
+          "head_x": 1.95,
+          "head_y": 0,
+          "lift": 0,
+          "body_angle": 0
+        },
+        {
+          "duration_ms": 120,
+          "head_tilt": 3.9,
+          "head_x": 0.87,
+          "head_y": 0,
+          "lift": 0,
+          "body_angle": 0
+        },
+        {
+          "duration_ms": 120,
+          "head_tilt": -3.9,
+          "head_x": -0.87,
+          "head_y": 0,
+          "lift": 0,
+          "body_angle": 0
+        },
+        {
+          "duration_ms": 120,
+          "head_tilt": -8.77,
+          "head_x": -1.95,
+          "head_y": 0,
+          "lift": 0,
+          "body_angle": 0
+        },
+        {
+          "duration_ms": 120,
+          "head_tilt": -7.04,
+          "head_x": -1.56,
+          "head_y": 0,
+          "lift": 0,
+          "body_angle": 0
+        },
+        {
+          "duration_ms": 120,
+          "head_tilt": -0.0,
+          "head_x": -0.0,
+          "head_y": 0,
+          "lift": 0,
+          "body_angle": 0
+        }
+      ]
+    },
+    "SLEEP": {
+      "loop": true,
+      "frames": [
+        {
+          "duration_ms": 120,
+          "head_tilt": 0.0,
+          "head_x": 0,
+          "head_y": 2,
+          "lift": 0,
+          "body_angle": 0
+        }
+      ]
+    },
+    "INTERACT": {
+      "loop": false,
+      "frames": [
+        {
+          "duration_ms": 120,
+          "head_tilt": 0.0,
+          "head_x": 0,
+          "head_y": 0,
+          "lift": -0.0,
+          "body_angle": 0
+        },
+        {
+          "duration_ms": 120,
+          "head_tilt": 7.04,
+          "head_x": 0,
+          "head_y": 0,
+          "lift": -1.56,
+          "body_angle": 0
+        },
+        {
+          "duration_ms": 120,
+          "head_tilt": 8.77,
+          "head_x": 0,
+          "head_y": 0,
+          "lift": -1.95,
+          "body_angle": 0
+        },
+        {
+          "duration_ms": 120,
+          "head_tilt": 3.9,
+          "head_x": 0,
+          "head_y": 0,
+          "lift": -0.87,
+          "body_angle": 0
+        },
+        {
+          "duration_ms": 120,
+          "head_tilt": -3.9,
+          "head_x": 0,
+          "head_y": 0,
+          "lift": -0.87,
+          "body_angle": 0
+        },
+        {
+          "duration_ms": 120,
+          "head_tilt": -8.77,
+          "head_x": 0,
+          "head_y": 0,
+          "lift": -1.95,
+          "body_angle": 0
+        },
+        {
+          "duration_ms": 120,
+          "head_tilt": -7.04,
+          "head_x": 0,
+          "head_y": 0,
+          "lift": -1.56,
+          "body_angle": 0
+        },
+        {
+          "duration_ms": 120,
+          "head_tilt": -0.0,
+          "head_x": 0,
+          "head_y": 0,
+          "lift": -0.0,
+          "body_angle": 0
+        }
+      ]
+    },
+    "NOTIFICATION": {
+      "loop": false,
+      "frames": [
+        {
+          "duration_ms": 120,
+          "head_tilt": 0.0,
+          "head_x": 0,
+          "head_y": 0,
+          "lift": -0.0,
+          "body_angle": 0
+        },
+        {
+          "duration_ms": 120,
+          "head_tilt": 7.04,
+          "head_x": 0,
+          "head_y": 0,
+          "lift": -1.56,
+          "body_angle": 0
+        },
+        {
+          "duration_ms": 120,
+          "head_tilt": 8.77,
+          "head_x": 0,
+          "head_y": 0,
+          "lift": -1.95,
+          "body_angle": 0
+        },
+        {
+          "duration_ms": 120,
+          "head_tilt": 3.9,
+          "head_x": 0,
+          "head_y": 0,
+          "lift": -0.87,
+          "body_angle": 0
+        },
+        {
+          "duration_ms": 120,
+          "head_tilt": -3.9,
+          "head_x": 0,
+          "head_y": 0,
+          "lift": -0.87,
+          "body_angle": 0
+        },
+        {
+          "duration_ms": 120,
+          "head_tilt": -8.77,
+          "head_x": 0,
+          "head_y": 0,
+          "lift": -1.95,
+          "body_angle": 0
+        },
+        {
+          "duration_ms": 120,
+          "head_tilt": -7.04,
+          "head_x": 0,
+          "head_y": 0,
+          "lift": -1.56,
+          "body_angle": 0
+        },
+        {
+          "duration_ms": 120,
+          "head_tilt": -0.0,
+          "head_x": 0,
+          "head_y": 0,
+          "lift": -0.0,
+          "body_angle": 0
+        }
+      ]
+    },
+    "SURPRISED": {
+      "loop": false,
+      "frames": [
+        {
+          "duration_ms": 120,
+          "head_tilt": 0.0,
+          "head_x": 0,
+          "head_y": -0.0,
+          "lift": 0,
+          "body_angle": 0
+        },
+        {
+          "duration_ms": 120,
+          "head_tilt": 7.04,
+          "head_x": 0,
+          "head_y": -1.56,
+          "lift": 0,
+          "body_angle": 0
+        },
+        {
+          "duration_ms": 120,
+          "head_tilt": 8.77,
+          "head_x": 0,
+          "head_y": -1.95,
+          "lift": 0,
+          "body_angle": 0
+        },
+        {
+          "duration_ms": 120,
+          "head_tilt": 3.9,
+          "head_x": 0,
+          "head_y": -0.87,
+          "lift": 0,
+          "body_angle": 0
+        },
+        {
+          "duration_ms": 120,
+          "head_tilt": -3.9,
+          "head_x": 0,
+          "head_y": -0.87,
+          "lift": 0,
+          "body_angle": 0
+        },
+        {
+          "duration_ms": 120,
+          "head_tilt": -8.77,
+          "head_x": 0,
+          "head_y": -1.95,
+          "lift": 0,
+          "body_angle": 0
+        },
+        {
+          "duration_ms": 120,
+          "head_tilt": -7.04,
+          "head_x": 0,
+          "head_y": -1.56,
+          "lift": 0,
+          "body_angle": 0
+        },
+        {
+          "duration_ms": 120,
+          "head_tilt": -0.0,
+          "head_x": 0,
+          "head_y": -0.0,
+          "lift": 0,
+          "body_angle": 0
+        }
+      ]
+    },
+    "WORK": {
+      "loop": false,
+      "frames": [
+        {
+          "duration_ms": 120,
+          "head_tilt": 0.0,
+          "head_x": 0.0,
+          "head_y": 0,
+          "lift": 0,
+          "body_angle": 0
+        },
+        {
+          "duration_ms": 120,
+          "head_tilt": 7.04,
+          "head_x": 1.56,
+          "head_y": 0,
+          "lift": 0,
+          "body_angle": 0
+        },
+        {
+          "duration_ms": 120,
+          "head_tilt": 8.77,
+          "head_x": 1.95,
+          "head_y": 0,
+          "lift": 0,
+          "body_angle": 0
+        },
+        {
+          "duration_ms": 120,
+          "head_tilt": 3.9,
+          "head_x": 0.87,
+          "head_y": 0,
+          "lift": 0,
+          "body_angle": 0
+        },
+        {
+          "duration_ms": 120,
+          "head_tilt": -3.9,
+          "head_x": -0.87,
+          "head_y": 0,
+          "lift": 0,
+          "body_angle": 0
+        },
+        {
+          "duration_ms": 120,
+          "head_tilt": -8.77,
+          "head_x": -1.95,
+          "head_y": 0,
+          "lift": 0,
+          "body_angle": 0
+        },
+        {
+          "duration_ms": 120,
+          "head_tilt": -7.04,
+          "head_x": -1.56,
+          "head_y": 0,
+          "lift": 0,
+          "body_angle": 0
+        },
+        {
+          "duration_ms": 120,
+          "head_tilt": -0.0,
+          "head_x": -0.0,
+          "head_y": 0,
+          "lift": 0,
+          "body_angle": 0
+        }
+      ]
+    },
+    "CONFUSED": {
+      "loop": false,
+      "frames": [
+        {
+          "duration_ms": 120,
+          "head_tilt": 0.0,
+          "head_x": 0,
+          "head_y": 0,
+          "lift": 0,
+          "body_angle": 0.0
+        },
+        {
+          "duration_ms": 120,
+          "head_tilt": 10.95,
+          "head_x": 0,
+          "head_y": 0,
+          "lift": 0,
+          "body_angle": 6.25
+        },
+        {
+          "duration_ms": 120,
+          "head_tilt": 13.65,
+          "head_x": 0,
+          "head_y": 0,
+          "lift": 0,
+          "body_angle": 7.8
+        },
+        {
+          "duration_ms": 120,
+          "head_tilt": 6.07,
+          "head_x": 0,
+          "head_y": 0,
+          "lift": 0,
+          "body_angle": 3.47
+        },
+        {
+          "duration_ms": 120,
+          "head_tilt": -6.07,
+          "head_x": 0,
+          "head_y": 0,
+          "lift": 0,
+          "body_angle": -3.47
+        },
+        {
+          "duration_ms": 120,
+          "head_tilt": -13.65,
+          "head_x": 0,
+          "head_y": 0,
+          "lift": 0,
+          "body_angle": -7.8
+        },
+        {
+          "duration_ms": 120,
+          "head_tilt": -10.95,
+          "head_x": 0,
+          "head_y": 0,
+          "lift": 0,
+          "body_angle": -6.25
+        },
+        {
+          "duration_ms": 120,
+          "head_tilt": -0.0,
+          "head_x": 0,
+          "head_y": 0,
+          "lift": 0,
+          "body_angle": -0.0
+        }
+      ]
+    },
+    "DRAG": {
+      "loop": false,
+      "frames": [
+        {
+          "duration_ms": 120,
+          "head_tilt": 0.0,
+          "head_x": 0,
+          "head_y": 0,
+          "lift": 0,
+          "body_angle": 0.0
+        },
+        {
+          "duration_ms": 120,
+          "head_tilt": 10.95,
+          "head_x": 0,
+          "head_y": 0,
+          "lift": 0,
+          "body_angle": 6.25
+        },
+        {
+          "duration_ms": 120,
+          "head_tilt": 13.65,
+          "head_x": 0,
+          "head_y": 0,
+          "lift": 0,
+          "body_angle": 7.8
+        },
+        {
+          "duration_ms": 120,
+          "head_tilt": 6.07,
+          "head_x": 0,
+          "head_y": 0,
+          "lift": 0,
+          "body_angle": 3.47
+        },
+        {
+          "duration_ms": 120,
+          "head_tilt": -6.07,
+          "head_x": 0,
+          "head_y": 0,
+          "lift": 0,
+          "body_angle": -3.47
+        },
+        {
+          "duration_ms": 120,
+          "head_tilt": -13.65,
+          "head_x": 0,
+          "head_y": 0,
+          "lift": 0,
+          "body_angle": -7.8
+        },
+        {
+          "duration_ms": 120,
+          "head_tilt": -10.95,
+          "head_x": 0,
+          "head_y": 0,
+          "lift": 0,
+          "body_angle": -6.25
+        },
+        {
+          "duration_ms": 120,
+          "head_tilt": -0.0,
+          "head_x": 0,
+          "head_y": 0,
+          "lift": 0,
+          "body_angle": -0.0
+        }
+      ]
+    },
+    "RECOVER": {
+      "loop": false,
+      "frames": [
+        {
+          "duration_ms": 120,
+          "head_tilt": 0.0,
+          "head_x": 0,
+          "head_y": 0,
+          "lift": 0,
+          "body_angle": 0.0
+        },
+        {
+          "duration_ms": 120,
+          "head_tilt": 9.38,
+          "head_x": 0,
+          "head_y": 0,
+          "lift": 0,
+          "body_angle": 6.25
+        },
+        {
+          "duration_ms": 120,
+          "head_tilt": 9.75,
+          "head_x": 0,
+          "head_y": 0,
+          "lift": 0,
+          "body_angle": 7.8
+        },
+        {
+          "duration_ms": 120,
+          "head_tilt": 3.47,
+          "head_x": 0,
+          "head_y": 0,
+          "lift": 0,
+          "body_angle": 3.47
+        },
+        {
+          "duration_ms": 120,
+          "head_tilt": -2.6,
+          "head_x": 0,
+          "head_y": 0,
+          "lift": 0,
+          "body_angle": -3.47
+        },
+        {
+          "duration_ms": 120,
+          "head_tilt": -3.9,
+          "head_x": 0,
+          "head_y": 0,
+          "lift": 0,
+          "body_angle": -7.8
+        },
+        {
+          "duration_ms": 120,
+          "head_tilt": -1.56,
+          "head_x": 0,
+          "head_y": 0,
+          "lift": 0,
+          "body_angle": -6.25
+        },
+        {
+          "duration_ms": 120,
+          "head_tilt": -0.0,
+          "head_x": 0,
+          "head_y": 0,
+          "lift": 0,
+          "body_angle": -0.0
+        }
+      ]
+    },
+    "WAKE": {
+      "loop": false,
+      "frames": [
+        {
+          "duration_ms": 120,
+          "head_tilt": 0.0,
+          "head_x": 0,
+          "head_y": -0.0,
+          "lift": 0,
+          "body_angle": 0
+        },
+        {
+          "duration_ms": 120,
+          "head_tilt": 7.04,
+          "head_x": 0,
+          "head_y": -1.56,
+          "lift": 0,
+          "body_angle": 0
+        },
+        {
+          "duration_ms": 120,
+          "head_tilt": 8.77,
+          "head_x": 0,
+          "head_y": -1.95,
+          "lift": 0,
+          "body_angle": 0
+        },
+        {
+          "duration_ms": 120,
+          "head_tilt": 3.9,
+          "head_x": 0,
+          "head_y": -0.87,
+          "lift": 0,
+          "body_angle": 0
+        },
+        {
+          "duration_ms": 120,
+          "head_tilt": -3.9,
+          "head_x": 0,
+          "head_y": -0.87,
+          "lift": 0,
+          "body_angle": 0
+        },
+        {
+          "duration_ms": 120,
+          "head_tilt": -8.77,
+          "head_x": 0,
+          "head_y": -1.95,
+          "lift": 0,
+          "body_angle": 0
+        },
+        {
+          "duration_ms": 120,
+          "head_tilt": -7.04,
+          "head_x": 0,
+          "head_y": -1.56,
+          "lift": 0,
+          "body_angle": 0
+        },
+        {
+          "duration_ms": 120,
+          "head_tilt": -0.0,
+          "head_x": 0,
+          "head_y": -0.0,
+          "lift": 0,
+          "body_angle": 0
+        }
+      ]
+    },
+    "GREETING": {
+      "loop": false,
+      "frames": [
+        {
+          "duration_ms": 120,
+          "head_tilt": 0.0,
+          "head_x": 0,
+          "head_y": -0.0,
+          "lift": 0,
+          "body_angle": 0
+        },
+        {
+          "duration_ms": 120,
+          "head_tilt": 7.04,
+          "head_x": 0,
+          "head_y": -1.56,
+          "lift": 0,
+          "body_angle": 0
+        },
+        {
+          "duration_ms": 120,
+          "head_tilt": 8.77,
+          "head_x": 0,
+          "head_y": -1.95,
+          "lift": 0,
+          "body_angle": 0
+        },
+        {
+          "duration_ms": 120,
+          "head_tilt": 3.9,
+          "head_x": 0,
+          "head_y": -0.87,
+          "lift": 0,
+          "body_angle": 0
+        },
+        {
+          "duration_ms": 120,
+          "head_tilt": -3.9,
+          "head_x": 0,
+          "head_y": -0.87,
+          "lift": 0,
+          "body_angle": 0
+        },
+        {
+          "duration_ms": 120,
+          "head_tilt": -8.77,
+          "head_x": 0,
+          "head_y": -1.95,
+          "lift": 0,
+          "body_angle": 0
+        },
+        {
+          "duration_ms": 120,
+          "head_tilt": -7.04,
+          "head_x": 0,
+          "head_y": -1.56,
+          "lift": 0,
+          "body_angle": 0
+        },
+        {
+          "duration_ms": 120,
+          "head_tilt": -0.0,
+          "head_x": 0,
+          "head_y": -0.0,
+          "lift": 0,
+          "body_angle": 0
+        }
+      ]
+    },
+    "WORRIED": {
+      "loop": false,
+      "frames": [
+        {
+          "duration_ms": 120,
+          "head_tilt": 0.0,
+          "head_x": 0,
+          "head_y": 0,
+          "lift": 0,
+          "body_angle": 0
+        },
+        {
+          "duration_ms": 120,
+          "head_tilt": 7.04,
+          "head_x": 0,
+          "head_y": 0,
+          "lift": 0,
+          "body_angle": 0
+        },
+        {
+          "duration_ms": 120,
+          "head_tilt": 8.77,
+          "head_x": 0,
+          "head_y": 0,
+          "lift": 0,
+          "body_angle": 0
+        },
+        {
+          "duration_ms": 120,
+          "head_tilt": 3.9,
+          "head_x": 0,
+          "head_y": 0,
+          "lift": 0,
+          "body_angle": 0
+        },
+        {
+          "duration_ms": 120,
+          "head_tilt": -3.9,
+          "head_x": 0,
+          "head_y": 0,
+          "lift": 0,
+          "body_angle": 0
+        },
+        {
+          "duration_ms": 120,
+          "head_tilt": -8.77,
+          "head_x": 0,
+          "head_y": 0,
+          "lift": 0,
+          "body_angle": 0
+        },
+        {
+          "duration_ms": 120,
+          "head_tilt": -7.04,
+          "head_x": 0,
+          "head_y": 0,
+          "lift": 0,
+          "body_angle": 0
+        },
+        {
+          "duration_ms": 120,
+          "head_tilt": -0.0,
+          "head_x": 0,
+          "head_y": 0,
+          "lift": 0,
+          "body_angle": 0
+        }
+      ]
+    },
+    "OVERHEAT": {
+      "loop": false,
+      "frames": [
+        {
+          "duration_ms": 120,
+          "head_tilt": 0.0,
+          "head_x": 0,
+          "head_y": 0,
+          "lift": 0,
+          "body_angle": 0
+        },
+        {
+          "duration_ms": 120,
+          "head_tilt": 7.04,
+          "head_x": 0,
+          "head_y": 0,
+          "lift": 0,
+          "body_angle": 0
+        },
+        {
+          "duration_ms": 120,
+          "head_tilt": 8.77,
+          "head_x": 0,
+          "head_y": 0,
+          "lift": 0,
+          "body_angle": 0
+        },
+        {
+          "duration_ms": 120,
+          "head_tilt": 3.9,
+          "head_x": 0,
+          "head_y": 0,
+          "lift": 0,
+          "body_angle": 0
+        },
+        {
+          "duration_ms": 120,
+          "head_tilt": -3.9,
+          "head_x": 0,
+          "head_y": 0,
+          "lift": 0,
+          "body_angle": 0
+        },
+        {
+          "duration_ms": 120,
+          "head_tilt": -8.77,
+          "head_x": 0,
+          "head_y": 0,
+          "lift": 0,
+          "body_angle": 0
+        },
+        {
+          "duration_ms": 120,
+          "head_tilt": -7.04,
+          "head_x": 0,
+          "head_y": 0,
+          "lift": 0,
+          "body_angle": 0
+        },
+        {
+          "duration_ms": 120,
+          "head_tilt": -0.0,
+          "head_x": 0,
+          "head_y": 0,
+          "lift": 0,
+          "body_angle": 0
+        }
+      ]
+    },
+    "LOOK_LEFT": {
+      "loop": false,
+      "frames": [
+        {
+          "duration_ms": 120,
+          "head_tilt": 0.0,
+          "head_x": -3,
+          "head_y": 0,
+          "lift": 0,
+          "body_angle": 0
+        },
+        {
+          "duration_ms": 120,
+          "head_tilt": 7.04,
+          "head_x": -3,
+          "head_y": 0,
+          "lift": 0,
+          "body_angle": 0
+        },
+        {
+          "duration_ms": 120,
+          "head_tilt": 8.77,
+          "head_x": -3,
+          "head_y": 0,
+          "lift": 0,
+          "body_angle": 0
+        },
+        {
+          "duration_ms": 120,
+          "head_tilt": 3.9,
+          "head_x": -3,
+          "head_y": 0,
+          "lift": 0,
+          "body_angle": 0
+        },
+        {
+          "duration_ms": 120,
+          "head_tilt": -3.9,
+          "head_x": -3,
+          "head_y": 0,
+          "lift": 0,
+          "body_angle": 0
+        },
+        {
+          "duration_ms": 120,
+          "head_tilt": -8.77,
+          "head_x": -3,
+          "head_y": 0,
+          "lift": 0,
+          "body_angle": 0
+        },
+        {
+          "duration_ms": 120,
+          "head_tilt": -7.04,
+          "head_x": -3,
+          "head_y": 0,
+          "lift": 0,
+          "body_angle": 0
+        },
+        {
+          "duration_ms": 120,
+          "head_tilt": -0.0,
+          "head_x": -3,
+          "head_y": 0,
+          "lift": 0,
+          "body_angle": 0
+        }
+      ]
+    },
+    "LOOK_RIGHT": {
+      "loop": false,
+      "frames": [
+        {
+          "duration_ms": 120,
+          "head_tilt": 0.0,
+          "head_x": 3,
+          "head_y": 0,
+          "lift": 0,
+          "body_angle": 0
+        },
+        {
+          "duration_ms": 120,
+          "head_tilt": 7.04,
+          "head_x": 3,
+          "head_y": 0,
+          "lift": 0,
+          "body_angle": 0
+        },
+        {
+          "duration_ms": 120,
+          "head_tilt": 8.77,
+          "head_x": 3,
+          "head_y": 0,
+          "lift": 0,
+          "body_angle": 0
+        },
+        {
+          "duration_ms": 120,
+          "head_tilt": 3.9,
+          "head_x": 3,
+          "head_y": 0,
+          "lift": 0,
+          "body_angle": 0
+        },
+        {
+          "duration_ms": 120,
+          "head_tilt": -3.9,
+          "head_x": 3,
+          "head_y": 0,
+          "lift": 0,
+          "body_angle": 0
+        },
+        {
+          "duration_ms": 120,
+          "head_tilt": -8.77,
+          "head_x": 3,
+          "head_y": 0,
+          "lift": 0,
+          "body_angle": 0
+        },
+        {
+          "duration_ms": 120,
+          "head_tilt": -7.04,
+          "head_x": 3,
+          "head_y": 0,
+          "lift": 0,
+          "body_angle": 0
+        },
+        {
+          "duration_ms": 120,
+          "head_tilt": -0.0,
+          "head_x": 3,
+          "head_y": 0,
+          "lift": 0,
+          "body_angle": 0
+        }
+      ]
+    }
+  }
+}

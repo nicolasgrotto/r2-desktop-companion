@@ -76,6 +76,21 @@ class AudioSettings:
 
 
 @dataclass
+class DroidPreferences:
+    behavior: BehaviorSettings = field(default_factory=BehaviorSettings)
+    audio: AudioSettings = field(default_factory=AudioSettings)
+    personality: str = "custom"
+    appearance: str = "blue"
+    customization: dict[str, str] = field(default_factory=dict)
+
+    @classmethod
+    def from_settings(cls, settings, customization=None):
+        from copy import deepcopy
+        return cls(deepcopy(settings.behavior), deepcopy(settings.audio), settings.personality,
+                   settings.appearance, dict(customization or {}))
+
+
+@dataclass
 class Settings:
     schema_version: int = 1
     window: WindowSettings = field(default_factory=WindowSettings)
@@ -98,12 +113,19 @@ class Settings:
     quiet_start: int = 1320
     quiet_end: int = 480
     holograms: bool = True
+    active_droid: str = "r2_default"
+    droid_preferences: dict[str, DroidPreferences] = field(default_factory=dict)
+
+    def capture_droid(self):
+        previous = self.droid_preferences.get(self.active_droid)
+        self.droid_preferences[self.active_droid] = DroidPreferences.from_settings(
+            self, previous.customization if previous else {})
 
     def to_dict(self) -> dict:
         return asdict(self)
 
     @classmethod
-    def parse(cls, raw: dict) -> "Settings":
+    def parse(cls, raw: dict, _profiles=True) -> "Settings":
         if not isinstance(raw, dict):
             raise ValueError("Configuração deve ser um objeto JSON.")
         version = raw.get("schema_version", 1)
@@ -187,7 +209,7 @@ class Settings:
                 raise ValueError("Alias não referencia um destino válido.")
             used_ids.add(item.id)
             shortcuts.append(item)
-        return cls(window=window, behavior=behavior, visual_scale=int(number(data["visual_scale"], 64, 256)),
+        result = cls(window=window, behavior=behavior, visual_scale=int(number(data["visual_scale"], 64, 256)),
                    sound_enabled=boolean(data["sound_enabled"]), bubbles=boolean(data["bubbles"]),
                    suppress_fullscreen=boolean(data["suppress_fullscreen"]),
                    timer_seconds=int(number(data["timer_seconds"], 1, 86400)), startup=boolean(data["startup"]),
@@ -195,3 +217,22 @@ class Settings:
                    personality=data["personality"], appearance=data["appearance"],
                    quiet_enabled=boolean(data["quiet_enabled"]), quiet_start=int(number(data["quiet_start"], 0, 1439)),
                    quiet_end=int(number(data["quiet_end"], 0, 1439)), holograms=boolean(data["holograms"]), **collections)
+        if _profiles:
+            import re
+            identifier = data["active_droid"]
+            if not isinstance(identifier, str) or not re.fullmatch(r"[a-z][a-z0-9_]{0,63}", identifier):
+                raise ValueError("Personagem ativo inválido.")
+            profiles = data["droid_preferences"]
+            if not isinstance(profiles, dict) or len(profiles) > 100:
+                raise ValueError("Preferências individuais inválidas.")
+            for key, value in profiles.items():
+                if not isinstance(key, str) or not re.fullmatch(r"[a-z][a-z0-9_]{0,63}", key) or not isinstance(value, dict):
+                    raise ValueError("Preferência de droide inválida.")
+                checked = cls.parse(value, _profiles=False)
+                custom = value.get("customization", {})
+                if not isinstance(custom, dict) or len(custom) > 16:
+                    raise ValueError("Personalizações inválidas.")
+                custom = {text(k, 64): text(v, 64) for k, v in custom.items()}
+                result.droid_preferences[key] = DroidPreferences.from_settings(checked, custom)
+            result.active_droid = identifier
+        return result

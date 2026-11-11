@@ -14,9 +14,10 @@ PHRASES = {
     "affection": (("soft", "warble", "chirp"), ("warble", "soft"), ("soft", "answer", "chirp"))}
 
 
-def compose_phrases(source: Path, destination: Path):
+def compose_phrases(source: Path, destination: Path, phrases=None):
+    phrases = PHRASES if phrases is None else phrases
     syllables = {}
-    for name in {name for variants in PHRASES.values() for phrase in variants for name in phrase}:
+    for name in {name for variants in phrases.values() for phrase in variants for name in phrase}:
         with wave.open(str(source / f"{name}.wav"), "rb") as sound:
             if (sound.getnchannels(), sound.getsampwidth(), sound.getframerate()) != (1, 2, 22050):
                 raise ValueError("Sílaba sonora incompatível.")
@@ -24,7 +25,7 @@ def compose_phrases(source: Path, destination: Path):
                 raise ValueError("Sílaba sonora extensa demais.")
             syllables[name] = sound.readframes(sound.getnframes())
     result = {}
-    for emotion, variants in PHRASES.items():
+    for emotion, variants in phrases.items():
         result[emotion] = []
         for index, phrase in enumerate(variants):
             path = destination / f"{emotion}-{index}.wav"

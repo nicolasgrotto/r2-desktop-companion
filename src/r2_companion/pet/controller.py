@@ -40,6 +40,8 @@ class PetController(QObject):
     def enter(self, state: State):
         if self.closed:
             return
+        if hasattr(self.animation, "clips") and state not in self.animation.clips:
+            state = State.IDLE
         previous = self.state
         if state == State.WALK and self.gates:
             self.next_destination = None

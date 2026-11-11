@@ -16,7 +16,7 @@ CATEGORY_INTERVALS = {"idle": 90, "movement": 12, "reactions": 3, "sleep": 3, "n
 
 class AudioService(QObject):
     def __init__(self, directory: Path, clock=time.monotonic, rng=None, factory=QSoundEffect,
-                 available=None):
+                 available=None, profile=None):
         super().__init__()
         self.directory = directory
         self.clock, self.rng = clock, rng or random.Random()
@@ -32,6 +32,14 @@ class AudioService(QObject):
         self.closed = False
         self.voices = {}
         self.voice_directory = None
+        self.factory = factory
+        self.profile_id = "r2_default"
+        self.preview_bank = None
+        if profile is not None:
+            bank = self.prepare_profile(profile)
+            self.effects, self.voices = bank["effects"], bank["voices"]
+            self.voice_directory, self.profile_id = bank["directory"], bank["id"]
+            return
         for category in CATEGORY_INTERVALS:
             for path in sorted(directory.glob(f"{category}/*.wav")):
                 try:
@@ -59,7 +67,83 @@ class AudioService(QObject):
                 log.warning("Vocalizações indisponíveis; efeitos básicos preservados")
 
     def all_effects(self):
-        return [effect for values in (*self.effects.values(), *self.voices.values()) for _, effect in values]
+        effects = [effect for values in (*self.effects.values(), *self.voices.values()) for _, effect in values]
+        if self.preview_bank:
+            effects.extend(self.bank_effects(self.preview_bank))
+        return effects
+
+    @staticmethod
+    def bank_effects(bank):
+        return [effect for values in (*bank["effects"].values(), *bank["voices"].values()) for _, effect in values]
+
+    def prepare_profile(self, profile):
+        bank = {"id": profile.id, "effects": {}, "voices": {}, "directory": None}
+        try:
+            for category in CATEGORY_INTERVALS:
+                for path in sorted(profile.sounds.glob(f"{category}/*.wav")):
+                    effect = self.factory(self)
+                    bank["effects"].setdefault(category, []).append((path.stem, effect))
+                    effect.setLoopCount(1)
+                    effect.setVolume(self.settings.volume)
+                    effect.setSource(QUrl.fromLocalFile(str(path)))
+            bank["directory"] = tempfile.TemporaryDirectory(prefix="r2-voice-")
+            for emotion, paths in compose_phrases(profile.voice, Path(bank["directory"].name), profile.phrases).items():
+                for path in paths:
+                    effect = self.factory(self)
+                    bank["voices"].setdefault(emotion, []).append((path.stem, effect))
+                    effect.setLoopCount(1)
+                    effect.setVolume(self.settings.volume)
+                    effect.setSource(QUrl.fromLocalFile(str(path)))
+            return bank
+        except (OSError, ValueError, RuntimeError):
+            self.release_bank(bank)
+            raise
+
+    def activate_profile(self, bank):
+        self.stop()
+        self.clear_preview()
+        previous = {"id": self.profile_id, "effects": self.effects, "voices": self.voices, "directory": self.voice_directory}
+        self.effects, self.voices = bank["effects"], bank["voices"]
+        self.voice_directory, self.profile_id = bank["directory"], bank["id"]
+        self.configure(self.enabled, self.settings)
+        return previous
+
+    def release_bank(self, bank):
+        for effect in self.bank_effects(bank):
+            effect.stop()
+            if hasattr(effect, "deleteLater"):
+                effect.deleteLater()
+        if bank["directory"]:
+            try:
+                bank["directory"].cleanup()
+            except OSError:
+                log.warning("Cache de voz será limpo pelo Windows")
+
+    def clear_preview(self):
+        if self.preview_bank:
+            self.release_bank(self.preview_bank)
+            self.preview_bank = None
+
+    def prepare_preview(self, profile):
+        if profile.id == self.profile_id:
+            self.clear_preview()
+            return
+        if not self.preview_bank or self.preview_bank["id"] != profile.id:
+            bank = self.prepare_profile(profile)
+            self.clear_preview()
+            self.preview_bank = bank
+
+    def preview(self, profile, kind, name, variant, settings):
+        self.prepare_preview(profile)
+        bank = self.preview_bank
+        voices, effects = (bank["voices"], bank["effects"]) if bank else (self.voices, self.effects)
+        if kind == "voice":
+            options = voices.get(name, [])
+            options = options[variant:variant + 1] if variant >= 0 else options
+            return self.play_options("reactions", options, settings)
+        options = [(n, e) for values in effects.values() for n, e in values if n == name]
+        category = next((key for key, values in effects.items() if any(n == name for n, _ in values)), "reactions")
+        return self.play_options(category, options, settings)
 
     def check_status(self, effect, path):
         if effect.status() == QSoundEffect.Status.Error:
@@ -86,13 +170,14 @@ class AudioService(QObject):
         options = self.voices.get(emotion, [])
         return self.play_options(category, options) if options else self.play(category)
 
-    def play_options(self, category, options):
-        if (self.closed or not self.enabled or self.settings.muted or self.suppressed
-                or self.sleeping and category != "sleep" or not self.settings.categories.get(category, False)):
+    def play_options(self, category, options, settings=None):
+        settings = settings or self.settings
+        if (self.closed or not self.enabled or self.settings.muted or settings.muted or self.suppressed
+                or self.sleeping and category != "sleep" or not settings.categories.get(category, False)):
             return False
         now = self.clock()
-        if (now - self.last_play < self.settings.min_interval
-                or now - self.history.get(category, -1000000) < (self.settings.idle_interval if category == "idle" else CATEGORY_INTERVALS.get(category, 3))):
+        if (now - self.last_play < max(settings.min_interval, self.settings.min_interval)
+                or now - self.history.get(category, -1000000) < (settings.idle_interval if category == "idle" else CATEGORY_INTERVALS.get(category, 3))):
             return False
         options = [(name, effect) for name, effect in options if effect.status() == QSoundEffect.Status.Ready]
         options = [(n, e) for n, e in options if n != self.previous.get(category)] or options
@@ -101,6 +186,7 @@ class AudioService(QObject):
                 return False
             name, effect = self.rng.choice(options)
             self.stop()
+            effect.setVolume(settings.volume)
             effect.play()
             self.last_play = now
             self.history[category] = now
@@ -117,6 +203,7 @@ class AudioService(QObject):
     def close(self):
         self.closed = True
         self.stop()
+        self.clear_preview()
         if self.voice_directory is not None:
             try:
                 self.voice_directory.cleanup()

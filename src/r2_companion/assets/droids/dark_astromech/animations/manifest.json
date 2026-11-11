@@ -1,0 +1,1213 @@
+{
+  "manifest_version": 1,
+  "canvas": [
+    64,
+    64
+  ],
+  "anchor": [
+    32,
+    57
+  ],
+  "clips": {
+    "IDLE": {
+      "loop": true,
+      "frames": [
+        {
+          "image": "../sprites/vesper.png",
+          "rect": [
+            0,
+            0,
+            64,
+            64
+          ],
+          "duration_ms": 140
+        }
+      ]
+    },
+    "BLINK": {
+      "loop": false,
+      "frames": [
+        {
+          "image": "../sprites/vesper.png",
+          "rect": [
+            0,
+            64,
+            64,
+            64
+          ],
+          "duration_ms": 90
+        },
+        {
+          "image": "../sprites/vesper.png",
+          "rect": [
+            64,
+            64,
+            64,
+            64
+          ],
+          "duration_ms": 90
+        },
+        {
+          "image": "../sprites/vesper.png",
+          "rect": [
+            128,
+            64,
+            64,
+            64
+          ],
+          "duration_ms": 90
+        },
+        {
+          "image": "../sprites/vesper.png",
+          "rect": [
+            192,
+            64,
+            64,
+            64
+          ],
+          "duration_ms": 90
+        },
+        {
+          "image": "../sprites/vesper.png",
+          "rect": [
+            256,
+            64,
+            64,
+            64
+          ],
+          "duration_ms": 90
+        },
+        {
+          "image": "../sprites/vesper.png",
+          "rect": [
+            320,
+            64,
+            64,
+            64
+          ],
+          "duration_ms": 90
+        }
+      ]
+    },
+    "LOOK_AROUND": {
+      "loop": false,
+      "frames": [
+        {
+          "image": "../sprites/vesper.png",
+          "rect": [
+            0,
+            128,
+            64,
+            64
+          ],
+          "duration_ms": 140
+        },
+        {
+          "image": "../sprites/vesper.png",
+          "rect": [
+            64,
+            128,
+            64,
+            64
+          ],
+          "duration_ms": 140
+        },
+        {
+          "image": "../sprites/vesper.png",
+          "rect": [
+            128,
+            128,
+            64,
+            64
+          ],
+          "duration_ms": 140
+        },
+        {
+          "image": "../sprites/vesper.png",
+          "rect": [
+            192,
+            128,
+            64,
+            64
+          ],
+          "duration_ms": 140
+        },
+        {
+          "image": "../sprites/vesper.png",
+          "rect": [
+            256,
+            128,
+            64,
+            64
+          ],
+          "duration_ms": 140
+        },
+        {
+          "image": "../sprites/vesper.png",
+          "rect": [
+            320,
+            128,
+            64,
+            64
+          ],
+          "duration_ms": 140
+        }
+      ]
+    },
+    "WALK": {
+      "loop": true,
+      "frames": [
+        {
+          "image": "../sprites/vesper.png",
+          "rect": [
+            0,
+            192,
+            64,
+            64
+          ],
+          "duration_ms": 140
+        },
+        {
+          "image": "../sprites/vesper.png",
+          "rect": [
+            64,
+            192,
+            64,
+            64
+          ],
+          "duration_ms": 140
+        },
+        {
+          "image": "../sprites/vesper.png",
+          "rect": [
+            128,
+            192,
+            64,
+            64
+          ],
+          "duration_ms": 140
+        },
+        {
+          "image": "../sprites/vesper.png",
+          "rect": [
+            192,
+            192,
+            64,
+            64
+          ],
+          "duration_ms": 140
+        },
+        {
+          "image": "../sprites/vesper.png",
+          "rect": [
+            256,
+            192,
+            64,
+            64
+          ],
+          "duration_ms": 140
+        },
+        {
+          "image": "../sprites/vesper.png",
+          "rect": [
+            320,
+            192,
+            64,
+            64
+          ],
+          "duration_ms": 140
+        }
+      ]
+    },
+    "HAPPY": {
+      "loop": false,
+      "frames": [
+        {
+          "image": "../sprites/vesper.png",
+          "rect": [
+            0,
+            256,
+            64,
+            64
+          ],
+          "duration_ms": 140
+        },
+        {
+          "image": "../sprites/vesper.png",
+          "rect": [
+            64,
+            256,
+            64,
+            64
+          ],
+          "duration_ms": 140
+        },
+        {
+          "image": "../sprites/vesper.png",
+          "rect": [
+            128,
+            256,
+            64,
+            64
+          ],
+          "duration_ms": 140
+        },
+        {
+          "image": "../sprites/vesper.png",
+          "rect": [
+            192,
+            256,
+            64,
+            64
+          ],
+          "duration_ms": 140
+        },
+        {
+          "image": "../sprites/vesper.png",
+          "rect": [
+            256,
+            256,
+            64,
+            64
+          ],
+          "duration_ms": 140
+        },
+        {
+          "image": "../sprites/vesper.png",
+          "rect": [
+            320,
+            256,
+            64,
+            64
+          ],
+          "duration_ms": 140
+        }
+      ]
+    },
+    "CURIOUS": {
+      "loop": false,
+      "frames": [
+        {
+          "image": "../sprites/vesper.png",
+          "rect": [
+            0,
+            320,
+            64,
+            64
+          ],
+          "duration_ms": 140
+        },
+        {
+          "image": "../sprites/vesper.png",
+          "rect": [
+            64,
+            320,
+            64,
+            64
+          ],
+          "duration_ms": 140
+        },
+        {
+          "image": "../sprites/vesper.png",
+          "rect": [
+            128,
+            320,
+            64,
+            64
+          ],
+          "duration_ms": 140
+        },
+        {
+          "image": "../sprites/vesper.png",
+          "rect": [
+            192,
+            320,
+            64,
+            64
+          ],
+          "duration_ms": 140
+        },
+        {
+          "image": "../sprites/vesper.png",
+          "rect": [
+            256,
+            320,
+            64,
+            64
+          ],
+          "duration_ms": 140
+        },
+        {
+          "image": "../sprites/vesper.png",
+          "rect": [
+            320,
+            320,
+            64,
+            64
+          ],
+          "duration_ms": 140
+        }
+      ]
+    },
+    "SLEEP": {
+      "loop": true,
+      "frames": [
+        {
+          "image": "../sprites/vesper.png",
+          "rect": [
+            0,
+            384,
+            64,
+            64
+          ],
+          "duration_ms": 140
+        }
+      ]
+    },
+    "INTERACT": {
+      "loop": false,
+      "frames": [
+        {
+          "image": "../sprites/vesper.png",
+          "rect": [
+            0,
+            448,
+            64,
+            64
+          ],
+          "duration_ms": 140
+        },
+        {
+          "image": "../sprites/vesper.png",
+          "rect": [
+            64,
+            448,
+            64,
+            64
+          ],
+          "duration_ms": 140
+        },
+        {
+          "image": "../sprites/vesper.png",
+          "rect": [
+            128,
+            448,
+            64,
+            64
+          ],
+          "duration_ms": 140
+        },
+        {
+          "image": "../sprites/vesper.png",
+          "rect": [
+            192,
+            448,
+            64,
+            64
+          ],
+          "duration_ms": 140
+        },
+        {
+          "image": "../sprites/vesper.png",
+          "rect": [
+            256,
+            448,
+            64,
+            64
+          ],
+          "duration_ms": 140
+        },
+        {
+          "image": "../sprites/vesper.png",
+          "rect": [
+            320,
+            448,
+            64,
+            64
+          ],
+          "duration_ms": 140
+        }
+      ]
+    },
+    "NOTIFICATION": {
+      "loop": false,
+      "frames": [
+        {
+          "image": "../sprites/vesper.png",
+          "rect": [
+            0,
+            512,
+            64,
+            64
+          ],
+          "duration_ms": 140
+        },
+        {
+          "image": "../sprites/vesper.png",
+          "rect": [
+            64,
+            512,
+            64,
+            64
+          ],
+          "duration_ms": 140
+        },
+        {
+          "image": "../sprites/vesper.png",
+          "rect": [
+            128,
+            512,
+            64,
+            64
+          ],
+          "duration_ms": 140
+        },
+        {
+          "image": "../sprites/vesper.png",
+          "rect": [
+            192,
+            512,
+            64,
+            64
+          ],
+          "duration_ms": 140
+        },
+        {
+          "image": "../sprites/vesper.png",
+          "rect": [
+            256,
+            512,
+            64,
+            64
+          ],
+          "duration_ms": 140
+        },
+        {
+          "image": "../sprites/vesper.png",
+          "rect": [
+            320,
+            512,
+            64,
+            64
+          ],
+          "duration_ms": 140
+        }
+      ]
+    },
+    "SURPRISED": {
+      "loop": false,
+      "frames": [
+        {
+          "image": "../sprites/vesper.png",
+          "rect": [
+            0,
+            576,
+            64,
+            64
+          ],
+          "duration_ms": 140
+        },
+        {
+          "image": "../sprites/vesper.png",
+          "rect": [
+            64,
+            576,
+            64,
+            64
+          ],
+          "duration_ms": 140
+        },
+        {
+          "image": "../sprites/vesper.png",
+          "rect": [
+            128,
+            576,
+            64,
+            64
+          ],
+          "duration_ms": 140
+        },
+        {
+          "image": "../sprites/vesper.png",
+          "rect": [
+            192,
+            576,
+            64,
+            64
+          ],
+          "duration_ms": 140
+        },
+        {
+          "image": "../sprites/vesper.png",
+          "rect": [
+            256,
+            576,
+            64,
+            64
+          ],
+          "duration_ms": 140
+        },
+        {
+          "image": "../sprites/vesper.png",
+          "rect": [
+            320,
+            576,
+            64,
+            64
+          ],
+          "duration_ms": 140
+        }
+      ]
+    },
+    "WORK": {
+      "loop": false,
+      "frames": [
+        {
+          "image": "../sprites/vesper.png",
+          "rect": [
+            0,
+            640,
+            64,
+            64
+          ],
+          "duration_ms": 140
+        },
+        {
+          "image": "../sprites/vesper.png",
+          "rect": [
+            64,
+            640,
+            64,
+            64
+          ],
+          "duration_ms": 140
+        },
+        {
+          "image": "../sprites/vesper.png",
+          "rect": [
+            128,
+            640,
+            64,
+            64
+          ],
+          "duration_ms": 140
+        },
+        {
+          "image": "../sprites/vesper.png",
+          "rect": [
+            192,
+            640,
+            64,
+            64
+          ],
+          "duration_ms": 140
+        },
+        {
+          "image": "../sprites/vesper.png",
+          "rect": [
+            256,
+            640,
+            64,
+            64
+          ],
+          "duration_ms": 140
+        },
+        {
+          "image": "../sprites/vesper.png",
+          "rect": [
+            320,
+            640,
+            64,
+            64
+          ],
+          "duration_ms": 140
+        }
+      ]
+    },
+    "CONFUSED": {
+      "loop": false,
+      "frames": [
+        {
+          "image": "../sprites/vesper.png",
+          "rect": [
+            0,
+            704,
+            64,
+            64
+          ],
+          "duration_ms": 140
+        },
+        {
+          "image": "../sprites/vesper.png",
+          "rect": [
+            64,
+            704,
+            64,
+            64
+          ],
+          "duration_ms": 140
+        },
+        {
+          "image": "../sprites/vesper.png",
+          "rect": [
+            128,
+            704,
+            64,
+            64
+          ],
+          "duration_ms": 140
+        },
+        {
+          "image": "../sprites/vesper.png",
+          "rect": [
+            192,
+            704,
+            64,
+            64
+          ],
+          "duration_ms": 140
+        },
+        {
+          "image": "../sprites/vesper.png",
+          "rect": [
+            256,
+            704,
+            64,
+            64
+          ],
+          "duration_ms": 140
+        },
+        {
+          "image": "../sprites/vesper.png",
+          "rect": [
+            320,
+            704,
+            64,
+            64
+          ],
+          "duration_ms": 140
+        }
+      ]
+    },
+    "DRAG": {
+      "loop": false,
+      "frames": [
+        {
+          "image": "../sprites/vesper.png",
+          "rect": [
+            0,
+            768,
+            64,
+            64
+          ],
+          "duration_ms": 140
+        },
+        {
+          "image": "../sprites/vesper.png",
+          "rect": [
+            64,
+            768,
+            64,
+            64
+          ],
+          "duration_ms": 140
+        },
+        {
+          "image": "../sprites/vesper.png",
+          "rect": [
+            128,
+            768,
+            64,
+            64
+          ],
+          "duration_ms": 140
+        },
+        {
+          "image": "../sprites/vesper.png",
+          "rect": [
+            192,
+            768,
+            64,
+            64
+          ],
+          "duration_ms": 140
+        },
+        {
+          "image": "../sprites/vesper.png",
+          "rect": [
+            256,
+            768,
+            64,
+            64
+          ],
+          "duration_ms": 140
+        },
+        {
+          "image": "../sprites/vesper.png",
+          "rect": [
+            320,
+            768,
+            64,
+            64
+          ],
+          "duration_ms": 140
+        }
+      ]
+    },
+    "RECOVER": {
+      "loop": false,
+      "frames": [
+        {
+          "image": "../sprites/vesper.png",
+          "rect": [
+            0,
+            832,
+            64,
+            64
+          ],
+          "duration_ms": 140
+        },
+        {
+          "image": "../sprites/vesper.png",
+          "rect": [
+            64,
+            832,
+            64,
+            64
+          ],
+          "duration_ms": 140
+        },
+        {
+          "image": "../sprites/vesper.png",
+          "rect": [
+            128,
+            832,
+            64,
+            64
+          ],
+          "duration_ms": 140
+        },
+        {
+          "image": "../sprites/vesper.png",
+          "rect": [
+            192,
+            832,
+            64,
+            64
+          ],
+          "duration_ms": 140
+        },
+        {
+          "image": "../sprites/vesper.png",
+          "rect": [
+            256,
+            832,
+            64,
+            64
+          ],
+          "duration_ms": 140
+        },
+        {
+          "image": "../sprites/vesper.png",
+          "rect": [
+            320,
+            832,
+            64,
+            64
+          ],
+          "duration_ms": 140
+        }
+      ]
+    },
+    "WAKE": {
+      "loop": false,
+      "frames": [
+        {
+          "image": "../sprites/vesper.png",
+          "rect": [
+            0,
+            896,
+            64,
+            64
+          ],
+          "duration_ms": 140
+        },
+        {
+          "image": "../sprites/vesper.png",
+          "rect": [
+            64,
+            896,
+            64,
+            64
+          ],
+          "duration_ms": 140
+        },
+        {
+          "image": "../sprites/vesper.png",
+          "rect": [
+            128,
+            896,
+            64,
+            64
+          ],
+          "duration_ms": 140
+        },
+        {
+          "image": "../sprites/vesper.png",
+          "rect": [
+            192,
+            896,
+            64,
+            64
+          ],
+          "duration_ms": 140
+        },
+        {
+          "image": "../sprites/vesper.png",
+          "rect": [
+            256,
+            896,
+            64,
+            64
+          ],
+          "duration_ms": 140
+        },
+        {
+          "image": "../sprites/vesper.png",
+          "rect": [
+            320,
+            896,
+            64,
+            64
+          ],
+          "duration_ms": 140
+        }
+      ]
+    },
+    "GREETING": {
+      "loop": false,
+      "frames": [
+        {
+          "image": "../sprites/vesper.png",
+          "rect": [
+            0,
+            960,
+            64,
+            64
+          ],
+          "duration_ms": 140
+        },
+        {
+          "image": "../sprites/vesper.png",
+          "rect": [
+            64,
+            960,
+            64,
+            64
+          ],
+          "duration_ms": 140
+        },
+        {
+          "image": "../sprites/vesper.png",
+          "rect": [
+            128,
+            960,
+            64,
+            64
+          ],
+          "duration_ms": 140
+        },
+        {
+          "image": "../sprites/vesper.png",
+          "rect": [
+            192,
+            960,
+            64,
+            64
+          ],
+          "duration_ms": 140
+        },
+        {
+          "image": "../sprites/vesper.png",
+          "rect": [
+            256,
+            960,
+            64,
+            64
+          ],
+          "duration_ms": 140
+        },
+        {
+          "image": "../sprites/vesper.png",
+          "rect": [
+            320,
+            960,
+            64,
+            64
+          ],
+          "duration_ms": 140
+        }
+      ]
+    },
+    "WORRIED": {
+      "loop": false,
+      "frames": [
+        {
+          "image": "../sprites/vesper.png",
+          "rect": [
+            0,
+            1024,
+            64,
+            64
+          ],
+          "duration_ms": 140
+        },
+        {
+          "image": "../sprites/vesper.png",
+          "rect": [
+            64,
+            1024,
+            64,
+            64
+          ],
+          "duration_ms": 140
+        },
+        {
+          "image": "../sprites/vesper.png",
+          "rect": [
+            128,
+            1024,
+            64,
+            64
+          ],
+          "duration_ms": 140
+        },
+        {
+          "image": "../sprites/vesper.png",
+          "rect": [
+            192,
+            1024,
+            64,
+            64
+          ],
+          "duration_ms": 140
+        },
+        {
+          "image": "../sprites/vesper.png",
+          "rect": [
+            256,
+            1024,
+            64,
+            64
+          ],
+          "duration_ms": 140
+        },
+        {
+          "image": "../sprites/vesper.png",
+          "rect": [
+            320,
+            1024,
+            64,
+            64
+          ],
+          "duration_ms": 140
+        }
+      ]
+    },
+    "OVERHEAT": {
+      "loop": false,
+      "frames": [
+        {
+          "image": "../sprites/vesper.png",
+          "rect": [
+            0,
+            1088,
+            64,
+            64
+          ],
+          "duration_ms": 140
+        },
+        {
+          "image": "../sprites/vesper.png",
+          "rect": [
+            64,
+            1088,
+            64,
+            64
+          ],
+          "duration_ms": 140
+        },
+        {
+          "image": "../sprites/vesper.png",
+          "rect": [
+            128,
+            1088,
+            64,
+            64
+          ],
+          "duration_ms": 140
+        },
+        {
+          "image": "../sprites/vesper.png",
+          "rect": [
+            192,
+            1088,
+            64,
+            64
+          ],
+          "duration_ms": 140
+        },
+        {
+          "image": "../sprites/vesper.png",
+          "rect": [
+            256,
+            1088,
+            64,
+            64
+          ],
+          "duration_ms": 140
+        },
+        {
+          "image": "../sprites/vesper.png",
+          "rect": [
+            320,
+            1088,
+            64,
+            64
+          ],
+          "duration_ms": 140
+        }
+      ]
+    },
+    "LOOK_LEFT": {
+      "loop": false,
+      "frames": [
+        {
+          "image": "../sprites/vesper.png",
+          "rect": [
+            0,
+            1152,
+            64,
+            64
+          ],
+          "duration_ms": 140
+        },
+        {
+          "image": "../sprites/vesper.png",
+          "rect": [
+            64,
+            1152,
+            64,
+            64
+          ],
+          "duration_ms": 140
+        },
+        {
+          "image": "../sprites/vesper.png",
+          "rect": [
+            128,
+            1152,
+            64,
+            64
+          ],
+          "duration_ms": 140
+        },
+        {
+          "image": "../sprites/vesper.png",
+          "rect": [
+            192,
+            1152,
+            64,
+            64
+          ],
+          "duration_ms": 140
+        },
+        {
+          "image": "../sprites/vesper.png",
+          "rect": [
+            256,
+            1152,
+            64,
+            64
+          ],
+          "duration_ms": 140
+        },
+        {
+          "image": "../sprites/vesper.png",
+          "rect": [
+            320,
+            1152,
+            64,
+            64
+          ],
+          "duration_ms": 140
+        }
+      ]
+    },
+    "LOOK_RIGHT": {
+      "loop": false,
+      "frames": [
+        {
+          "image": "../sprites/vesper.png",
+          "rect": [
+            0,
+            1216,
+            64,
+            64
+          ],
+          "duration_ms": 140
+        },
+        {
+          "image": "../sprites/vesper.png",
+          "rect": [
+            64,
+            1216,
+            64,
+            64
+          ],
+          "duration_ms": 140
+        },
+        {
+          "image": "../sprites/vesper.png",
+          "rect": [
+            128,
+            1216,
+            64,
+            64
+          ],
+          "duration_ms": 140
+        },
+        {
+          "image": "../sprites/vesper.png",
+          "rect": [
+            192,
+            1216,
+            64,
+            64
+          ],
+          "duration_ms": 140
+        },
+        {
+          "image": "../sprites/vesper.png",
+          "rect": [
+            256,
+            1216,
+            64,
+            64
+          ],
+          "duration_ms": 140
+        },
+        {
+          "image": "../sprites/vesper.png",
+          "rect": [
+            320,
+            1216,
+            64,
+            64
+          ],
+          "duration_ms": 140
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,251 @@
+{
+  "profile_version": 1,
+  "id": "r2_default",
+  "name": "R2 · Original",
+  "description": "Seu companheiro branco e azul, com o atlas e as preferências anteriores preservados.",
+  "manifest": "characters/default/manifest.json",
+  "renderer": "atlas",
+  "animations": {
+    "IDLE": "Repouso",
+    "BLINK": "Expressões",
+    "LOOK_AROUND": "Expressões",
+    "WALK": "Locomoção",
+    "HAPPY": "Expressões",
+    "CURIOUS": "Expressões",
+    "SLEEP": "Repouso",
+    "INTERACT": "Interações",
+    "NOTIFICATION": "Interações",
+    "SURPRISED": "Expressões",
+    "WORK": "Inspeção",
+    "CONFUSED": "Expressões",
+    "DRAG": "Locomoção",
+    "RECOVER": "Locomoção",
+    "WAKE": "Repouso",
+    "GREETING": "Interações",
+    "WORRIED": "Inspeção",
+    "OVERHEAT": "Inspeção",
+    "LOOK_LEFT": "Expressões",
+    "LOOK_RIGHT": "Expressões"
+  },
+  "audio": {
+    "voice": "voice",
+    "sounds": "sounds",
+    "phrases": {
+      "curious": [
+        [
+          "rise",
+          "trill"
+        ],
+        [
+          "question",
+          "chirp",
+          "trill"
+        ],
+        [
+          "servo",
+          "rise",
+          "warble"
+        ]
+      ],
+      "happy": [
+        [
+          "bright",
+          "chirp",
+          "spark"
+        ],
+        [
+          "spark",
+          "bright",
+          "chirp"
+        ],
+        [
+          "chirp",
+          "trill",
+          "bright"
+        ]
+      ],
+      "confused": [
+        [
+          "answer",
+          "question",
+          "fall"
+        ],
+        [
+          "warble",
+          "answer",
+          "low"
+        ],
+        [
+          "question",
+          "warble",
+          "fall"
+        ]
+      ],
+      "surprised": [
+        [
+          "spark",
+          "question"
+        ],
+        [
+          "bright",
+          "spark"
+        ],
+        [
+          "spark",
+          "rise"
+        ]
+      ],
+      "worried": [
+        [
+          "low",
+          "fall"
+        ],
+        [
+          "warble",
+          "low"
+        ],
+        [
+          "answer",
+          "fall",
+          "low"
+        ]
+      ],
+      "greeting": [
+        [
+          "chirp",
+          "answer",
+          "rise"
+        ],
+        [
+          "rise",
+          "bright",
+          "answer",
+          "trill"
+        ],
+        [
+          "answer",
+          "chirp",
+          "question"
+        ]
+      ],
+      "sleep": [
+        [
+          "soft",
+          "low"
+        ],
+        [
+          "soft",
+          "soft"
+        ],
+        [
+          "answer",
+          "soft"
+        ]
+      ],
+      "wake": [
+        [
+          "low",
+          "rise",
+          "chirp"
+        ],
+        [
+          "soft",
+          "question",
+          "bright"
+        ],
+        [
+          "rise",
+          "answer"
+        ]
+      ],
+      "celebrate": [
+        [
+          "rise",
+          "trill",
+          "spark",
+          "bright"
+        ],
+        [
+          "bright",
+          "chirp",
+          "trill",
+          "spark"
+        ],
+        [
+          "chirp",
+          "rise",
+          "bright"
+        ]
+      ],
+      "affection": [
+        [
+          "soft",
+          "warble",
+          "chirp"
+        ],
+        [
+          "warble",
+          "soft"
+        ],
+        [
+          "soft",
+          "answer",
+          "chirp"
+        ]
+      ]
+    }
+  },
+  "personality": "custom",
+  "movement": "astromech",
+  "canvas": [
+    64,
+    64
+  ],
+  "speed": 1,
+  "theme": {
+    "name": "Estação azul",
+    "radius": 12,
+    "colors": {
+      "primary": "#2162cc",
+      "secondary": "#183f68",
+      "accent": "#5ed4ff",
+      "background": "#edf3f9",
+      "panel": "#ffffff",
+      "border": "#b6c9db",
+      "text": "#14314c",
+      "muted": "#4e657a",
+      "hero": "#102c48",
+      "hero_text": "#f5faff",
+      "hero_muted": "#b5d0e7",
+      "selected": "#dceaff",
+      "focus": "#2162cc",
+      "button_text": "#ffffff",
+      "error": "#b03131",
+      "disabled": "#637588",
+      "notification": "#102c48",
+      "hologram": "#73dcff",
+      "decoration": "#386685"
+    }
+  },
+  "customization": {
+    "appearance": {
+      "label": "Cor dos painéis",
+      "default": "blue",
+      "options": {
+        "blue": {
+          "label": "Azul original"
+        },
+        "teal": {
+          "label": "Verde oceano"
+        },
+        "violet": {
+          "label": "Violeta"
+        },
+        "amber": {
+          "label": "Âmbar"
+        }
+      }
+    }
+  },
+  "art_status": "Arte provisória original preservada"
+}

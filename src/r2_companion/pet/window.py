@@ -25,6 +25,10 @@ class PetWindow(QWidget):
         self.setAutoFillBackground(False)
         self.setToolTip("R2 Companion · arte provisória\nArraste para mover · botão direito para opções")
         self.frame = QPixmap()
+        self.visual = None
+        self.body_angle = self.head_tilt = self.head_offset = 0.0
+        self.illumination = None
+        self.decoration = False
         self.press_global: QPointF | None = None
         self.anchor = QPointF()
         self.dragging = False
@@ -75,6 +79,12 @@ class PetWindow(QWidget):
             event.accept()
 
     def set_frame(self, frame: QPixmap) -> None:
+        from ..droids.visuals import DroidVisual
+        if isinstance(frame, DroidVisual):
+            self.visual = frame
+            self.update()
+            return
+        self.visual = None
         self.original_frame = frame
         if self.accent != "blue" and not frame.isNull():
             key = (frame.cacheKey(), self.accent)
@@ -92,6 +102,22 @@ class PetWindow(QWidget):
             frame = self.tinted_frames[key]
         self.frame = frame
         self.update()
+
+    def set_motion(self, angle, tilt, offset):
+        self.body_angle, self.head_tilt, self.head_offset = angle, tilt, offset
+        self.update()
+
+    def configure_droid(self, profile, preferences):
+        self.tinted_frames.clear()
+        self.set_motion(0, 0, 0)
+        self.setWindowTitle(f"{profile.name} · R2 Companion")
+        self.setToolTip(f"{profile.name}\nArraste para mover · botão direito para opções\n{profile.art_status}")
+        custom = profile.customizations(preferences.customization)
+        self.illumination = None
+        if "illumination" in custom:
+            self.illumination = profile.customization["illumination"]["options"][custom["illumination"]]["color"]
+        self.decoration = custom.get("decoration") == "beacon"
+        self.set_appearance(preferences.appearance if "appearance" in custom else "blue")
 
     def moveEvent(self, event):
         super().moveEvent(event)
@@ -120,7 +146,17 @@ class PetWindow(QWidget):
         painter.fillRect(self.rect(), QColor(0, 0, 0, 0))
         painter.setCompositionMode(QPainter.CompositionMode.CompositionMode_SourceOver)
         painter.setRenderHint(QPainter.RenderHint.SmoothPixmapTransform, False)
-        painter.drawPixmap(self.rect(), self.frame)
+        if self.visual is not None:
+            from ..droids.visuals import paint_visual
+            paint_visual(painter, self.rect(), self.visual, self.body_angle, self.head_tilt,
+                         self.head_offset, self.illumination, self.decoration)
+        else:
+            painter.drawPixmap(self.rect(), self.frame)
+            if self.illumination:
+                painter.save()
+                painter.scale(self.width() / 64, self.height() / 64)
+                painter.fillRect(39, 17, 2, 2, QColor(self.illumination))
+                painter.restore()
         if not self.hologram.isNull():
             side = max(16, self.width() // 5)
             painter.drawPixmap(self.width() - side - 4, 4, side, side, self.hologram)
