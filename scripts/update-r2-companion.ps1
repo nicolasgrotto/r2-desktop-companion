@@ -316,7 +316,10 @@ function Install-R2Package([string]$Directory, [string]$Package, [string]$Reposi
         Move-R2Directory $packagePath $install
         $movedNew = $true
         Assert-R2Package $install $Repository $Version
-        if ($Restart) { Start-R2Installation $install $UserData }
+        if ($Restart) {
+            Write-R2Status 'restarting' 'Instalacao aplicada. Reiniciando o Companion.'
+            Start-R2Installation $install $UserData
+        }
         Write-R2Log "Atualizado para $Version. Backup: $backup"
         return $backup
     } catch {
@@ -400,7 +403,11 @@ function Invoke-R2Update {
         Stop-R2Installation $install $ExpectedProcessId $ProcessStarted
         $backup = Install-R2Package $install $package $metadata.repository $version $data -Restart:(-not $NoRestart)
         Show-R2Message "R2 atualizado para $version. Backup preservado em $backup."
-        Write-R2Status 'done' "R2 atualizado para $version. Backup: $backup"
+        if ($NoRestart) {
+            Write-R2Status 'restart_required' "R2 atualizado para $version. Abra o Companion para utilizar a nova versao. Backup: $backup"
+        } else {
+            Write-R2Status 'done' "R2 atualizado para $version e reiniciado. Backup: $backup"
+        }
     } finally {
         if ($lock) { $lock.Dispose() }
         if ($stage -and (Test-Path -LiteralPath $stage)) {

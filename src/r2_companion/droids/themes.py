@@ -145,10 +145,7 @@ class PersistedThemeWatcher(QObject):
         directory = self.directory
         while not directory.is_dir() and directory != directory.parent:
             directory = directory.parent
-        path = self.directory / "config.json"
         desired = {str(directory)}
-        if path.is_file():
-            desired.add(str(path))
         current = set(self.watcher.directories() + self.watcher.files())
         if current - desired:
             self.watcher.removePaths(sorted(current - desired))

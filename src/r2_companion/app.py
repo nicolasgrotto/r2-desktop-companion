@@ -760,11 +760,12 @@ def main(argv=None) -> int:
     parser.add_argument("--owner-pid", type=int, default=0)
     parser.add_argument("--owner-start", type=int, default=0)
     parser.add_argument("--resume-update", type=Path)
+    parser.add_argument("--update-ready-file", type=Path)
     args = parser.parse_args(argv)
     if args.update_center:
         from .ui.updates import run_update_center
         return run_update_center(args.data_dir or Path.home() / "AppData/Local/R2DesktopCompanion/R2Companion",
-                                 args.install_dir, args.owner_pid, args.owner_start, args.resume_update)
+                                 args.install_dir, args.owner_pid, args.owner_start, args.resume_update, args.update_ready_file)
     if not 1 <= args.smoke_seconds <= 3600:
         parser.error("--smoke-seconds deve estar entre 1 e 3600")
     if args.smoke_test and args.data_dir is None:

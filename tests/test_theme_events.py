@@ -31,7 +31,8 @@ def test_theme_events_handle_repeated_atomic_replacements_from_another_process(q
             subprocess.run([sys.executable, "-c", code, str(tmp_path / "config.json"),
                             json.dumps({"active_droid": identifier})], check=True)
             wait_for(lambda: watcher.last_id == identifier)
-            assert str(tmp_path / "config.json") in watcher.watcher.files()
+            assert str(tmp_path) in watcher.watcher.directories()
+            assert not watcher.watcher.files()
         assert changes.count() == 3
     finally:
         watcher.close()
@@ -96,3 +97,14 @@ def test_closing_theme_watcher_removes_notifications(qapp, tmp_path):
     assert watcher.last_id == "r2_default"
     assert not watcher.timer.isActive()
     assert not watcher.watcher.files() and not watcher.watcher.directories()
+
+
+def test_theme_watcher_does_not_lock_config_during_repeated_character_changes(qapp, tmp_path):
+    watcher = PersistedThemeWatcher(tmp_path, ASSETS)
+    try:
+        for identifier in ("dark_astromech", "r2_default", "spherical_droid") * 5:
+            save(tmp_path, identifier)
+            wait_for(lambda: watcher.last_id == identifier)
+            assert not watcher.watcher.files()
+    finally:
+        watcher.close()
