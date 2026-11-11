@@ -55,6 +55,10 @@ class PetWindow(QWidget):
         self.affection_timer.setSingleShot(True)
         self.affection_timer.setInterval(650)
         self.affection_timer.timeout.connect(self.pet_head)
+        from ..ui.projection import ProjectionOverlay
+        self.projection_overlay = ProjectionOverlay(self)
+        from ..ui.steam import SteamOverlay
+        self.steam = SteamOverlay(self)
 
     def pet_head(self):
         if self.press_global is not None and not self.dragging:
@@ -92,7 +96,9 @@ class PetWindow(QWidget):
         picture.fill(Qt.GlobalColor.transparent)
         painter = QPainter(picture)
         painter.setRenderHint(QPainter.RenderHint.Antialiasing)
-        painter.setBrush(QColor(color("hero")))
+        background = QColor(color("hero"))
+        background.setAlpha(200)
+        painter.setBrush(background)
         painter.setPen(QPen(QColor(color("hologram")), 2))
         painter.drawRoundedRect(QRectF(picture.rect()).adjusted(2, 2, -2, -2), 14, 14)
         painter.setPen(QColor(color("hologram")))
@@ -103,6 +109,7 @@ class PetWindow(QWidget):
             painter.drawText(QRectF(12, 67, 296, 90), Qt.AlignmentFlag.AlignCenter | Qt.TextFlag.TextWordWrap, date_text)
         painter.end()
         self.hologram = picture
+        self.projection_overlay.reposition()
         self.update()
 
     def clear_projection(self):
@@ -111,14 +118,17 @@ class PetWindow(QWidget):
         self.projection_kind = None
         self.projection_text = ""
         self.hologram = QPixmap()
+        self.projection_overlay.hide()
         self.update()
 
     def stop_effects(self):
+        self.steam.set_active(False)
         self.affection_timer.stop()
         self.hologram_timer.stop()
         self.clear_projection()
 
     def showEvent(self, event):
+        self.steam.reposition()
         if self.projection_kind:
             self.refresh_projection()
             self.projection_timer.start()
@@ -126,6 +136,9 @@ class PetWindow(QWidget):
 
     def hideEvent(self, event):
         self.projection_timer.stop()
+        self.projection_overlay.hide()
+        self.steam.timer.stop()
+        self.steam.hide()
         super().hideEvent(event)
 
     def mouseDoubleClickEvent(self, event):
@@ -212,7 +225,7 @@ class PetWindow(QWidget):
                          self.head_offset, self.illumination, self.decoration)
         else:
             painter.drawPixmap(self.rect(), self.frame)
-        if not self.hologram.isNull():
+        if not self.hologram.isNull() and not self.projection_kind:
             width = max(16, self.width() - 8) if self.projection_kind else max(16, self.width() // 5)
             height = round(width * self.hologram.height() / self.hologram.width())
             painter.drawPixmap(self.width() - width - 4, 4, width, height, self.hologram)

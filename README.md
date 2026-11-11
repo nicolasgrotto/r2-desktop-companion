@@ -50,15 +50,17 @@ Para isolar os dados dentro do projeto:
 - Na roda, Ferramentas abre uma segunda camada com Central de ferramentas, Relógio, Temporizador, Sistema, Tarefas e Anotações.
 - Ferramentas: relógio/data em destaque, temporizador com minutos/segundos e atalhos de 1/5/25 minutos, CPU/RAM e bateria quando disponível.
 - Ferramentas → Minigames: catálogo com Duel of Fates. Jogar abre `https://nicolasgrotto.github.io/duel-of-fates/` via QDesktopServices/QUrl no navegador padrão. Não há navegador incorporado, WebEngine ou download do jogo pelo Companion. Para ampliar o catálogo, acrescente um Minigame em `features/minigames.py`.
-- Ferramentas → Diagnóstico: verifica CPU, memória, bateria e áudio sob demanda, com uma pequena cena de inspeção.
+- Ferramentas → Diagnóstico: mostra personagem, versão, sistema, CPU, memória, bateria e áudio sob demanda. A página possui rolagem e a central permanece dentro da tela.
 - Segure o botão esquerdo sobre a cabeça por 650 ms para fazer carinho. Arrastar cancela o carinho; a reação não abre a roda de ações.
 - Tarefas: adicionar, concluir, reabrir, filtrar pendentes e excluir. Notas: criar, editar, excluir e copiar, com salvamento automático local. Ambas também estão no menu de contexto.
+- Depois de três minutos contínuos dormindo, o droide só acorda com um clique nele. Esse clique reproduz o despertar sem abrir a roda; um sono curto ainda pode terminar automaticamente quando você voltar.
+- Na transmissão e nas preferências, o nome acompanha o personagem equipado. A reação de aquecimento por CPU elevada inclui fumaça animada.
 - Clique duplo: cumprimento. Cliques repetidos: confusão. Arrasto: esforço e recuperação. Bateria baixa, carregamento e CPU elevada podem gerar reações discretas com cooldown.
 - Na roda, Configurações → Aplicativos e Meus locais abrem painéis com busca e seleção. Use Gerenciar favoritos para editar destinos. Configurações → Autonomia reúne Explorar e Pausar/Continuar. Explorar inicia um passeio quando houver espaço.
 - Configurações: tamanho, frequência, caminhada, inatividade, som, balões, prioridade da janela, aplicativos e locais favoritos.
 - Áudio: habilite Efeitos sonoros do R2 em Preferências; ajuste volume, modo silencioso, intervalo e categorias na aba Áudio. O som começa desativado e não modifica o volume do Windows.
 - Personalidade: Calmo, Curioso e Comunicativo ajustam pesos, frequência e vocalizações. O perfil não liga o som nem altera seu volume ou modo silencioso. As preferências continuam ajustáveis.
-- Aparência: detalhes em azul original, verde oceano, violeta ou âmbar. Projetar → Relógio ou Horário e data mantém uma projeção com conteúdo atualizado. Use Encerrar projeção para removê-la. A opção Permitir projeções holográficas nas Configurações controla sua disponibilidade.
+- Aparência: detalhes em azul original, verde oceano, violeta ou âmbar. Projetar → Relógio ou Horário e data mantém uma projeção com conteúdo atualizado. A projeção flutua acima do personagem, ou abaixo quando faltar espaço, com feixes holográficos saindo do olho. Use Encerrar projeção para removê-la. A opção Permitir projeções holográficas nas Configurações controla sua disponibilidade.
 - Horário de silêncio: use horas locais em HH:mm; é possível atravessar a meia-noite. Início e fim iguais significam silêncio o dia inteiro. Durante o período, autonomia, sons e avisos ficam suspensos; ferramentas continuam disponíveis.
 - Para adicionar um aplicativo/pasta/arquivo, use a aba Aplicativos e atalhos. Selecione um destino e use Criar atalho para um nome adicional no menu Atalhos.
 - Somente `.exe` local sem argumentos; scripts e interpretadores conhecidos são bloqueados. Arquivos favoritos: TXT, PDF, PNG, JPG/JPEG, WAV e MP3. Pastas locais também são aceitas. Não importamos `.lnk`/`.url` nem comandos.
@@ -75,7 +77,7 @@ Sono, arraste, menus, Configurações e a roda aberta suspendem a autonomia. Int
 reservam uma pausa antes de voltar a caminhar. Nas bordas ele tenta a direção oposta.
 A roda fecha após 12 segundos sem uso; ao apontar para ela esse prazo é suspenso,
 e ao sair com o ponteiro ela fecha em seis segundos. Assim ela não prende a autonomia
-indefinidamente. Caminhadas permanecem curtas e dentro do monitor atual.
+indefinidamente. Caminhadas permanecem curtas e dentro do monitor atual. Se o personagem cobrir a janela em uso, incluindo a Central de Ferramentas, ele caminha para a borda livre mais próxima. O desvio respeita pausa, sono, silêncio e a opção Caminhar sozinho; janelas maximizadas seguem a política de tela cheia existente.
 
 Ao aproximar o cursor, o R2 pode olhar ou demonstrar curiosidade. Se o ponteiro
 ficar parado, pode se aproximar devagar, mantendo distância; não há perseguição

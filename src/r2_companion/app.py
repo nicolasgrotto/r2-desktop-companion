@@ -35,7 +35,7 @@ from .services.system_info import SystemInfo
 from .services.tasks import LocalTasks
 from .services.updates import UpdateService
 from .services.windows import (SessionEvents, StartupService, foreground_fullscreen, idle_seconds,
-                               packaged_executable, uptime)
+                               packaged_executable, uptime, foreground_window_rect)
 from .ui.bubble import Bubble
 from .ui.context_menu import create_menu
 from .ui.settings import SettingsDialog
@@ -43,7 +43,7 @@ from .ui.tools import ToolsDialog
 from .ui.tray import Tray
 from .ui.radial import RadialMenu
 from .ui.targets import LaunchpadDialog
-from .ui.theme import fit_dialog
+from .ui.theme import fit_dialog, apply_character_name
 from .droids.profiles import DroidRegistry
 from .droids.preferences import preferences_for, select_droid
 from .droids.controller import DroidController
@@ -194,6 +194,8 @@ class Companion(QObject):
         self.window.set_topmost(settings.window.topmost)
         self.positioning.reconcile()
         self.audio.configure(settings.sound_enabled, deepcopy(settings.audio))
+        for panel in (self.tools, self.bubble, self.tray.notice):
+            apply_character_name(panel, self.profile.name)
         self.tools.set_duration(settings.timer_seconds)
         self.apps_panel.set_settings(settings)
         self.locations_panel.set_settings(settings)
@@ -329,6 +331,7 @@ class Companion(QObject):
         self.store.apply(settings, notify=False)
 
     def state_changed(self, state):
+        self.window.steam.set_active(state == State.OVERHEAT)
         self.audio.set_context(bool(self.controller.gates - {"radial"}) or self.fullscreen_active,
                                state == State.SLEEP or self.controller.inactive)
         if state == State.INTERACT:
@@ -354,6 +357,11 @@ class Companion(QObject):
         self.controller.interact()
 
     def left_click(self):
+        if self.controller.state in {State.SLEEP, State.WAKE}:
+            self.radial.hide()
+            self.last_activity = time.monotonic()
+            self.controller.wake_by_click()
+            return
         if self.awareness.click():
             self.radial.hide()
             self.controller.react(State.CONFUSED)
@@ -365,6 +373,9 @@ class Companion(QObject):
         self.radial.popup_near(self.window, self.controller.paused)
 
     def double_click(self):
+        if self.controller.state in {State.SLEEP, State.WAKE}:
+            self.controller.wake_by_click()
+            return
         self.radial.hide()
         self.last_activity = time.monotonic()
         self.controller.update_inactivity(0)
@@ -467,6 +478,13 @@ class Companion(QObject):
         if not QSystemTrayIcon.isSystemTrayAvailable() and self.pass_through:
             self.set_pass_through(False)
         self.update_visibility()
+        if not active:
+            foreground = QApplication.activeWindow()
+            if foreground is not None and foreground is not self.window and foreground.isVisible() and foreground is not self.radial:
+                obstacle = QRectF(foreground.frameGeometry())
+            else:
+                obstacle = foreground_window_rect(int(self.window.winId()), self.positioning.screen)
+            self.awareness.avoid_window(obstacle)
         self.awareness.observe()
 
     def set_suspended(self, active):
@@ -827,7 +845,7 @@ def main(argv=None) -> int:
                 navigation_checks["no_accidental_projection"] = companion.window.hologram.isNull()
                 companion.tools.hide()
                 navigation_checks["clock"] = companion.project_tool("clock") and bool(companion.window.projection_text)
-                companion.window.grab().save(str(directory / "projection-clock.png"))
+                companion.window.projection_overlay.grab().save(str(directory / "projection-clock.png"))
                 companion.window.clear_projection()
                 companion.show_garage()
                 garage = companion.garage_dialog
@@ -861,7 +879,7 @@ def main(argv=None) -> int:
                  companion.desktop_timer, companion.tools.clock_timer, companion.bubble.timer,
                  companion.radial.dismiss_timer, companion.radial.deactivate_timer, companion.greeting_timer, companion.awareness.timer,
                  companion.productivity.timer, companion.tray.notice.timer, companion.window.affection_timer,
-                 companion.window.hologram_timer, companion.window.projection_timer, companion.tools.diagnostics_page.timer, store.timer])
+                 companion.window.hologram_timer, companion.window.projection_timer, companion.window.steam.timer, companion.tools.diagnostics_page.timer, store.timer])
             (directory / "smoke.json").write_text(json.dumps(report, indent=2), encoding="utf-8")
         QTimer.singleShot(round(args.smoke_seconds * 1000), finish_smoke)
     return app.exec()

@@ -138,3 +138,38 @@ README e este documento são as referências principais da raiz. Changelog, nota
 de versão e avisos de terceiros públicos ficam em packaging/docs. Auditorias,
 relatórios, cópias pessoais e evidências ficam em local_docs, ignorado
 pelo Git; não são incluídos no pacote.
+
+
+## Refinamentos de convivência com janelas
+
+DiagnosticsPage usa QScrollArea e uma lista explícita de informações úteis para o
+usuário. O relatório técnico completo permanece disponível internamente. ToolsDialog
+possui também um viewport externo, permitindo reduzir a central sem propagar a
+altura mínima de suas páginas para a janela.
+
+ProjectionOverlay é uma superfície transparente a cliques, sem foco e vinculada ao
+PetWindow. Posiciona o cartão acima ou abaixo do personagem, limitado à área útil,
+e desenha feixes translúcidos e linhas de varredura com a cor holográfica do tema.
+O timer existente atualiza seu conteúdo; mudanças de geometria reposicionam a
+superfície. Ocultação, encerramento e substituição limpam a apresentação.
+
+O ciclo de observação do desktop consulta somente a geometria da janela em uso.
+Para janelas Qt do próprio processo, usa frameGeometry; para outras, usa Win32 com
+conversão do monitor e escala para DIP. Exclui desktop, menus e janelas maximizadas.
+ContextReactions escolhe a saída livre mais próxima e solicita WALK ao controlador
+existente. Os passos preservam o limite de distância, as animações e os gates da
+aplicação, sem mover instantaneamente o personagem nem ler conteúdo das janelas.
+
+
+PetController mede separadamente o tempo efetivo em SLEEP e o tempo de inatividade
+que motivou o sono. Após 180 segundos contínuos em SLEEP, o retorno da atividade não
+retira o personagem do sono. wake_by_click limpa a inatividade e entra em WAKE sem
+abrir a roda; notificações permanecem enfileiradas até o fim do despertar. Gates e
+trocas de personagem preservam o sono prolongado e o clip do perfil atual.
+
+apply_character_name atualiza os textos estáticos de transmissão e preferências a
+partir do nome do perfil. Templates permitem trocar novamente sem reter o nome
+anterior; dados dinâmicos e tarefas/notas do usuário são excluídos da substituição.
+SteamOverlay desenha fumaça translúcida durante OVERHEAT usando o estado já emitido
+pelo controlador. O timer só funciona enquanto o efeito está ativo e visível; sair
+da reação, ocultar ou encerrar interrompe sua apresentação.

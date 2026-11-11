@@ -1,16 +1,19 @@
 from PySide6.QtCore import QTimer, Signal
-from PySide6.QtWidgets import QFormLayout, QPushButton, QVBoxLayout, QWidget
+from PySide6.QtWidgets import QFormLayout, QPushButton, QScrollArea, QVBoxLayout, QWidget
 
 from .theme import card, label
 
 
-class DiagnosticsPage(QWidget):
+class DiagnosticsPage(QScrollArea):
     scan_requested = Signal()
 
     def __init__(self):
         super().__init__()
         self.provider = None
-        layout = QVBoxLayout(self)
+        self.setWidgetResizable(True)
+        body = QWidget()
+        self.setWidget(body)
+        layout = QVBoxLayout(body)
         panel, content = card()
         content.addWidget(label("Autodiagnóstico", "heading"))
         self.message = label("Uma verificação rápida dos componentes locais do R2.", "muted")
@@ -43,10 +46,19 @@ class DiagnosticsPage(QWidget):
         if self.provider is None:
             return
         report = self.provider()
-        for key, value in report.items():
+        for key in ("Personagem", "Versão", "Sistema", "CPU", "Memória RAM", "Bateria", "Carregamento", "Áudio", "Som do R2"):
+            if key not in report:
+                continue
+            value = report[key].split(" (")[0] if key == "Personagem" else report[key]
             if key not in self.fields:
                 self.fields[key] = label("")
+                self.fields[key].setWordWrap(True)
+                self.fields[key].setProperty("characterLiteral", True)
                 self.form.addRow(key, self.fields[key])
+                caption = self.form.labelForField(self.fields[key])
+                if "R2" in key:
+                    caption.setProperty("characterText", key)
+                    caption.setText(key.replace("R2", getattr(self, "character_name", "R2")))
             self.fields[key].setText(value)
         self.button.setEnabled(True)
         self.message.setText("Verificação concluída. A ausência de bateria é normal em um desktop.")

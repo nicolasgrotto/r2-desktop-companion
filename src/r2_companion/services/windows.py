@@ -81,6 +81,37 @@ def foreground_fullscreen(pet_handle: int) -> bool:
             and rect.right >= area.right - 1 and rect.bottom >= area.bottom - 1)
 
 
+def foreground_window_rect(pet_handle, screen):
+    if not IS_WINDOWS or screen is None:
+        return None
+    from PySide6.QtCore import QRectF
+    foreground = user32.GetForegroundWindow()
+    if not foreground or foreground == pet_handle or user32.IsZoomed(foreground):
+        return None
+    name = ctypes.create_unicode_buffer(256)
+    user32.GetClassNameW(foreground, name, len(name))
+    if name.value in {"Progman", "WorkerW", "Shell_TrayWnd", "Shell_SecondaryTrayWnd", "#32768"}:
+        return None
+    rect = wintypes.RECT()
+    if not user32.GetWindowRect(foreground, ctypes.byref(rect)):
+        return None
+    class MonitorInfo(ctypes.Structure):
+        _fields_ = [("cbSize", wintypes.DWORD), ("rcMonitor", wintypes.RECT),
+                    ("rcWork", wintypes.RECT), ("dwFlags", wintypes.DWORD)]
+    info = MonitorInfo()
+    info.cbSize = ctypes.sizeof(info)
+    if not user32.GetMonitorInfoW(user32.MonitorFromWindow(pet_handle, 2), ctypes.byref(info)):
+        return None
+    ratio = screen.devicePixelRatio()
+    origin = screen.geometry().topLeft()
+    result = QRectF(origin.x() + (rect.left - info.rcMonitor.left) / ratio,
+                    origin.y() + (rect.top - info.rcMonitor.top) / ratio,
+                    (rect.right - rect.left) / ratio, (rect.bottom - rect.top) / ratio)
+    if result.contains(QRectF(screen.availableGeometry())):
+        return None
+    return result
+
+
 class SessionSignals(QObject):
     suspended = Signal(bool)
     ending = Signal()

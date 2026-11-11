@@ -14,7 +14,7 @@ from ..droids.visuals import DroidVisual, load_profile_clips, paint_visual
 from ..pet.animation import AnimationManager
 from ..pet.personality import apply_profile
 from ..pet.state import State
-from .theme import apply_theme, card, header, label
+from .theme import apply_theme, card, header, label, apply_character_name
 
 ANIMATION_NAMES = {"IDLE": "Repouso", "BLINK": "Piscar", "LOOK_AROUND": "Observar", "WALK": "Locomoção",
                    "HAPPY": "Felicidade", "CURIOUS": "Curiosidade", "SLEEP": "Sono", "INTERACT": "Interação",
@@ -178,6 +178,9 @@ class DroidStudio(QDialog):
         self.filter_animations()
         theme_manager().refresh()
         self.profile_loaded()
+        for field in (self.name, self.description, self.equipped, self.status):
+            field.setProperty("characterLiteral", True)
+        apply_character_name(self, profile.name)
 
     def profile_loaded(self):
         preferences = preferences_for(self.companion.store.settings, self.profile)
@@ -437,6 +440,7 @@ class AudioCenter(QDialog):
             item.setData(Qt.ItemDataRole.UserRole, ("effect", path.stem))
             self.catalog.addItem(item)
         self.catalog.setCurrentRow(0)
+        apply_character_name(self, self.profile.name)
 
     def update_variants(self, *_):
         self.variant.clear()

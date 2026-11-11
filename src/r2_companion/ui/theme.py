@@ -221,3 +221,31 @@ def _colored_icon(name: str, color: str) -> QIcon:
         p.end()
         result.addPixmap(pixmap)
     return result
+
+
+def apply_character_name(root, name):
+    import re
+    from PySide6.QtWidgets import QAbstractButton
+    for widget in (root, *root.findChildren(QWidget)):
+        widget.character_name = name
+        current = widget
+        literal = False
+        while current is not None:
+            literal = literal or bool(current.property("characterLiteral"))
+            if current is root:
+                break
+            current = current.parentWidget()
+        if literal:
+            continue
+        if not isinstance(widget, (QLabel, QAbstractButton)):
+            continue
+        template = widget.property("characterText")
+        if template is None:
+            if not re.search(r"\bR2\b(?! Companion)", widget.text()):
+                continue
+            template = widget.text()
+            widget.setProperty("characterText", template)
+        widget.setText(re.sub(r"\bR2\b(?! Companion)", lambda match: name, template))
+        if widget.property("role") == "brand":
+            widget.ensurePolished()
+            widget.setFixedWidth(max(54, widget.fontMetrics().horizontalAdvance(name) + 20))

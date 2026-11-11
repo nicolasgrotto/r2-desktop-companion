@@ -29,10 +29,27 @@ class PetController(QObject):
         self.paused = False
         self.last_click = -1000.0
         self.sleep_started = None
+        self.sleep_entered = None
         self.next_destination = None
         self.animation.clip_finished.connect(self.finished)
         self.positioning.movement_finished.connect(self.finished)
         self.behavior.action_requested.connect(self.autonomous)
+
+    @property
+    def requires_wake_click(self):
+        return (self.state == State.SLEEP and self.sleep_entered is not None
+                and self.clock() - self.sleep_entered >= 180)
+
+    def wake_by_click(self):
+        if self.closed or self.gates or self.state != State.SLEEP:
+            return False
+        self.inactive = False
+        self.sleep_started = None
+        self.sleep_entered = None
+        self.pending_click = False
+        self.behavior.defer_walk()
+        self.enter(State.WAKE)
+        return True
 
     def start(self):
         self.enter(State.IDLE)
@@ -46,6 +63,12 @@ class PetController(QObject):
         if hasattr(self.animation, "clips") and state not in self.animation.clips:
             state = State.IDLE
         previous = self.state
+        if previous == State.SLEEP and state != State.SLEEP and self.requires_wake_click:
+            state = State.SLEEP
+        if state == State.SLEEP and self.sleep_entered is None:
+            self.sleep_entered = self.clock()
+        elif state != State.SLEEP:
+            self.sleep_entered = None
         if state == State.WALK and self.gates:
             self.next_destination = None
             return
@@ -94,7 +117,7 @@ class PetController(QObject):
         return True
 
     def request(self, state: State) -> bool:
-        if self.closed or not self.supports(state) or not can_request(self.state, state, bool(self.gates)):
+        if self.closed or self.requires_wake_click or not self.supports(state) or not can_request(self.state, state, bool(self.gates)):
             if state == State.WALK:
                 self.next_destination = None
             return False
@@ -121,7 +144,7 @@ class PetController(QObject):
         self.drain()
 
     def drain(self):
-        if self.closed or self.gates:
+        if self.closed or self.gates or self.requires_wake_click:
             return
         if self.pending_click and self.state in {State.IDLE, State.SLEEP}:
             self.pending_click = False

@@ -25,6 +25,7 @@ class Bubble(QFrame):
         layout.setSpacing(7)
         layout.addWidget(label("● R2 / TRANSMISSÃO", "eyebrow"))
         self.message = label("")
+        self.message.setProperty("characterLiteral", True)
         self.message.setWordWrap(True)
         layout.addWidget(self.message)
         self.anchor = None

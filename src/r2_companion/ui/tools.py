@@ -56,7 +56,14 @@ class ToolsDialog(QDialog):
         apply_theme(self)
         self.countdown, self.monitor = countdown, monitor
         self.battery = None
-        layout = QVBoxLayout(self)
+        outer = QVBoxLayout(self)
+        outer.setContentsMargins(0, 0, 0, 0)
+        self.scroll_area = QScrollArea()
+        self.scroll_area.setWidgetResizable(True)
+        outer.addWidget(self.scroll_area)
+        body = QWidget()
+        self.scroll_area.setWidget(body)
+        layout = QVBoxLayout(body)
         layout.setContentsMargins(28, 24, 28, 22)
         layout.setSpacing(14)
         layout.addWidget(header("Central de ferramentas", "Seu tempo e seu computador, em sintonia."))
@@ -67,6 +74,8 @@ class ToolsDialog(QDialog):
         if productivity is not None:
             self.tasks_page = TasksPage(productivity)
             self.notes_page = NotesPage(productivity)
+            self.tasks_page.setProperty("characterLiteral", True)
+            self.notes_page.setProperty("characterLiteral", True)
             self.tabs.addTab(self.tasks_page, "Tarefas")
             self.tabs.addTab(self.notes_page, "Notas")
         self.minigames_page = MinigamesPage()
@@ -256,7 +265,7 @@ class ToolsDialog(QDialog):
             self.completion.setText("Escolha um intervalo entre 1 segundo e 24 horas.")
             return
         self.duration_selected.emit(seconds)
-        self.completion.setText("Seu tempo está correndo. Pode deixar que o R2 avisa.")
+        self.completion.setText(f"Seu tempo está correndo. Pode deixar que {getattr(self, 'character_name', 'R2')} avisa.")
         self.countdown.start(seconds)
 
     def toggle_pause(self):

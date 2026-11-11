@@ -11,7 +11,7 @@ from ..features.launcher import validate_executable
 from ..features.locations import validate_location
 from ..pet.personality import apply_profile
 from .targets import TargetDelegate, filter_targets, target_item
-from .theme import apply_theme, card, header, icon, label
+from .theme import apply_theme, card, header, icon, label, apply_character_name
 
 
 class SettingsDialog(QDialog):
@@ -208,6 +208,10 @@ class SettingsDialog(QDialog):
         buttons.rejected.connect(self.reject)
         layout.addWidget(buttons)
         self.render_targets()
+
+        if droid_profile is not None:
+            apply_character_name(self, droid_profile.name)
+            self.setWindowTitle(f"Configurações · {droid_profile.name} · R2 Companion")
 
     def render_targets(self):
         self.targets.clear()

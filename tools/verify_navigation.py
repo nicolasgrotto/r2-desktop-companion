@@ -1,4 +1,4 @@
-﻿import argparse
+import argparse
 import json
 from pathlib import Path
 import sys
@@ -85,7 +85,7 @@ def main():
             QTest.qWait(2100)
             assert not pet.window.hologram.isNull()
             profile["projection_text"] = pet.window.projection_text
-            capture("projection", pet.window)
+            capture("projection", pet.window.projection_overlay)
             pet.window.clear_projection()
             pet.show_garage()
             garage = pet.garage_dialog

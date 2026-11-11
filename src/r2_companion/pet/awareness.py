@@ -19,6 +19,20 @@ def fullscreen_policy(mode, manual_position, screen_name):
     return "hide"
 
 
+def escape_destination(pet, obstacle, area):
+    if not pet.intersects(obstacle):
+        return None
+    margin = 14
+    options = [QPointF(obstacle.left() - pet.width() - margin, pet.y()),
+               QPointF(obstacle.right() + margin, pet.y()),
+               QPointF(pet.x(), obstacle.top() - pet.height() - margin),
+               QPointF(pet.x(), obstacle.bottom() + margin)]
+    safe = area.adjusted(8, 8, -8, -8)
+    options = [point for point in options if safe.contains(QRectF(point, pet.size()))
+               and not QRectF(point, pet.size()).intersects(obstacle)]
+    return min(options, key=lambda point: (point - pet.topLeft()).manhattanLength()) if options else None
+
+
 class ContextReactions(QObject):
     def __init__(self, controller, positioning, store, audio, clock=time.monotonic):
         super().__init__()
@@ -113,6 +127,21 @@ class ContextReactions(QObject):
             self.controller.next_destination = destination
             if self.controller.request(State.WALK):
                 self.controller.behavior.accepted(State.WALK)
+
+    def avoid_window(self, obstacle):
+        settings = self.store.settings.behavior
+        if (obstacle is None or not self.available() or not settings.movement
+                or settings.frequency == "off" or self.positioning.screen is None):
+            return False
+        destination = escape_destination(QRectF(self.positioning.window.geometry()), obstacle,
+                                         QRectF(self.positioning.screen.availableGeometry()))
+        if destination is None:
+            return False
+        self.controller.next_destination = destination
+        if self.controller.request(State.WALK):
+            self.controller.behavior.accepted(State.WALK)
+            return True
+        return False
 
     def sample_system(self):
         if (not self.store.settings.behavior.system_reactions
