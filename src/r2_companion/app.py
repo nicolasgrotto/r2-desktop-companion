@@ -43,13 +43,13 @@ from .ui.tools import ToolsDialog
 from .ui.tray import Tray
 from .ui.radial import RadialMenu
 from .ui.targets import LaunchpadDialog
-from .ui.theme import fit_dialog, icon
+from .ui.theme import fit_dialog
 from .droids.profiles import DroidRegistry
 from .droids.preferences import preferences_for, select_droid
 from .droids.controller import DroidController
 from .droids.movement import create_movement
 from .droids.visuals import load_profile_clips
-from .droids.themes import color, theme_manager
+from .droids.themes import theme_manager
 
 ASSETS = Path(__file__).resolve().parent / "assets"
 log = logging.getLogger(__name__)
@@ -188,7 +188,9 @@ class Companion(QObject):
         self.window.configure_droid(self.profile, preferences_for(settings, self.profile))
         if theme_manager().active != self.profile.theme:
             theme_manager().apply(self.profile.theme)
-        self.radial.center.setText(self.profile.name.split()[0][:2].upper())
+        self.radial.center_text = self.profile.name.split()[0][:2].upper()
+        if self.radial.level == "main":
+            self.radial.center.setText(self.radial.center_text)
         self.window.set_topmost(settings.window.topmost)
         self.positioning.reconcile()
         self.audio.configure(settings.sound_enabled, deepcopy(settings.audio))
@@ -219,7 +221,7 @@ class Companion(QObject):
             dialog = factory(self)
             setattr(self, attribute, dialog)
         fit_dialog(dialog, self.window)
-        dialog.show()
+        dialog.showNormal()
         dialog.raise_()
         dialog.activateWindow()
 
@@ -368,19 +370,24 @@ class Companion(QObject):
         self.controller.update_inactivity(0)
         self.controller.react(State.GREETING)
 
+    def navigation_actions(self):
+        actions = {"garage": self.show_garage, "audio": self.show_audio_center,
+                   "tools": self.show_tools, "tools_center": self.show_tools,
+                   "settings": self.show_settings, "updates": self.check_updates,
+                   "apps": lambda: self.show_launchpad(self.apps_panel),
+                   "locations": lambda: self.show_launchpad(self.locations_panel),
+                   "explore": self.walk_now, "pause": self.toggle_pause,
+                   "project_clock": lambda: self.project_tool("clock"),
+                   "project_date": lambda: self.project_tool("date"),
+                   "project_stop": self.window.clear_projection}
+        for page in self.tools.pages:
+            actions[page] = lambda page=page: self.show_tools_page(page)
+        return actions
+
     def radial_action(self, action):
-        if action == "tools":
-            self.show_tools()
-        elif action == "apps":
-            self.show_launchpad(self.apps_panel)
-        elif action == "locations":
-            self.show_launchpad(self.locations_panel)
-        elif action == "settings":
-            self.show_settings()
-        elif action == "explore":
-            self.walk_now()
-        elif action == "pause":
-            self.toggle_pause()
+        callback = self.navigation_actions().get(action)
+        if callback is not None:
+            callback()
 
     def show_launchpad(self, panel):
         self.radial.hide()
@@ -545,10 +552,7 @@ class Companion(QObject):
                    "pass_through": lambda: self.set_pass_through(not self.pass_through),
                    "passing": lambda: self.pass_through,
                    "screen": self.move_screen, "exit": self.shutdown, "target": self.open_target}
-        actions.update(garage=self.show_garage, audio=self.show_audio_center)
-        actions.update(tasks=lambda: self.show_tools_page(3), notes=lambda: self.show_tools_page(4),
-                       updates=self.check_updates, minigames=lambda: self.show_tools_page(self.tools.tabs.indexOf(self.tools.minigames_page)),
-                       diagnostics=lambda: self.show_tools_page(self.tools.tabs.indexOf(self.tools.diagnostics_page)))
+        actions.update(self.navigation_actions())
         self.menu = create_menu(self.window, actions, self.store.settings, QGuiApplication.screens(),
                                 QSystemTrayIcon.isSystemTrayAvailable())
         self.menu.aboutToShow.connect(self.menu_opened)
@@ -577,18 +581,24 @@ class Companion(QObject):
     def show_tools(self):
         self.radial.hide()
         fit_dialog(self.tools, self.window)
-        self.tools.show()
+        self.tools.showNormal()
         self.tools.raise_()
         self.tools.activateWindow()
-        self.project_tool("clock")
 
-    def project_tool(self, glyph):
-        if self.store.settings.holograms and not self.controller.gates and not self.quiet_active:
-            self.window.project(icon(glyph, color("hologram")).pixmap(32, 32))
+    def project_tool(self, kind):
+        if kind not in {"clock", "date"}:
+            return False
+        self.radial.hide()
+        if not self.store.settings.holograms:
+            self.present_bubble("Ative as projeções holográficas nas Configurações.")
+            return False
+        if self.fullscreen_hidden or self.session_hidden or self.user_hidden:
+            return False
+        return self.window.show_projection(kind)
 
     def show_tools_page(self, index):
-        self.tools.tabs.setCurrentIndex(index)
-        self.show_tools()
+        if self.tools.select_page(index):
+            self.show_tools()
 
     def task_completed(self, entry_id):
         self.reactions.start("task")
@@ -602,7 +612,6 @@ class Companion(QObject):
             self.warning(str(error))
             return False
         self.reactions.start("game")
-        self.project_tool("play")
         return True
 
     def check_updates(self):
@@ -614,7 +623,7 @@ class Companion(QObject):
     def show_settings(self):
         self.radial.hide()
         if self.settings_dialog is not None:
-            self.settings_dialog.show()
+            self.settings_dialog.showNormal()
             self.settings_dialog.raise_()
             return
         try:
@@ -744,6 +753,7 @@ def main(argv=None) -> int:
     parser.add_argument("--data-dir", type=Path, help="Diretório alternativo de dados, útil para testes isolados")
     parser.add_argument("--smoke-test", action="store_true", help="Executa brevemente, grava diagnóstico e encerra")
     parser.add_argument("--smoke-droids", action="store_true")
+    parser.add_argument("--smoke-navigation", action="store_true")
     parser.add_argument("--smoke-seconds", type=float, default=3)
     parser.add_argument("--update-center", action="store_true")
     parser.add_argument("--install-dir", type=Path)
@@ -759,8 +769,10 @@ def main(argv=None) -> int:
         parser.error("--smoke-seconds deve estar entre 1 e 3600")
     if args.smoke_test and args.data_dir is None:
         parser.error("--smoke-test requer --data-dir para isolar os dados de teste")
-    if args.smoke_droids and not args.smoke_test:
-        parser.error("--smoke-droids requer --smoke-test")
+    if (args.smoke_droids or args.smoke_navigation) and not args.smoke_test:
+        parser.error("--smoke-droids e --smoke-navigation requerem --smoke-test")
+    if args.smoke_navigation and args.smoke_seconds < 5:
+        parser.error("--smoke-navigation requer --smoke-seconds de pelo menos 5")
     app = QApplication([sys.argv[0]])
     app.setOrganizationName("R2DesktopCompanion")
     app.setApplicationName("R2Companion")
@@ -786,6 +798,7 @@ def main(argv=None) -> int:
         return 1
     if args.smoke_test:
         droid_checks = []
+        navigation_checks = {}
         if args.smoke_droids:
             for index, identifier in enumerate(companion.droids.profiles):
                 def check_droid(identifier=identifier):
@@ -794,6 +807,35 @@ def main(argv=None) -> int:
                     droid_checks.append({"id": identifier, "accepted": accepted, "error": companion.droid_error,
                                          "diagnostics": companion.droid_diagnostics()})
                 QTimer.singleShot(200 + index * 450, check_droid)
+        if args.smoke_navigation:
+            def start_navigation_smoke():
+                companion.radial.popup_near(companion.window)
+                companion.radial.buttons["tools"].click()
+            def finish_navigation_smoke():
+                if companion.radial.transitioning:
+                    QTimer.singleShot(25, finish_navigation_smoke)
+                    return
+                navigation_checks["tools_level"] = companion.radial.level == "tools"
+                companion.radial.grab().save(str(directory / "wheel-tools.png"))
+                if "tools_center" in companion.radial.buttons:
+                    companion.radial.buttons["tools_center"].click()
+                navigation_checks["tools_visible"] = companion.tools.isVisible()
+                for page in ("tasks", "notes", "minigames", "diagnostics"):
+                    companion.show_tools_page(page)
+                    navigation_checks[page] = companion.tools.isVisible() and companion.tools.tabs.currentWidget() is companion.tools.pages[page]
+                navigation_checks["no_accidental_projection"] = companion.window.hologram.isNull()
+                companion.tools.hide()
+                navigation_checks["clock"] = companion.project_tool("clock") and bool(companion.window.projection_text)
+                companion.window.grab().save(str(directory / "projection-clock.png"))
+                companion.window.clear_projection()
+                companion.show_garage()
+                garage = companion.garage_dialog
+                navigation_checks["garage_animations"] = garage.animations.count() > 0
+                garage.grab().save(str(directory / "garage.png"))
+                garage.close()
+                navigation_checks["gallery_removed"] = not any("Galeria" in action.text() for action in companion.menu.action_refs)
+            QTimer.singleShot(1500, start_navigation_smoke)
+            QTimer.singleShot(2000, finish_navigation_smoke)
         def finish_smoke():
             import psutil
             process = psutil.Process()
@@ -805,6 +847,8 @@ def main(argv=None) -> int:
                       "working_set_bytes": process.memory_info().rss,
                       "geometry": companion.window.geometry().getRect()}
             report["droids"] = droid_checks
+            report["version"] = __version__
+            report["navigation"] = navigation_checks
             report["active_droid"] = companion.profile.id
             companion.window.grab().save(str(directory / "smoke.png"))
             companion.shutdown()
@@ -814,9 +858,9 @@ def main(argv=None) -> int:
                 [companion.animation.timer, companion.behavior.timer, companion.positioning.timer,
                  companion.countdown.timer, companion.monitor.timer, companion.idle_timer,
                  companion.desktop_timer, companion.tools.clock_timer, companion.bubble.timer,
-                 companion.radial.dismiss_timer, companion.greeting_timer, companion.awareness.timer,
+                 companion.radial.dismiss_timer, companion.radial.deactivate_timer, companion.greeting_timer, companion.awareness.timer,
                  companion.productivity.timer, companion.tray.notice.timer, companion.window.affection_timer,
-                 companion.window.hologram_timer, companion.tools.diagnostics_page.timer, store.timer])
+                 companion.window.hologram_timer, companion.window.projection_timer, companion.tools.diagnostics_page.timer, store.timer])
             (directory / "smoke.json").write_text(json.dumps(report, indent=2), encoding="utf-8")
         QTimer.singleShot(round(args.smoke_seconds * 1000), finish_smoke)
     return app.exec()

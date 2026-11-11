@@ -110,7 +110,7 @@ class SettingsDialog(QDialog):
             widget.setTime(QTime(minutes // 60, minutes % 60))
         form.addRow("Silêncio a partir de", self.quiet_start)
         form.addRow("Retomar às", self.quiet_end)
-        self.holograms = QCheckBox("Pequenas projeções nas ferramentas")
+        self.holograms = QCheckBox("Permitir projeções holográficas pelo menu Projetar")
         self.holograms.setChecked(settings.holograms)
         form.addRow(self.holograms)
         self.startup = QCheckBox("Iniciar com o Windows (somente este usuário)")

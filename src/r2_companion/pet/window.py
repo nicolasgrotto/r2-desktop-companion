@@ -1,6 +1,9 @@
-from PySide6.QtCore import QEvent, QPointF, Qt, QTimer, Signal
-from PySide6.QtGui import QColor, QMouseEvent, QPainter, QPixmap
+from PySide6.QtCore import QEvent, QPointF, QRectF, Qt, QTimer, Signal
+from PySide6.QtGui import QColor, QFont, QMouseEvent, QPainter, QPen, QPixmap
 from PySide6.QtWidgets import QApplication, QWidget
+
+from ..droids.themes import color, theme_manager
+from ..features.clock import local_clock
 
 
 class PetWindow(QWidget):
@@ -42,6 +45,12 @@ class PetWindow(QWidget):
         self.hologram_timer = QTimer(self)
         self.hologram_timer.setSingleShot(True)
         self.hologram_timer.timeout.connect(self.clear_projection)
+        self.projection_kind = None
+        self.projection_text = ""
+        self.projection_timer = QTimer(self)
+        self.projection_timer.setInterval(1000)
+        self.projection_timer.timeout.connect(self.refresh_projection)
+        theme_manager().changed.connect(self.refresh_projection)
         self.affection_timer = QTimer(self)
         self.affection_timer.setSingleShot(True)
         self.affection_timer.setInterval(650)
@@ -59,11 +68,48 @@ class PetWindow(QWidget):
             self.set_frame(self.original_frame)
 
     def project(self, pixmap):
+        self.clear_projection()
         self.hologram = pixmap
         self.hologram_timer.start(1800)
         self.update()
 
+    def show_projection(self, kind):
+        if kind not in {"clock", "date"}:
+            return False
+        self.clear_projection()
+        self.projection_kind = kind
+        self.refresh_projection()
+        if self.isVisible():
+            self.projection_timer.start()
+        return True
+
+    def refresh_projection(self, *_):
+        if self.projection_kind is None:
+            return
+        time_text, date_text = local_clock().split("\n", 1)
+        self.projection_text = time_text + ("\n" + date_text if self.projection_kind == "date" else "")
+        picture = QPixmap(320, 164 if self.projection_kind == "date" else 76)
+        picture.fill(Qt.GlobalColor.transparent)
+        painter = QPainter(picture)
+        painter.setRenderHint(QPainter.RenderHint.Antialiasing)
+        painter.setBrush(QColor(color("hero")))
+        painter.setPen(QPen(QColor(color("hologram")), 2))
+        painter.drawRoundedRect(QRectF(picture.rect()).adjusted(2, 2, -2, -2), 14, 14)
+        painter.setPen(QColor(color("hologram")))
+        painter.setFont(QFont("Consolas", 30, QFont.Weight.Bold))
+        painter.drawText(QRectF(8, 6, 304, 62), Qt.AlignmentFlag.AlignCenter, time_text)
+        if self.projection_kind == "date":
+            painter.setFont(QFont("Segoe UI", 18))
+            painter.drawText(QRectF(12, 67, 296, 90), Qt.AlignmentFlag.AlignCenter | Qt.TextFlag.TextWordWrap, date_text)
+        painter.end()
+        self.hologram = picture
+        self.update()
+
     def clear_projection(self):
+        self.hologram_timer.stop()
+        self.projection_timer.stop()
+        self.projection_kind = None
+        self.projection_text = ""
         self.hologram = QPixmap()
         self.update()
 
@@ -71,6 +117,16 @@ class PetWindow(QWidget):
         self.affection_timer.stop()
         self.hologram_timer.stop()
         self.clear_projection()
+
+    def showEvent(self, event):
+        if self.projection_kind:
+            self.refresh_projection()
+            self.projection_timer.start()
+        super().showEvent(event)
+
+    def hideEvent(self, event):
+        self.projection_timer.stop()
+        super().hideEvent(event)
 
     def mouseDoubleClickEvent(self, event):
         if event.button() == Qt.MouseButton.LeftButton:
@@ -157,8 +213,9 @@ class PetWindow(QWidget):
         else:
             painter.drawPixmap(self.rect(), self.frame)
         if not self.hologram.isNull():
-            side = max(16, self.width() // 5)
-            painter.drawPixmap(self.width() - side - 4, 4, side, side, self.hologram)
+            width = max(16, self.width() - 8) if self.projection_kind else max(16, self.width() // 5)
+            height = round(width * self.hologram.height() / self.hologram.width())
+            painter.drawPixmap(self.width() - width - 4, 4, width, height, self.hologram)
 
     def mousePressEvent(self, event: QMouseEvent):
         if event.button() == Qt.MouseButton.LeftButton:

@@ -73,6 +73,11 @@ class ToolsDialog(QDialog):
         self.diagnostics_page = DiagnosticsPage()
         self.tabs.addTab(self.minigames_page, "Minigames")
         self.tabs.addTab(self.diagnostics_page, "Diagnóstico")
+        self.pages = {"clock": self.tabs.widget(0), "timer": self.tabs.widget(1),
+                      "system": self.tabs.widget(2), "minigames": self.minigames_page,
+                      "diagnostics": self.diagnostics_page}
+        if productivity is not None:
+            self.pages.update(tasks=self.tasks_page, notes=self.notes_page)
         self.tabs.setUsesScrollButtons(True)
         layout.addWidget(self.tabs, 1)
         self.completion = label("Tudo pronto. Escolha uma ferramenta para começar.", "muted")
@@ -90,6 +95,21 @@ class ToolsDialog(QDialog):
         self.set_duration(duration)
         self.refresh_clock()
         self.refresh_timer()
+
+    def select_page(self, page):
+        if isinstance(page, str):
+            widget = self.pages.get(page)
+            if widget is None:
+                return False
+            index = self.tabs.indexOf(widget)
+        else:
+            index = page
+        if not isinstance(index, int) or not 0 <= index < self.tabs.count():
+            return False
+        self.tabs.setCurrentIndex(index)
+        if self.tabs.currentWidget() is self.diagnostics_page:
+            self.diagnostics_page.finish()
+        return True
 
     @staticmethod
     def scroll(content):

@@ -1,59 +1,82 @@
+from PySide6.QtGui import QAction
 from PySide6.QtWidgets import QMenu
 from .theme import apply_theme
+from .navigation import NAVIGATION
 
 
 def create_menu(parent, actions: dict, settings, screens, tray_available: bool) -> QMenu:
     menu = QMenu(parent)
     apply_theme(menu)
-    menu.addAction("Interagir", actions["interact"])
+    references = []
+    submenus = []
+    def add(target, key, title, callback=None):
+        action = QAction(title, target)
+        action.setData(key)
+        action.triggered.connect(lambda checked=False, callback=callback or actions[key]: callback())
+        target.addAction(action)
+        references.append(action)
+        return action
+    def submenu(title):
+        child = menu.addMenu(title)
+        submenus.append(child)
+        return child
+    add(menu, "interact", "Interagir")
     for key, title in (("garage", "Droid Garage"), ("audio", "Central de Áudio")):
         if key in actions:
-            menu.addAction(title, actions[key])
-    applications = menu.addMenu("Aplicativos")
+            add(menu, key, title)
+    applications = submenu("Aplicativos")
     for entry in settings.applications:
-        applications.addAction(entry.label, lambda checked=False, t=entry: actions["target"](t))
+        add(applications, entry.id, entry.label, lambda entry=entry: actions["target"](entry))
     if not settings.applications:
-        applications.addAction("Configure em Configurações…", actions["settings"])
-    shortcuts = menu.addMenu("Atalhos")
+        add(applications, "settings", "Configure em Configurações…")
+    shortcuts = submenu("Atalhos")
     for entry in settings.locations:
-        shortcuts.addAction(entry.label, lambda checked=False, t=entry: actions["target"](t))
+        add(shortcuts, entry.id, entry.label, lambda entry=entry: actions["target"](entry))
     targets = {t.id: t for t in settings.applications + settings.locations}
     for alias in settings.shortcuts:
         if alias.target_id in targets:
-            shortcuts.addAction(alias.label, lambda checked=False, key=alias.target_id: actions["target"](targets[key]))
+            add(shortcuts, alias.id, alias.label, lambda key=alias.target_id: actions["target"](targets[key]))
     if not settings.locations and not settings.shortcuts:
-        shortcuts.addAction("Configure em Configurações…", actions["settings"])
+        add(shortcuts, "settings", "Configure em Configurações…")
     if "minigames" in actions:
-        tools = menu.addMenu("Ferramentas")
-        tools.addAction("Central de ferramentas", actions["tools"])
-        tools.addAction("Minigames", actions["minigames"])
-        tools.addAction("Diagnóstico", actions["diagnostics"])
+        tools = submenu("Ferramentas")
+        add(tools, "tools", "Central de ferramentas")
+        for item in NAVIGATION["tools"][1:]:
+            if item.id in actions:
+                add(tools, item.id, item.title)
+        add(tools, "minigames", "Minigames")
+        add(tools, "diagnostics", "Diagnóstico")
         menu.tools_ref = tools
     else:
-        menu.addAction("Ferramentas · relógio, temporizador e sistema", actions["tools"])
+        add(menu, "tools", "Ferramentas · relógio, temporizador e sistema")
     if "tasks" in actions:
-        menu.addAction("Lista de tarefas", actions["tasks"])
-        menu.addAction("Bloco de notas rápido", actions["notes"])
-    menu.addAction("Configurações…", actions["settings"])
+        add(menu, "tasks", "Lista de tarefas")
+        add(menu, "notes", "Bloco de notas rápido")
+    if "project_clock" in actions:
+        projections = submenu("Projetar")
+        for item in NAVIGATION["project"]:
+            add(projections, item.id, item.title.replace("\n", " "))
+        menu.projections_ref = projections
+    add(menu, "settings", "Configurações…")
     if "updates" in actions:
-        menu.addAction("Verificar atualizações", actions["updates"])
+        add(menu, "updates", "Verificar atualizações")
     menu.addSeparator()
-    menu.addAction("Mostrar mascote", actions["show"])
-    hide = menu.addAction("Ocultar mascote", actions["hide"])
+    add(menu, "show", "Mostrar mascote")
+    hide = add(menu, "hide", "Ocultar mascote")
     hide.setEnabled(tray_available)
-    pass_through = menu.addAction("Deixar cliques atravessarem o mascote", actions["pass_through"])
+    pass_through = add(menu, "pass_through", "Deixar cliques atravessarem o mascote")
     pass_through.setCheckable(True)
     pass_through.setChecked(actions["passing"]())
     pass_through.setEnabled(tray_available)
-    pause = menu.addAction("Pausar / continuar autonomia", actions["pause"])
+    pause = add(menu, "pause", "Pausar / continuar autonomia")
     pause.setCheckable(True)
     pause.setChecked(actions["paused"]())
-    menu.addAction("Restaurar posição", actions["restore"])
-    monitor_menu = menu.addMenu("Mover para monitor")
+    add(menu, "restore", "Restaurar posição")
+    monitor_menu = submenu("Mover para monitor")
     for index, screen in enumerate(screens):
-        monitor_menu.addAction(f"{index + 1} · {screen.name()}", lambda checked=False, s=screen: actions["screen"](s))
+        add(monitor_menu, f"screen_{index}", f"{index + 1} · {screen.name()}", lambda screen=screen: actions["screen"](screen))
     menu.addSeparator()
-    menu.addAction("Sair", actions["exit"])
-    menu.submenu_refs = (applications, shortcuts, monitor_menu) + ((menu.tools_ref,) if hasattr(menu, "tools_ref") else ())
-    menu.action_refs = tuple(menu.actions()) + tuple(action for submenu in menu.submenu_refs for action in submenu.actions())
+    add(menu, "exit", "Sair")
+    menu.submenu_refs = tuple(submenus)
+    menu.action_refs = tuple(references) + tuple(menu.actions())
     return menu

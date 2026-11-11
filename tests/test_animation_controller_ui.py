@@ -336,6 +336,9 @@ def test_left_click_opens_wheel_and_still_plays_the_interaction(companion):
 def test_radial_button_opens_tools_and_escape_releases_gate(companion):
     companion.left_click()
     QTest.mouseClick(companion.radial.buttons["tools"], Qt.MouseButton.LeftButton)
+    QTest.qWait(300)
+    assert companion.radial.level == "tools"
+    QTest.mouseClick(companion.radial.buttons["tools_center"], Qt.MouseButton.LeftButton)
     assert companion.tools.isVisible()
     assert not companion.radial.isVisible()
     assert "radial" not in companion.controller.gates
