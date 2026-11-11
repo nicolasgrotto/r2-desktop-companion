@@ -6,7 +6,7 @@ root = Path(SPECPATH).parent
 assets = root / "src/r2_companion/assets"
 data = [(str(assets), "r2_companion/assets"),
         (str(root / "scripts/update-r2-companion.ps1"), "scripts"),
-        (str(root / "THIRD_PARTY_NOTICES.md"), ".")]
+        (str(root / "packaging/docs/THIRD_PARTY_NOTICES.md"), ".")]
 for name in ("PySide6-Essentials", "PySide6-Addons", "shiboken6", "psutil", "pyinstaller"):
     dist = distribution(name)
     for entry in dist.files or []:

@@ -25,13 +25,17 @@ def main():
                    if not key.upper().startswith(("PYTHON", "QT_")) and key != "VIRTUAL_ENV"}
     environment["PATH"] = str(Path(os.environ["SystemRoot"]) / "System32")
     data = output / "dados isolados"
-    process = subprocess.run([str(executable), "--data-dir", str(data), "--smoke-test", "--smoke-seconds", "5"],
+    process = subprocess.run([str(executable), "--data-dir", str(data), "--smoke-test", "--smoke-seconds", "7", "--smoke-droids", "--smoke-navigation"],
                              cwd=work, env=environment, creationflags=subprocess.CREATE_NO_WINDOW, timeout=45)
     if process.returncode:
         raise RuntimeError(f"Smoke exit: {process.returncode}")
     smoke = json.loads((data / "smoke.json").read_text(encoding="utf-8"))
     if not smoke["visible"] or smoke["active_timers_after_shutdown"]:
         raise RuntimeError("Smoke failed: visibility or shutdown")
+    if not smoke["navigation"] or not all(smoke["navigation"].values()):
+        raise RuntimeError("Packaged navigation smoke failed")
+    if len(smoke["droids"]) != 3 or not all(item["accepted"] for item in smoke["droids"]):
+        raise RuntimeError("Packaged droid smoke failed")
     with archive.open("rb") as handle:
         digest = hashlib.file_digest(handle, "sha256").hexdigest()
     if archive.with_suffix(".zip.sha256").read_text().split()[0] != digest:

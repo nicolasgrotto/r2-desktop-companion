@@ -63,7 +63,7 @@ jobs:
           GH_REPO: ${{ github.repository }}
           RELEASE_TAG: ${{ github.ref_name }}
         run: |
-          notes="release-notes/$RELEASE_TAG.md"
+          notes="packaging/docs/release-notes/$RELEASE_TAG.md"
           test -f "$notes"
           if state=$(gh release view "$RELEASE_TAG" --json isDraft --jq '.isDraft'); then
             test "$state" = true || { echo 'A published release will not be overwritten'; exit 1; }

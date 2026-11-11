@@ -1,7 +1,7 @@
 # Componentes de terceiros
 
 Este é um build de desenvolvimento com mascote offline e atualizador manual. Os assets provisórios originais
-estão descritos em `src/r2_companion/assets/LICENSES.md`.
+estão descritos em `src/r2_companion/assets/LICENSES.md` (no repositório).
 
 | Componente | Versão testada | Referência de licença/proveniência |
 | --- | --- | --- |
