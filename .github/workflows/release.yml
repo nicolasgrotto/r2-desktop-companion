@@ -31,11 +31,13 @@ jobs:
           $version = python -c "import tomllib; print(tomllib.load(open('pyproject.toml', 'rb'))['project']['version'])"
           $executable = Join-Path $PWD "dist/$version/R2Companion/R2Companion.exe"
           $data = Join-Path $PWD '.runtime-ci-exe'
-          $process = Start-Process -FilePath $executable -ArgumentList @('--data-dir', ('"{0}"' -f $data), '--smoke-test') -PassThru -WindowStyle Hidden
+          $process = Start-Process -FilePath $executable -ArgumentList @('--data-dir', ('"{0}"' -f $data), '--smoke-test', '--smoke-droids') -PassThru -WindowStyle Hidden
           if (-not $process.WaitForExit(60000)) { throw 'Smoke timeout' }
           if ($process.ExitCode -ne 0) { throw "Smoke exit code $($process.ExitCode)" }
           $report = Get-Content (Join-Path $data 'smoke.json') -Raw | ConvertFrom-Json
           if ($report.active_timers_after_shutdown -ne 0) { throw 'Timers remained active' }
+          if ($report.movement_timer_after_shutdown) { throw 'Movement timer remained active' }
+          if ($report.droids.Count -ne 3 -or @($report.droids | Where-Object { -not $_.accepted }).Count -ne 0) { throw 'Droid smoke failed' }
       - uses: actions/upload-artifact@v4
         with:
           name: R2Companion-Windows-x64
@@ -50,6 +52,7 @@ jobs:
     permissions:
       contents: write
     steps:
+      - uses: actions/checkout@v4
       - uses: actions/download-artifact@v4
         with:
           name: R2Companion-Windows-x64
@@ -60,5 +63,12 @@ jobs:
           GH_REPO: ${{ github.repository }}
           RELEASE_TAG: ${{ github.ref_name }}
         run: |
-          gh release view "$RELEASE_TAG" || gh release create "$RELEASE_TAG" --verify-tag --generate-notes --title "$RELEASE_TAG"
+          notes="release-notes/$RELEASE_TAG.md"
+          test -f "$notes"
+          if state=$(gh release view "$RELEASE_TAG" --json isDraft --jq '.isDraft'); then
+            test "$state" = true || { echo 'A published release will not be overwritten'; exit 1; }
+          else
+            gh release create "$RELEASE_TAG" --verify-tag --draft --notes-file "$notes" --title "R2 Desktop Companion ${RELEASE_TAG#v}"
+          fi
           gh release upload "$RELEASE_TAG" release/R2Companion-Windows-x64.zip release/R2Companion-Windows-x64.zip.sha256 --clobber
+          gh release edit "$RELEASE_TAG" --notes-file "$notes" --draft=false --latest

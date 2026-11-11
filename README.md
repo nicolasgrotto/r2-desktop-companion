@@ -26,6 +26,8 @@ Consulte a [arquitetura multi-droides](MULTI_DROID_ARCHITECTURE.md), a
 
 ## Executar pelo código
 
+Notas da release: [Changelog](CHANGELOG.md) e [1.1.0](release-notes/v1.1.0.md).
+
 Requer Python 3.12+ x64. Combinação exercitada: Python 3.13.12 e Qt/PySide6 6.10.2
 no Windows 10 22H2. Abra PowerShell na raiz deste repositório:
 
