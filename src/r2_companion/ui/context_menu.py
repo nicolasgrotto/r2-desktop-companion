@@ -6,7 +6,7 @@ def create_menu(parent, actions: dict, settings, screens, tray_available: bool) 
     menu = QMenu(parent)
     apply_theme(menu)
     menu.addAction("Interagir", actions["interact"])
-    for key, title in (("garage", "Droid Garage"), ("audio", "Central de Áudio"), ("gallery", "Galeria de Animações")):
+    for key, title in (("garage", "Droid Garage"), ("audio", "Central de Áudio")):
         if key in actions:
             menu.addAction(title, actions[key])
     applications = menu.addMenu("Aplicativos")

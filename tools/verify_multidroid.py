@@ -11,6 +11,7 @@ from PySide6.QtMultimedia import QSoundEffect
 from PySide6.QtWidgets import QApplication
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
+from r2_companion import __version__
 from r2_companion.app import Companion
 from r2_companion.core.config import Settings
 from r2_companion.pet.state import State
@@ -76,8 +77,8 @@ def main():
     def audio(identifier):
         capture(identifier, "audio", companion.audio_dialog)
         companion.audio_dialog.hide()
-        companion.show_animation_gallery()
-        gallery = companion.gallery_dialog
+        companion.show_garage()
+        gallery = companion.garage_dialog
         gallery.selector.setCurrentIndex(gallery.selector.findData(identifier))
         gallery.animations.setCurrentRow(3)
         area = companion.positioning.screen.availableGeometry()
@@ -89,13 +90,13 @@ def main():
             "timer": companion.positioning.timer.isActive()}
 
     def gallery(identifier):
-        capture(identifier, "gallery", companion.gallery_dialog)
+        capture(identifier, "gallery", companion.garage_dialog)
         capture(identifier, "desktop", companion.window)
         report["profiles"][identifier]["body_angle_during_walk"] = companion.window.body_angle
         report["profiles"][identifier]["walk_observed"] = {"state": companion.controller.state.value,
             "gates": sorted(companion.controller.gates), "position": companion.window.pos().toTuple(),
             "timer": companion.positioning.timer.isActive()}
-        companion.gallery_dialog.hide()
+        companion.garage_dialog.hide()
         companion.show_tools_page(4)
 
     def tools(identifier):
@@ -138,7 +139,7 @@ def main():
         report["movement_timer_after_shutdown"] = bool(getattr(companion.positioning.movement, "timer", None)
                                                        and companion.positioning.movement.timer.isActive())
         report["all_switches_accepted"] = all(r["accepted"] for r in report["switches"])
-        report["version"] = "1.1.0"
+        report["version"] = __version__
         (store.directory / "report.json").write_text(json.dumps(report, indent=2, ensure_ascii=False), encoding="utf-8")
 
     def step():

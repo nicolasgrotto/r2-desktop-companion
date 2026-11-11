@@ -146,6 +146,7 @@ class DroidStudio(QDialog):
         self.animation.clip_finished.connect(lambda token: self.preview.roll_timer.stop())
         self.animations.currentRowChanged.connect(self.animation_selected)
         self.frame_variant.currentIndexChanged.connect(self.show_variant)
+        self.repeat.toggled.connect(self.play)
         self.category.currentIndexChanged.connect(self.filter_animations)
         self.selector.currentIndexChanged.connect(self.load_selected)
 
@@ -221,6 +222,9 @@ class DroidStudio(QDialog):
         state = item.data(Qt.ItemDataRole.UserRole)
         if state not in self.clips:
             return
+        self.frame_variant.blockSignals(True)
+        self.frame_variant.setCurrentIndex(0)
+        self.frame_variant.blockSignals(False)
         self.animation.clips = {state: replace(self.clips[state], loop=self.repeat.isChecked())}
         self.animation.play(state, 1)
         if state == State.WALK and self.profile.renderer == "layered":
@@ -231,6 +235,7 @@ class DroidStudio(QDialog):
         self.animation.stop()
         self.preview.roll_timer.stop()
         self.preview.angle = self.preview.tilt = 0
+        self.preview.update()
 
     def show_variant(self, *_):
         if self.frame_variant.currentData() is None or self.frame_variant.currentData() < 0:
@@ -258,12 +263,6 @@ class DroidStudio(QDialog):
         if not self.clips:
             self.load_selected()
         super().showEvent(event)
-
-
-class AnimationGallery(DroidStudio):
-    def __init__(self, companion):
-        super().__init__(companion, "Galeria de Animações")
-        self.initialize()
 
 
 class DroidGarage(DroidStudio):

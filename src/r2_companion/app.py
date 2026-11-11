@@ -73,7 +73,7 @@ class Companion(QObject):
         self.quiet_active = False
         self._switching_droid = False
         self.droid_error = ""
-        self.garage_dialog = self.audio_dialog = self.gallery_dialog = None
+        self.garage_dialog = self.audio_dialog = None
         self.droids = DroidRegistry(ASSETS)
         identifier = store.settings.active_droid
         if identifier not in self.droids.profiles:
@@ -230,10 +230,6 @@ class Companion(QObject):
     def show_audio_center(self):
         from .ui.droids import AudioCenter
         self.show_droid_dialog("audio_dialog", AudioCenter)
-
-    def show_animation_gallery(self):
-        from .ui.droids import AnimationGallery
-        self.show_droid_dialog("gallery_dialog", AnimationGallery)
 
     def equip_droid(self, identifier, preferences=None):
         if self.closed or self._switching_droid or self.window.dragging:
@@ -549,7 +545,7 @@ class Companion(QObject):
                    "pass_through": lambda: self.set_pass_through(not self.pass_through),
                    "passing": lambda: self.pass_through,
                    "screen": self.move_screen, "exit": self.shutdown, "target": self.open_target}
-        actions.update(garage=self.show_garage, audio=self.show_audio_center, gallery=self.show_animation_gallery)
+        actions.update(garage=self.show_garage, audio=self.show_audio_center)
         actions.update(tasks=lambda: self.show_tools_page(3), notes=lambda: self.show_tools_page(4),
                        updates=self.check_updates, minigames=lambda: self.show_tools_page(self.tools.tabs.indexOf(self.tools.minigames_page)),
                        diagnostics=lambda: self.show_tools_page(self.tools.tabs.indexOf(self.tools.diagnostics_page)))
@@ -693,7 +689,7 @@ class Companion(QObject):
         self.positioning.settle()
         self.closed = True
         self.reactions.close()
-        for dialog in (self.garage_dialog, self.audio_dialog, self.gallery_dialog):
+        for dialog in (self.garage_dialog, self.audio_dialog):
             if dialog is not None:
                 dialog.close()
         if self.positioning.movement:
@@ -720,7 +716,7 @@ class Companion(QObject):
         self.tray.hide()
         self.window.hide()
         for widget in (self.window, self.tools, self.bubble, self.radial, self.apps_panel,
-                       self.locations_panel, self.tray.notice, self.garage_dialog, self.audio_dialog, self.gallery_dialog):
+                       self.locations_panel, self.tray.notice, self.garage_dialog, self.audio_dialog):
             if widget is not None:
                 theme_manager().unregister_tree(widget)
         self.session_events.close()

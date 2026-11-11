@@ -24,7 +24,7 @@ from r2_companion.pet.state import State
 from r2_companion.pet.window import PetWindow
 from r2_companion.pet.positioning import clamp, legal_bounds
 from r2_companion.services.storage import ConfigStore
-from r2_companion.ui.droids import AnimationGallery, AudioCenter, DroidGarage
+from r2_companion.ui.droids import AudioCenter, DroidGarage
 from test_context_v03 import pet
 from test_audio_productivity import audio
 
@@ -286,8 +286,8 @@ def test_garage_preview_changes_neither_active_character_nor_preferences(pet, qa
     garage.close()
 
 
-def test_gallery_filters_actual_clips_can_play_stop_and_show_frames(pet):
-    gallery = AnimationGallery(pet)
+def test_garage_filters_actual_clips_can_play_stop_and_show_frames(pet):
+    gallery = DroidGarage(pet)
     gallery.selector.setCurrentIndex(gallery.selector.findData("spherical_droid"))
     assert gallery.animations.count() == len(gallery.profile.animations)
     gallery.category.setCurrentIndex(gallery.category.findData("Locomoção"))
@@ -496,9 +496,10 @@ def test_shutdown_releases_audio_objects_monitor_hooks_and_theme_subscriptions(p
     assert not audio.findChildren(QSoundEffect)
 
 
-@pytest.mark.parametrize("factory", [DroidGarage, AnimationGallery, AudioCenter])
-def test_new_dialogs_fit_small_work_areas_without_clipping_controls(pet, qapp, factory):
+@pytest.mark.parametrize("factory,identifier", [(DroidGarage, "r2_default"), (DroidGarage, "spherical_droid"), (AudioCenter, "r2_default")])
+def test_new_dialogs_fit_small_work_areas_without_clipping_controls(pet, qapp, factory, identifier):
     dialog = factory(pet)
+    dialog.selector.setCurrentIndex(dialog.selector.findData(identifier))
     dialog.resize(480, 360)
     dialog.show()
     qapp.processEvents()
