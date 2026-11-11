@@ -1,6 +1,7 @@
 import sys
 
 import pytest
+from PySide6.QtCore import QCoreApplication, QEvent
 from PySide6.QtWidgets import QApplication
 
 
@@ -18,6 +19,8 @@ def slot_errors(monkeypatch):
     errors = []
     monkeypatch.setattr(sys, "excepthook", lambda kind, value, tb: errors.append(value))
     yield
+    if QApplication.instance() is not None:
+        QCoreApplication.sendPostedEvents(None, QEvent.Type.DeferredDelete)
     assert not errors, f"Exceção em callback Qt: {errors}"
 
 

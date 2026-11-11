@@ -86,12 +86,16 @@ class PetWindow(QWidget):
             return
         self.visual = None
         self.original_frame = frame
-        if self.accent != "blue" and not frame.isNull():
-            key = (frame.cacheKey(), self.accent)
+        if (self.accent != "blue" or self.illumination) and not frame.isNull():
+            key = (frame.cacheKey(), self.accent, self.illumination)
             if key not in self.tinted_frames:
-                colors = {"teal": ("#188b87", "#7be9d4"), "violet": ("#7855b8", "#c3a3ff"),
-                          "amber": ("#bc8128", "#ffdc8e")}[self.accent]
-                palette = {QColor("#286bc0").rgb(): QColor(colors[0]).rgba(), QColor("#71d1ee").rgb(): QColor(colors[1]).rgba()}
+                palette = {}
+                if self.accent != "blue":
+                    colors = {"teal": ("#188b87", "#7be9d4"), "violet": ("#7855b8", "#c3a3ff"),
+                              "amber": ("#bc8128", "#ffdc8e")}[self.accent]
+                    palette = {QColor("#286bc0").rgb(): QColor(colors[0]).rgba(), QColor("#71d1ee").rgb(): QColor(colors[1]).rgba()}
+                if self.illumination:
+                    palette[QColor("#edac4b").rgb()] = QColor(self.illumination).rgba()
                 picture = frame.toImage()
                 for y in range(picture.height()):
                     for x in range(picture.width()):
@@ -152,11 +156,6 @@ class PetWindow(QWidget):
                          self.head_offset, self.illumination, self.decoration)
         else:
             painter.drawPixmap(self.rect(), self.frame)
-            if self.illumination:
-                painter.save()
-                painter.scale(self.width() / 64, self.height() / 64)
-                painter.fillRect(39, 17, 2, 2, QColor(self.illumination))
-                painter.restore()
         if not self.hologram.isNull():
             side = max(16, self.width() // 5)
             painter.drawPixmap(self.width() - side - 4, 4, side, side, self.hologram)

@@ -6,7 +6,7 @@ import time
 from PySide6.QtCore import QRectF, Qt, QTimer, Signal
 from PySide6.QtGui import QColor, QPainter, QPen, QPixmap
 from PySide6.QtWidgets import (QCheckBox, QComboBox, QDialog, QFormLayout, QHBoxLayout, QListWidget,
-                              QPushButton, QSlider, QSpinBox, QVBoxLayout, QWidget)
+                              QPushButton, QScrollArea, QSlider, QSpinBox, QVBoxLayout, QWidget)
 
 from ..droids.preferences import defaults_for, preferences_for
 from ..droids.themes import color, theme_manager
@@ -66,11 +66,15 @@ class PreviewCanvas(QWidget):
         elif not self.frame.isNull():
             p.setRenderHint(QPainter.RenderHint.SmoothPixmapTransform, False)
             frame = self.frame
-            if self.appearance != "blue":
+            if self.appearance != "blue" or self.illumination:
                 palette = {"teal": ("#188b87", "#7be9d4"), "violet": ("#7855b8", "#c3a3ff"), "amber": ("#bc8128", "#ffdc8e")}
-                first, second = palette[self.appearance]
                 picture = frame.toImage()
-                mapping = {QColor("#286bc0").rgba(): QColor(first).rgba(), QColor("#71d1ee").rgba(): QColor(second).rgba()}
+                mapping = {}
+                if self.appearance != "blue":
+                    first, second = palette[self.appearance]
+                    mapping = {QColor("#286bc0").rgba(): QColor(first).rgba(), QColor("#71d1ee").rgba(): QColor(second).rgba()}
+                if self.illumination:
+                    mapping[QColor("#edac4b").rgba()] = QColor(self.illumination).rgba()
                 for y in range(picture.height()):
                     for x in range(picture.width()):
                         value = picture.pixel(x, y)
@@ -78,9 +82,6 @@ class PreviewCanvas(QWidget):
                             picture.setPixel(x, y, mapping[value])
                 frame = QPixmap.fromImage(picture)
             p.drawPixmap(rect.toRect(), frame)
-            if self.illumination:
-                p.fillRect(QRectF(rect.x() + rect.width() * 39 / 64, rect.y() + rect.height() * 17 / 64,
-                                 rect.width() * 2 / 64, rect.height() * 2 / 64), QColor(self.illumination))
 
 
 class DroidStudio(QDialog):
@@ -94,7 +95,14 @@ class DroidStudio(QDialog):
         self.setWindowTitle(title + " · R2 Companion")
         self.resize(830, 740)
         apply_theme(self)
-        self.layout_main = QVBoxLayout(self)
+        outer = QVBoxLayout(self)
+        outer.setContentsMargins(0, 0, 0, 0)
+        self.scroll_area = QScrollArea()
+        self.scroll_area.setWidgetResizable(True)
+        outer.addWidget(self.scroll_area)
+        content = QWidget()
+        self.scroll_area.setWidget(content)
+        self.layout_main = QVBoxLayout(content)
         self.layout_main.setContentsMargins(24, 20, 24, 20)
         self.layout_main.addWidget(header(title, "Explore a identidade e as animações de cada companheiro."))
         self.selector = QComboBox()
@@ -362,7 +370,13 @@ class AudioCenter(QDialog):
         self.setWindowTitle("Central de Áudio · R2 Companion")
         self.resize(700, 660)
         apply_theme(self)
-        layout = QVBoxLayout(self)
+        outer = QVBoxLayout(self)
+        self.scroll_area = QScrollArea()
+        self.scroll_area.setWidgetResizable(True)
+        outer.addWidget(self.scroll_area)
+        content = QWidget()
+        self.scroll_area.setWidget(content)
+        layout = QVBoxLayout(content)
         layout.addWidget(header("Central de Áudio", "Compare vozes e salve preferências individuais."))
         self.selector = QComboBox()
         for profile in companion.droids.profiles.values():

@@ -15,7 +15,10 @@ environment["PYINSTALLER_CONFIG_DIR"] = str(root / ".runtime-buildcache")
 parser = argparse.ArgumentParser()
 parser.add_argument("--repository", default=os.environ.get("GITHUB_REPOSITORY"))
 parser.add_argument("--package-only", action="store_true")
+parser.add_argument("--artifact-label")
 args = parser.parse_args()
+if args.artifact_label and not re.fullmatch(r"[a-z0-9][a-z0-9-]{0,39}", args.artifact_label):
+    parser.error("Rótulo de artefato inválido.")
 repository = args.repository
 if not repository:
     git = ["git", "-c", f"safe.directory={root.as_posix()}"]
@@ -37,18 +40,18 @@ if os.environ.get("GITHUB_REF_TYPE") == "tag" and os.environ.get("GITHUB_REF_NAM
     parser.error("A tag deve corresponder a versao do projeto.")
 if not args.package_only:
     result = subprocess.call([sys.executable, "-m", "PyInstaller", "--noconfirm",
-                                 "--distpath", str(root / "dist" / version),
-                                 "--workpath", str(root / "build" / version),
+                                 "--distpath", str(root / "dist" / (version + ("-" + args.artifact_label if args.artifact_label else ""))),
+                                 "--workpath", str(root / "build" / (version + ("-" + args.artifact_label if args.artifact_label else ""))),
                                  str(root / "packaging/R2Companion.spec")],
                                 cwd=root, env=environment)
     if result:
         raise SystemExit(result)
-directory = root / "dist" / version / "R2Companion"
+directory = root / "dist" / (version + ("-" + args.artifact_label if args.artifact_label else "")) / "R2Companion"
 if not (directory / "R2Companion.exe").is_file():
     raise SystemExit("Executavel nao encontrado.")
 (directory / "release.json").write_text(json.dumps({"schema_version": 1, "version": version,
                                                    "repository": repository}, indent=2) + "\n", encoding="utf-8")
-archive = root / "dist/R2Companion-Windows-x64.zip"
+archive = root / ("dist/R2Companion-Windows-x64" + ("-" + args.artifact_label if args.artifact_label else "") + ".zip")
 with ZipFile(archive, "w", compression=ZIP_DEFLATED, compresslevel=6) as output:
     for path in sorted(directory.rglob("*")):
         if path.is_symlink():

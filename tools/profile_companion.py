@@ -18,6 +18,7 @@ from r2_companion.services.storage import ConfigStore
 parser = argparse.ArgumentParser()
 parser.add_argument("--seconds", type=int, default=60)
 parser.add_argument("--data-dir", type=Path, default=Path(".runtime-profile"))
+parser.add_argument("--droid", default="r2_default")
 args = parser.parse_args()
 if not 15 <= args.seconds <= 3600:
     parser.error("Use 15–3600 segundos")
@@ -28,6 +29,9 @@ if not store.acquire():
     raise SystemExit("Outra medição está em execução")
 store.apply(Settings(suppress_fullscreen=False))
 companion = Companion(app, store)
+if args.droid != companion.profile.id and not companion.equip_droid(args.droid):
+    companion.shutdown()
+    raise SystemExit(companion.droid_error)
 companion.idle_timer.stop()
 companion.controller.update_inactivity(0)
 process = psutil.Process()
@@ -71,13 +75,15 @@ def sample():
                                "average_machine_cpu_percent": sum(r["machine_cpu_percent"] for r in phase_records) / max(1, len(phase_records)),
                                "peak_working_set_bytes": max((r["working_set_bytes"] for r in phase_records), default=0),
                                "peak_private_bytes": max((r["private_bytes"] or 0 for r in phase_records), default=0)}
-        output = {"duration_seconds": elapsed, "logical_cpus": psutil.cpu_count(),
+        output = {"duration_seconds": elapsed, "logical_cpus": psutil.cpu_count(), "droid": companion.profile.id,
                   "summary": summaries, "samples": records,
                   "active_core_timers_after_shutdown": sum(timer.isActive() for timer in
                     (companion.animation.timer, companion.behavior.timer, companion.positioning.timer,
                      companion.countdown.timer, companion.monitor.timer, companion.idle_timer,
                      companion.desktop_timer, companion.awareness.timer, companion.productivity.timer,
                      companion.greeting_timer, companion.tray.notice.timer, companion.store.timer))}
+        output["movement_timer_after_shutdown"] = bool(getattr(companion.positioning.movement, "timer", None)
+                                                       and companion.positioning.movement.timer.isActive())
         (store.directory / "profile.json").write_text(json.dumps(output, indent=2), encoding="utf-8")
 
 

@@ -112,6 +112,7 @@ class AudioService(QObject):
     def release_bank(self, bank):
         for effect in self.bank_effects(bank):
             effect.stop()
+            effect.setSource(QUrl())
             if hasattr(effect, "deleteLater"):
                 effect.deleteLater()
         if bank["directory"]:

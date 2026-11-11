@@ -13,6 +13,17 @@ Qt com progresso real, perfis de personalidade, carinho, cores, diagnóstico e
 Minigames com Duel of Fates. Preferências, tarefas, notas e favoritos anteriores
 continuam compatíveis. O mascote preserva as regras de silêncio, sono e tela cheia.
 
+**Evolução local multi-droides (mantendo 1.1.0):** o menu oferece Droid Garage,
+Central de Áudio e Galeria de Animações. Equipe o original, Vesper (grafite/bronze)
+ou Orbita (esférico branco/laranja) sem reiniciar. Cada um tem voz, personalidade,
+personalizações e tema próprios, aplicados às ferramentas, configurações, menus
+e atualização. Orbita rola com corpo e cabeça independentes. Pré-visualizar não
+equipa nem altera preferências. A arte nova é pixel art original procedural com
+aprovação artística final pendente; o atlas provisório anterior foi preservado.
+
+Consulte a [arquitetura multi-droides](MULTI_DROID_ARCHITECTURE.md), a
+[auditoria da base](MULTI_DROID_AUDIT.md) e o [relatório de validação](MULTI_DROID_REPORT.md).
+
 ## Executar pelo código
 
 Requer Python 3.12+ x64. Combinação exercitada: Python 3.13.12 e Qt/PySide6 6.10.2

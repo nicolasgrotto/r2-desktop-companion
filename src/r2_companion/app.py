@@ -47,7 +47,7 @@ from .ui.theme import fit_dialog, icon
 from .droids.profiles import DroidRegistry
 from .droids.preferences import preferences_for, select_droid
 from .droids.controller import DroidController
-from .droids.movement import create_movement, MOVEMENT_CONTROLLERS
+from .droids.movement import create_movement
 from .droids.visuals import load_profile_clips
 from .droids.themes import color, theme_manager
 
@@ -78,18 +78,21 @@ class Companion(QObject):
         identifier = store.settings.active_droid
         if identifier not in self.droids.profiles:
             store.notices.append("Personagem salvo indisponível; o padrão foi restaurado e suas preferências foram preservadas.")
-            identifier = "r2_default"
-        self.droids.active_id = identifier
-        self.profile = self.droids.active
-        try:
-            clips = load_profile_clips(self.profile)
-            if self.profile.movement not in MOVEMENT_CONTROLLERS:
-                raise ValueError("Controlador de locomoção indisponível.")
-        except (OSError, ValueError, RuntimeError):
-            store.notices.append("Recursos do personagem indisponíveis; usando o padrão.")
-            self.droids.active_id = "r2_default"
-            self.profile = self.droids.active
-            clips = load_profile_clips(self.profile)
+            identifier = self.droids.default_id
+        candidates = [identifier] + [key for key in self.droids.profiles if key != identifier]
+        for candidate in candidates:
+            try:
+                profile = self.droids.get(candidate)
+                clips = load_profile_clips(profile)
+                self.audio = AudioService(ASSETS / "sounds", profile=profile.audio)
+            except (OSError, ValueError, RuntimeError, KeyError, TypeError):
+                store.notices.append("Recursos de um personagem indisponíveis; usando outro perfil válido.")
+                continue
+            self.droids.active_id = candidate
+            self.profile = profile
+            break
+        else:
+            raise ValueError("Nenhum personagem possui recursos válidos para iniciar.")
         store.apply(select_droid(store.settings, self.profile), notify=False)
         self.window = PetWindow()
         self.positioning = Positioner(self.window)
@@ -103,7 +106,6 @@ class Companion(QObject):
         self.locations_panel = LaunchpadDialog("locations")
         self.countdown = Countdown(uptime)
         self.monitor = SystemMonitor(SystemInfo())
-        self.audio = AudioService(ASSETS / "sounds", profile=self.profile.audio)
         self.droid_controller = DroidController(self.droids, self.audio, self.window)
         self.productivity = ProductivityStore(store.directory, store.read_only)
         self.awareness = ContextReactions(self.controller, self.positioning, store, self.audio)
@@ -339,6 +341,8 @@ class Companion(QObject):
             self.bubble.present(message, self.window)
 
     def warning(self, message):
+        if self.closed:
+            return
         log.warning("%s", message)
         if message in self.warning_history:
             return
@@ -639,6 +643,7 @@ class Companion(QObject):
         dialog = self.settings_dialog
         self.settings_dialog = None
         if dialog is not None:
+            theme_manager().unregister_tree(dialog)
             dialog.deleteLater()
         self.controller.set_gate("settings", False)
 
@@ -714,6 +719,10 @@ class Companion(QObject):
             self.settings_dialog.close()
         self.tray.hide()
         self.window.hide()
+        for widget in (self.window, self.tools, self.bubble, self.radial, self.apps_panel,
+                       self.locations_panel, self.tray.notice, self.garage_dialog, self.audio_dialog, self.gallery_dialog):
+            if widget is not None:
+                theme_manager().unregister_tree(widget)
         self.session_events.close()
         self.qt_app.removeNativeEventFilter(self.session_events)
         self.qt_app.aboutToQuit.disconnect(self.shutdown)

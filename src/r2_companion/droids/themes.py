@@ -5,9 +5,9 @@ from weakref import WeakKeyDictionary
 
 from PySide6.QtCore import QObject, QTimer, Signal
 from PySide6.QtGui import QColor, QPalette
-from PySide6.QtWidgets import QApplication
+from PySide6.QtWidgets import QApplication, QWidget
 
-from .profiles import DroidTheme
+from .profiles import DroidRegistry
 
 COLOR_TOKENS = {}
 for token, colors in {
@@ -36,8 +36,8 @@ class ThemeManager(QObject):
 
     def __init__(self):
         super().__init__()
-        path = Path(__file__).resolve().parents[1] / "assets/droids/r2_default/profile.json"
-        self.active = DroidTheme.parse(json.loads(path.read_text(encoding="utf-8"))["theme"])
+        assets = Path(__file__).resolve().parents[1] / "assets"
+        self.active = DroidRegistry(assets).active.theme
         self.widgets = WeakKeyDictionary()
 
     def render(self, template, theme=None):
@@ -56,17 +56,27 @@ class ThemeManager(QObject):
         widget.setStyleSheet(self.render(template, theme_for(widget)))
 
     def refresh(self):
+        refreshed = set()
         for widget, template in list(self.widgets.items()):
             try:
                 widget.setStyleSheet(self.render(template, theme_for(widget)))
-                widget.update()
+                from ..ui.theme import refresh_icons
+                for child in (widget, *widget.findChildren(QWidget)):
+                    if child not in refreshed:
+                        refreshed.add(child)
+                        refresh_icons(child)
+                        child.update()
             except RuntimeError:
                 self.widgets.pop(widget, None)
-        for widget in QApplication.allWidgets():
-            from ..ui.theme import refresh_icons
-            refresh_icons(widget)
-            widget.update()
         self.changed.emit(self.active)
+
+    def unregister_tree(self, root):
+        for widget in list(self.widgets):
+            try:
+                if widget is root or root.isAncestorOf(widget):
+                    self.widgets.pop(widget, None)
+            except RuntimeError:
+                self.widgets.pop(widget, None)
 
     def apply(self, theme):
         self.active = theme

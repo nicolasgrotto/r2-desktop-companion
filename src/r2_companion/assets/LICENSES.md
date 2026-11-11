@@ -37,3 +37,16 @@ O símbolo de duelo em `ui/theme.py` é um desenho vetorial original do projeto.
 Nenhuma imagem, trilha ou recurso do Duel of Fates foi copiado ou empacotado;
 o catálogo abre somente a URL informada no navegador padrão. As variações de cor
 reutilizam o atlas original, preservando forma, transparência e animações.
+
+## Multi-droides — evolução local 1.1.0
+
+Em 12/11/2026, `tools/generate_droids.py` produziu os recursos de Vesper e Orbita
+em `droids/dark_astromech` e `droids/spherical_droid`. São desenhos originais em
+pixel art procedural, sem insígnias, logotipos ou arquivos extraídos de franquias.
+O padrão referencia o atlas anterior, preservado. Os novos desenhos têm aprovação
+artística final pendente, registrada também nos perfis e interfaces.
+
+Cada novo personagem possui 12 sílabas PCM originais (mono, 22050 Hz, 16 bits),
+geradas por síntese matemática, sem samples. As frases usam o compositor existente
+com mapeamentos próprios; efeitos comuns continuam sendo os originais do projeto.
+A definição de licença de distribuição continua a cargo do proprietário.

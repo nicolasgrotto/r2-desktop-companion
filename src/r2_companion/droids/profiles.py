@@ -167,8 +167,10 @@ class DroidRegistry:
                 self.sources[profile.id] = path
             except (OSError, ValueError, KeyError, TypeError, AttributeError) as error:
                 self.errors[path.parent.name] = str(error)
-        if "r2_default" not in self.profiles:
-            raise ValueError("O perfil padrão não está disponível.")
+        if not self.profiles:
+            raise ValueError("Nenhum perfil de droide está disponível.")
+        self.default_id = "r2_default" if "r2_default" in self.profiles else next(iter(self.profiles))
+        self.active_id = self.default_id
 
     def get(self, identifier):
         if identifier not in self.profiles:
