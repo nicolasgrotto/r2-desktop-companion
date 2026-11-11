@@ -31,10 +31,11 @@ jobs:
           $version = python -c "import tomllib; print(tomllib.load(open('pyproject.toml', 'rb'))['project']['version'])"
           $executable = Join-Path $PWD "dist/$version/R2Companion/R2Companion.exe"
           $data = Join-Path $PWD '.runtime-ci-exe'
-          $process = Start-Process -FilePath $executable -ArgumentList @('--data-dir', ('"{0}"' -f $data), '--smoke-test', '--smoke-droids') -PassThru -WindowStyle Hidden
+          $process = Start-Process -FilePath $executable -ArgumentList @('--data-dir', ('"{0}"' -f $data), '--smoke-test', '--smoke-droids', '--smoke-navigation', '--smoke-seconds', '9') -PassThru -WindowStyle Hidden
           if (-not $process.WaitForExit(60000)) { throw 'Smoke timeout' }
           if ($process.ExitCode -ne 0) { throw "Smoke exit code $($process.ExitCode)" }
           $report = Get-Content (Join-Path $data 'smoke.json') -Raw | ConvertFrom-Json
+          if ($null -eq $report.navigation -or @($report.navigation.PSObject.Properties).Count -lt 10 -or @($report.navigation.PSObject.Properties | Where-Object { $_.Value -ne $true }).Count -ne 0) { throw 'Navigation smoke failed' }
           if ($report.active_timers_after_shutdown -ne 0) { throw 'Timers remained active' }
           if ($report.movement_timer_after_shutdown) { throw 'Movement timer remained active' }
           if ($report.droids.Count -ne 3 -or @($report.droids | Where-Object { -not $_.accepted }).Count -ne 0) { throw 'Droid smoke failed' }
