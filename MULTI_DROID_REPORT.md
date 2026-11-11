@@ -43,7 +43,9 @@ adaptados: configurações, ferramentas, áudio, tarefas, notas, diagnóstico,
 minigames, favoritos, menus, roda, balões, notificações e hologramas.
 
 Garagem e galeria possuem tema local de prévia. A central de atualização mantém
-seu processo separado e acompanha o ID persistido por leitura a cada 750 ms.
+seu processo separado e acompanha o ID persistido por eventos do QFileSystemWatcher,
+sem consulta periódica. Arquivo e diretório são observados para suportar gravações
+atômicas; eventos são agrupados no event loop e o observador é liberado ao fechar.
 Pares de texto/fundo têm validação de contraste mínimo 4,5:1; o contraste dos títulos
 escuros também tem regressão específica. As interfaces anteriores não foram refeitas.
 
@@ -167,16 +169,15 @@ O ARCHITECTURE.md local, não rastreado no início, permanece intacto e fora dos
 
 ## M. Commits
 
-| Hash | Mensagem | Horário real, America/Sao_Paulo |
+| Hash | Mensagem | Data registrada no Git, America/Sao_Paulo |
 | --- | --- | --- |
-| f0c442c | feat(droids): add profiles original characters and spherical locomotion | 12/11/2026 14:37:30 −03:00 |
-| 9e52370 | feat(ui): integrate Droid Garage audio center and dynamic themes | 12/11/2026 14:48:37 −03:00 |
+| f0cee0d | feat(droids): add profiles original characters and spherical locomotion | 11/11/2026 14:37:30 −03:00 |
+| 04642ca | feat(ui): integrate Droid Garage audio center and dynamic themes | 11/11/2026 14:48:37 −03:00 |
+| 51aba86 | test(droids): validate resilience packaging and document multi-droid integration | 11/11/2026 15:14:58 −03:00 |
 
-O commit que introduz este relatório reúne validação, robustez e documentação.
-Seu hash e horário constam da resposta final e podem ser consultados com:
-`git log -1 --format="%h %ai %s" -- MULTI_DROID_REPORT.md`.
-As datas não foram retroativas: são horários reais de execução em 12/11,
-posteriores ao commit-base de 10/11 às 11:25, com intervalos de 10–45 minutos.
+As datas de autor e committer desses três commits foram ajustadas para 11/11
+por solicitação do usuário, preservando horários e conteúdo. A execução e os
+artefatos descritos neste relatório foram produzidos em 12/11.
 
 ## N. Pendências reais
 
@@ -211,3 +212,24 @@ posteriores ao commit-base de 10/11 às 11:25, com intervalos de 10–45 minutos
 - `.runtime-profile-multidroid-spherical_droid/profile.json`.
 - `.runtime-exe-multidroid-final/smoke.json` e capturas do executável.
 - `.runtime-multidroid-delivery-validation.log`.
+
+## Ajuste posterior — atualização de tema por eventos
+
+A consulta periódica de 750 ms foi substituída por QFileSystemWatcher. A central
+continua em outro processo e recebe notificações de arquivo/diretório. O arquivo
+é observado novamente após substituição atômica; eventos são agrupados em uma
+passagem do event loop. Não há timer periódico nem leitura recorrente em repouso.
+Alterações em outros documentos do diretório não provocam nova leitura do JSON
+de configuração quando sua assinatura permanece igual. Fechar remove os watches.
+
+Cinco testes novos cobrem gravações atômicas repetidas por outro processo,
+ausência de polling/leitura de JSON inalterado, corrupção/remoção/recriação,
+criação posterior do diretório e encerramento. Resultado integral: **299 testes
+aprovados em 132,22 s**. Log: `.runtime-tests-theme-events-full.log`.
+
+Build separado, sem substituir o pacote anterior:
+`dist/R2Companion-Windows-x64-multidroid-events.zip`.
+PyInstaller terminou com saída 0. Log: `.runtime-build-theme-events.log`.
+SHA-256: `a03cc1b72fd640d3f3304d9e1fcbad7000214f4734b841e0fdc6e6b338fcce04`.
+O EXE desse build equipou os três personagens no smoke test e encerrou com zero
+timers centrais ativos. Evidência: `.runtime-exe-theme-events/smoke.json`.

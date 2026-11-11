@@ -131,9 +131,13 @@ Ferramentas, tarefas, notas, diagnóstico, minigames, favoritos, menus, balões 
 Central de Áudio acompanham o equipado. Garagem e galeria usam um override local
 do tema selecionado para prévia, sem mudar o tema global.
 
-A Central de Atualização continua em processo separado. Um watcher de leitura
-observa o ID persistido a cada 750 ms, atualiza tema e personagem do cabeçalho,
-sem assumir o lock ou escrever configurações. Consulta/download/SHA-256/instalação/
+A Central de Atualização continua em processo separado. QFileSystemWatcher recebe
+eventos de alteração do arquivo e do diretório de configuração, atualizando tema
+e personagem do cabeçalho sem polling. A observação do diretório permite rearmar
+o arquivo após substituições atômicas pelo QSaveFile. Um timer single-shot de 0 ms
+agrupa eventos na próxima passagem do event loop; ele permanece parado em repouso.
+Uma assinatura de arquivo evita reler JSON quando outro documento do diretório muda.
+O observador não assume o lock nem escreve configurações. Consulta/download/SHA-256/instalação/
 backup/reinício continuam nos componentes anteriores.
 
 Garagem e Galeria compartilham DroidStudio e um AnimationManager de prévia.

@@ -361,7 +361,7 @@ def test_update_center_watcher_tracks_persisted_theme_without_taking_lock(pet):
     theme_manager().apply(pet.droids.get("r2_default").theme)
     watcher.refresh()
     assert watcher.last_id == "dark_astromech" and theme_manager().active == pet.profile.theme
-    watcher.timer.stop()
+    watcher.close()
 
 
 def test_restart_and_corrupt_configuration_preserve_profiles_and_tools(pet, qapp):

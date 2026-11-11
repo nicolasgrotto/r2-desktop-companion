@@ -3,7 +3,7 @@ from pathlib import Path
 import re
 from weakref import WeakKeyDictionary
 
-from PySide6.QtCore import QObject, QTimer, Signal
+from PySide6.QtCore import QFileSystemWatcher, QObject, QTimer, Signal
 from PySide6.QtGui import QColor, QPalette
 from PySide6.QtWidgets import QApplication, QWidget
 
@@ -124,22 +124,51 @@ class PersistedThemeWatcher(QObject):
 
     def __init__(self, directory, assets, parent=None):
         super().__init__(parent)
-        self.directory, self.assets = directory, assets
+        self.directory, self.assets = Path(directory).resolve(), assets
         self.last_id = None
+        self.last_stamp = None
+        self.closed = False
+        self.watcher = QFileSystemWatcher(self)
+        self.watcher.fileChanged.connect(self.queue_refresh)
+        self.watcher.directoryChanged.connect(self.queue_refresh)
         self.timer = QTimer(self)
-        self.timer.setInterval(750)
+        self.timer.setSingleShot(True)
+        self.timer.setInterval(0)
         self.timer.timeout.connect(self.refresh)
         self.refresh()
-        self.timer.start()
+
+    def queue_refresh(self, *_):
+        if not self.closed:
+            self.timer.start()
+
+    def sync_paths(self):
+        directory = self.directory
+        while not directory.is_dir() and directory != directory.parent:
+            directory = directory.parent
+        path = self.directory / "config.json"
+        desired = {str(directory)}
+        if path.is_file():
+            desired.add(str(path))
+        current = set(self.watcher.directories() + self.watcher.files())
+        if current - desired:
+            self.watcher.removePaths(sorted(current - desired))
+        if desired - current:
+            self.watcher.addPaths(sorted(desired - current))
 
     def refresh(self):
+        if self.closed:
+            return
         from ..core.config import Settings
         from .profiles import DroidRegistry
         try:
+            self.sync_paths()
             path = self.directory / "config.json"
-            if path.stat().st_size > 1024 * 1024:
+            stat = path.stat()
+            stamp = (stat.st_ino, stat.st_mtime_ns, stat.st_size)
+            if stat.st_size > 1024 * 1024 or stamp == self.last_stamp:
                 return
             settings = Settings.parse(json.loads(path.read_text(encoding="utf-8")))
+            self.last_stamp = stamp
             if settings.active_droid != self.last_id:
                 registry = DroidRegistry(self.assets)
                 profile = registry.get(settings.active_droid)
@@ -148,3 +177,10 @@ class PersistedThemeWatcher(QObject):
                 self.profile_changed.emit(profile)
         except (OSError, ValueError, KeyError, TypeError):
             pass
+
+    def close(self):
+        self.closed = True
+        self.timer.stop()
+        paths = self.watcher.files() + self.watcher.directories()
+        if paths:
+            self.watcher.removePaths(paths)

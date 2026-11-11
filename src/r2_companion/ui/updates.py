@@ -303,7 +303,7 @@ class UpdateCenter(QDialog):
             event.ignore()
             return
         self.startup.stop()
-        self.theme_watcher.timer.stop()
+        self.theme_watcher.close()
         self.poll.stop()
         self.animation.stop()
         event.accept()
