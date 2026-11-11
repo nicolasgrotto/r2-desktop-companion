@@ -17,7 +17,7 @@ from .theme import apply_theme, card, header, icon, label
 class SettingsDialog(QDialog):
     applied = Signal(object, object)
 
-    def __init__(self, settings: Settings, startup_available: bool, startup_enabled: bool, startup_status: str):
+    def __init__(self, settings: Settings, startup_available: bool, startup_enabled: bool, startup_status: str, droid_profile=None):
         super().__init__()
         self.setWindowTitle("Configurações · R2 Companion")
         self.resize(720, 740)
@@ -55,6 +55,9 @@ class SettingsDialog(QDialog):
             self.appearance.addItem(title, value)
         self.appearance.setCurrentIndex(self.appearance.findData(settings.appearance))
         form.addRow("Detalhes do robô", self.appearance)
+        if droid_profile is not None and "appearance" not in droid_profile.customization:
+            self.appearance.setEnabled(False)
+            self.appearance.setToolTip("As personalizações deste personagem estão no Droid Garage.")
         self.frequency = QComboBox()
         for caption, value in (("Desativado", "off"), ("Discreto", "quiet"), ("Normal", "normal")):
             self.frequency.addItem(caption, value)

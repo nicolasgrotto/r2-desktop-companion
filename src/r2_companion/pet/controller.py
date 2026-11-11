@@ -37,6 +37,9 @@ class PetController(QObject):
     def start(self):
         self.enter(State.IDLE)
 
+    def supports(self, state):
+        return not hasattr(self.animation, "clips") or state in self.animation.clips
+
     def enter(self, state: State):
         if self.closed:
             return
@@ -84,14 +87,14 @@ class PetController(QObject):
             self.behavior.accepted(state)
 
     def react(self, state: State) -> bool:
-        if self.closed or self.gates or self.inactive or self.state == State.SLEEP:
+        if self.closed or self.gates or self.inactive or self.state == State.SLEEP or not self.supports(state):
             return False
         self.behavior.defer_walk()
         self.enter(state)
         return True
 
     def request(self, state: State) -> bool:
-        if self.closed or not can_request(self.state, state, bool(self.gates)):
+        if self.closed or not self.supports(state) or not can_request(self.state, state, bool(self.gates)):
             if state == State.WALK:
                 self.next_destination = None
             return False

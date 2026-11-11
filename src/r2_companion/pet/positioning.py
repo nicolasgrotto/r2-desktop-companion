@@ -68,6 +68,7 @@ class Positioner(QObject):
         self.screen = None
         self.movement = None
         self.aspect = 1.0
+        self.tracked_screens = []
         app = QGuiApplication.instance()
         app.screenAdded.connect(self.add_screen)
         app.screenRemoved.connect(self.reconcile)
@@ -75,6 +76,7 @@ class Positioner(QObject):
             self.add_screen(screen, reconcile=False)
 
     def add_screen(self, screen, reconcile=True):
+        self.tracked_screens.append(screen)
         screen.availableGeometryChanged.connect(self.reconcile)
         screen.logicalDotsPerInchChanged.connect(self.reconcile)
         if reconcile:
@@ -176,3 +178,16 @@ class Positioner(QObject):
         self.timer.stop()
         if self.movement:
             self.movement.stop()
+
+    def close(self):
+        self.stop()
+        app = QGuiApplication.instance()
+        app.screenAdded.disconnect(self.add_screen)
+        app.screenRemoved.disconnect(self.reconcile)
+        for screen in self.tracked_screens:
+            try:
+                screen.availableGeometryChanged.disconnect(self.reconcile)
+                screen.logicalDotsPerInchChanged.disconnect(self.reconcile)
+            except RuntimeError:
+                pass
+        self.tracked_screens.clear()

@@ -1,11 +1,14 @@
 from PySide6.QtWidgets import QMenu
-from .theme import STYLE
+from .theme import apply_theme
 
 
 def create_menu(parent, actions: dict, settings, screens, tray_available: bool) -> QMenu:
     menu = QMenu(parent)
-    menu.setStyleSheet(STYLE)
+    apply_theme(menu)
     menu.addAction("Interagir", actions["interact"])
+    for key, title in (("garage", "Droid Garage"), ("audio", "Central de Áudio"), ("gallery", "Galeria de Animações")):
+        if key in actions:
+            menu.addAction(title, actions[key])
     applications = menu.addMenu("Aplicativos")
     for entry in settings.applications:
         applications.addAction(entry.label, lambda checked=False, t=entry: actions["target"](t))

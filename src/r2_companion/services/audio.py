@@ -8,7 +8,7 @@ from PySide6.QtCore import QObject, QUrl
 from PySide6.QtMultimedia import QMediaDevices, QSoundEffect
 
 from ..core.config import AudioSettings
-from .vocalizations import compose_phrases
+from .vocalizations import compose_phrases, read_pcm
 
 log = logging.getLogger(__name__)
 CATEGORY_INTERVALS = {"idle": 90, "movement": 12, "reactions": 3, "sleep": 3, "notifications": 1}
@@ -81,6 +81,7 @@ class AudioService(QObject):
         try:
             for category in CATEGORY_INTERVALS:
                 for path in sorted(profile.sounds.glob(f"{category}/*.wav")):
+                    read_pcm(path, maximum=22050)
                     effect = self.factory(self)
                     bank["effects"].setdefault(category, []).append((path.stem, effect))
                     effect.setLoopCount(1)
@@ -201,11 +202,11 @@ class AudioService(QObject):
             effect.stop()
 
     def close(self):
+        if self.closed:
+            return
         self.closed = True
         self.stop()
         self.clear_preview()
-        if self.voice_directory is not None:
-            try:
-                self.voice_directory.cleanup()
-            except OSError:
-                log.warning("Cache de voz será limpo pelo Windows")
+        bank = {"id": self.profile_id, "effects": self.effects, "voices": self.voices, "directory": self.voice_directory}
+        self.effects, self.voices, self.voice_directory = {}, {}, None
+        self.release_bank(bank)

@@ -3,6 +3,7 @@ from PySide6.QtWidgets import (QApplication, QCheckBox, QHBoxLayout, QLineEdit,
                               QListWidget, QListWidgetItem, QPlainTextEdit, QPushButton, QVBoxLayout, QWidget)
 
 from .theme import label
+from ..droids.themes import styled
 
 
 class NoteEditor(QPlainTextEdit):
@@ -19,7 +20,7 @@ class NoteEditor(QPlainTextEdit):
 
 
 def style_list(widget):
-    widget.setStyleSheet("QListWidget { background: white; color: #193b57; border: 1px solid #caddea; border-radius: 9px; }"
+    styled(widget, "QListWidget { background: white; color: #193b57; border: 1px solid #caddea; border-radius: 9px; }"
                         "QListWidget::item { padding: 11px; border-bottom: 1px solid #edf3f9; }"
                         "QListWidget::item:selected { background: #e4effa; color: #193b57; }")
 
@@ -109,7 +110,7 @@ class NotesPage(QWidget):
         self.title.setPlaceholderText("Título")
         self.body = NoteEditor()
         self.body.setPlaceholderText("Escreva sua anotação…")
-        self.body.setStyleSheet("background: white; color: #14314c; padding: 10px; border: 1px solid #caddea;")
+        styled(self.body, "background: white; color: #14314c; padding: 10px; border: 1px solid #caddea;")
         self.title.textEdited.connect(self.save)
         self.body.textChanged.connect(self.save)
         layout.addWidget(self.title)

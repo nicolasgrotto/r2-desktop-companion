@@ -26,7 +26,10 @@ class ReactionDirector:
             return False
         self.previous = self.controller.state if self.controller.state in AUTONOMOUS - {State.WALK} else State.IDLE
         self.scene = scene
-        self.queue = deque(SCENES[scene])
+        self.queue = deque(state for state in SCENES[scene] if self.controller.supports(state))
+        if not self.queue:
+            self.scene = None
+            return False
         self.controller.react(self.queue.popleft())
         return True
 

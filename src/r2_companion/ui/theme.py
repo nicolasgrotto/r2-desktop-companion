@@ -4,6 +4,7 @@ import math
 from PySide6.QtCore import QPointF, QRectF, QSize, Qt
 from PySide6.QtGui import QColor, QGuiApplication, QIcon, QPainter, QPainterPath, QPen, QPixmap
 from PySide6.QtWidgets import QFrame, QHBoxLayout, QLabel, QVBoxLayout, QWidget
+from ..droids.themes import COLOR_TOKENS, color as theme_color, color, styled, theme_manager
 
 NAVY = "#102c48"
 BLUE = "#216eea"
@@ -15,7 +16,7 @@ QDialog { background: #edf3f9; color: #14314c; }
 QWidget { font-family: 'Segoe UI'; font-size: 13px; }
 QLabel { color: #14314c; background: transparent; }
 QLabel[role='eyebrow'] { color: #51728e; font-size: 10px; font-weight: 700; letter-spacing: 2px; }
-QLabel[role='heading'] { color: #102c48; font-size: 25px; font-weight: 700; }
+QLabel[role='heading'] { color: @text; font-size: 25px; font-weight: 700; }
 QLabel[role='muted'] { color: #647b91; }
 QLabel[role='error'] { color: #b94343; }
 QFrame[role='card'] { background: #ffffff; border: 1px solid #d8e5f1; border-radius: 16px; }
@@ -51,6 +52,7 @@ QScrollArea > QWidget > QWidget { background: transparent; }
 QScrollBar:vertical { background: transparent; width: 8px; margin: 4px 0; }
 QScrollBar::handle:vertical { background: #b9cede; border-radius: 4px; min-height: 28px; }
 QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical { height: 0; }
+QScrollBar::add-page:vertical, QScrollBar::sub-page:vertical { background: transparent; }
 QListWidget { background: transparent; border: none; outline: none; }
 QListWidget::item { border: none; margin: 4px 0; padding: 0; }
 QProgressBar { background: #e2edf6; border: none; border-radius: 5px; height: 10px; text-align: center; }
@@ -61,6 +63,12 @@ QMenu::item { padding: 8px 32px 8px 16px; border-radius: 5px; }
 QMenu::item:selected { background: #216eea; }
 QMenu::item:disabled { color: #7796b1; }
 QMenu::separator { background: #2d4b66; height: 1px; margin: 6px 10px; }
+QPushButton[role='primary'] { color: @button_text; }
+QPlainTextEdit, QTextEdit, QListWidget { background: @panel; color: @text; }
+QListWidget::item { padding: 9px; }
+QListWidget::item:selected { background: @selected; color: @text; }
+QFrame#speech { background: @notification; }
+QLabel[role='brand'] { background: @hero; color: @accent; border-radius: 12px; font-size: 25px; font-weight: 800; }
 """
 
 
@@ -88,7 +96,7 @@ def header(title: str, subtitle: str) -> QWidget:
     brand = QLabel("R2")
     brand.setAlignment(Qt.AlignmentFlag.AlignCenter)
     brand.setFixedSize(54, 54)
-    brand.setStyleSheet("background: #102c48; color: #67d2f6; border-radius: 15px; font-size: 25px; font-weight: 800;")
+    brand.setProperty("role", "brand")
     layout.addWidget(brand)
     text = QVBoxLayout()
     text.setSpacing(3)
@@ -102,7 +110,7 @@ def header(title: str, subtitle: str) -> QWidget:
 
 
 def apply_theme(widget):
-    widget.setStyleSheet(STYLE)
+    styled(widget, STYLE)
 
 
 def fit_dialog(widget, anchor):
@@ -117,8 +125,38 @@ def fit_dialog(widget, anchor):
     widget.move(x, y)
 
 
+ICON_SPECS = {}
+
+
+def icon(name: str, color=None) -> QIcon:
+    original = color
+    color = theme_color(COLOR_TOKENS.get(color, "primary")) if color is None or color in COLOR_TOKENS else color
+    result = _colored_icon(name, color)
+    ICON_SPECS[result.cacheKey()] = (name, original)
+    if len(ICON_SPECS) > 512:
+        ICON_SPECS.pop(next(iter(ICON_SPECS)))
+    return result
+
+
+def refresh_icons(widget):
+    from PySide6.QtWidgets import QAbstractButton, QComboBox, QTabWidget
+    if isinstance(widget, QAbstractButton):
+        spec = ICON_SPECS.get(widget.icon().cacheKey())
+        if spec:
+            widget.setIcon(icon(*spec))
+    if isinstance(widget, QTabWidget):
+        for i in range(widget.count()):
+            spec = ICON_SPECS.get(widget.tabIcon(i).cacheKey())
+            if spec:
+                widget.setTabIcon(i, icon(*spec))
+    for action in widget.actions():
+        spec = ICON_SPECS.get(action.icon().cacheKey())
+        if spec:
+            action.setIcon(icon(*spec))
+
+
 @lru_cache(maxsize=64)
-def icon(name: str, color: str = BLUE) -> QIcon:
+def _colored_icon(name: str, color: str) -> QIcon:
     result = QIcon()
     for side in (20, 24, 32, 48):
         pixmap = QPixmap(side, side)

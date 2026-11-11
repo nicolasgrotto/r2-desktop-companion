@@ -14,16 +14,26 @@ PHRASES = {
     "affection": (("soft", "warble", "chirp"), ("warble", "soft"), ("soft", "answer", "chirp"))}
 
 
+def read_pcm(path, maximum=11025):
+    try:
+        with wave.open(str(path), "rb") as sound:
+            if (sound.getnchannels(), sound.getsampwidth(), sound.getframerate()) != (1, 2, 22050):
+                raise ValueError("Sílaba sonora incompatível.")
+            if not 1 <= sound.getnframes() <= maximum:
+                raise ValueError("Recurso sonoro fora do limite de duração.")
+            samples = sound.readframes(sound.getnframes())
+            if len(samples) != sound.getnframes() * 2:
+                raise ValueError("Recurso sonoro truncado.")
+            return samples
+    except (wave.Error, EOFError) as error:
+        raise ValueError("Recurso PCM inválido.") from error
+
+
 def compose_phrases(source: Path, destination: Path, phrases=None):
     phrases = PHRASES if phrases is None else phrases
     syllables = {}
     for name in {name for variants in phrases.values() for phrase in variants for name in phrase}:
-        with wave.open(str(source / f"{name}.wav"), "rb") as sound:
-            if (sound.getnchannels(), sound.getsampwidth(), sound.getframerate()) != (1, 2, 22050):
-                raise ValueError("Sílaba sonora incompatível.")
-            if sound.getnframes() > 11025:
-                raise ValueError("Sílaba sonora extensa demais.")
-            syllables[name] = sound.readframes(sound.getnframes())
+        syllables[name] = read_pcm(source / f"{name}.wav")
     result = {}
     for emotion, variants in phrases.items():
         result[emotion] = []

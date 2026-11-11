@@ -4,6 +4,7 @@ from PySide6.QtWidgets import (QDialog, QHBoxLayout, QLineEdit, QListWidget, QLi
                               QPushButton, QStyle, QStyledItemDelegate, QVBoxLayout)
 
 from .theme import apply_theme, header, icon, label
+from ..droids.themes import color, styled
 
 KINDS = {"app": ("Aplicativo", "apps"), "folder": ("Pasta", "folder"),
          "file": ("Arquivo", "file"), "alias": ("Atalho", "apps")}
@@ -18,14 +19,14 @@ class TargetDelegate(QStyledItemDelegate):
         painter.setRenderHint(QPainter.RenderHint.Antialiasing)
         selected = bool(option.state & QStyle.StateFlag.State_Selected)
         rect = option.rect.adjusted(1, 2, -1, -3)
-        painter.setBrush(QColor("#e8f2ff" if selected else "#ffffff"))
-        painter.setPen(QColor("#4799ef" if selected else "#d8e5f1"))
+        painter.setBrush(QColor(color("selected" if selected else "panel")))
+        painter.setPen(QColor(color("focus" if selected else "border")))
         painter.drawRoundedRect(rect, 11, 11)
         details = index.data(Qt.ItemDataRole.UserRole + 1) or {}
         kind, glyph = KINDS.get(details.get("kind"), ("Destino", "file"))
         avatar = QRect(rect.x() + 13, rect.y() + 15, 40, 40)
         painter.setPen(Qt.PenStyle.NoPen)
-        painter.setBrush(QColor("#e4effa"))
+        painter.setBrush(QColor(color("selected")))
         painter.drawRoundedRect(avatar, 10, 10)
         icon(glyph).paint(painter, avatar.adjusted(8, 8, -8, -8))
         x, width = rect.x() + 66, max(20, rect.width() - 84)
@@ -33,14 +34,14 @@ class TargetDelegate(QStyledItemDelegate):
         font.setPixelSize(14)
         font.setWeight(QFont.Weight.DemiBold)
         painter.setFont(font)
-        painter.setPen(QColor("#163b58"))
+        painter.setPen(QColor(color("text")))
         title = details.get("label", index.data(Qt.ItemDataRole.DisplayRole) or "")
         painter.drawText(QRect(x, rect.y() + 12, width, 24), Qt.AlignmentFlag.AlignVCenter,
                          painter.fontMetrics().elidedText(title, Qt.TextElideMode.ElideRight, width))
         font.setPixelSize(11)
         font.setWeight(QFont.Weight.Normal)
         painter.setFont(font)
-        painter.setPen(QColor("#6a8197"))
+        painter.setPen(QColor(color("muted")))
         description = kind + " · " + details.get("path", "")
         painter.drawText(QRect(x, rect.y() + 37, width, 22), Qt.AlignmentFlag.AlignVCenter,
                          painter.fontMetrics().elidedText(description, Qt.TextElideMode.ElideMiddle, width))
@@ -97,7 +98,7 @@ class LaunchpadDialog(QDialog):
         self.empty = label("")
         self.empty.setWordWrap(True)
         self.empty.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        self.empty.setStyleSheet("color: #718ba1; padding: 28px; font-size: 15px;")
+        styled(self.empty, "color: #718ba1; padding: 28px; font-size: 15px;")
         layout.addWidget(self.empty, 1)
         row = QHBoxLayout()
         add = QPushButton("Gerenciar favoritos")

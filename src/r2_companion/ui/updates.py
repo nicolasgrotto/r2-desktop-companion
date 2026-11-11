@@ -15,6 +15,10 @@ from ..pet.state import State
 from ..services.update_client import check_release, download_release, validate_release, version_tuple, REPOSITORY
 from ..services.updates import read_release
 from .theme import fit_dialog
+from ..droids.themes import PersistedThemeWatcher, styled
+from ..droids.profiles import DroidRegistry
+from ..droids.visuals import load_profile_clips
+from .droids import PreviewCanvas
 
 STYLE = """
 QDialog { background: #091c30; color: #e6f7ff; }
@@ -54,9 +58,10 @@ class UpdateCenter(QDialog):
     def __init__(self, directory, install=None, owner_pid=0, owner_started=0, resume=None, client=check_release):
         super().__init__()
         self.setWindowTitle("Central de atualizações · R2 Companion")
-        self.setStyleSheet(STYLE)
+        styled(self, STYLE)
         self.resize(440, 340)
         self.directory = Path(directory).resolve()
+        self.theme_watcher = PersistedThemeWatcher(self.directory, Path(__file__).resolve().parents[1] / "assets", self)
         self.install = None if install is None else Path(install).resolve()
         self.owner_pid, self.owner_started = owner_pid, owner_started
         self.metadata = read_release(self.install / "release.json") if self.install else {"version": __version__, "repository": REPOSITORY}
@@ -71,7 +76,7 @@ class UpdateCenter(QDialog):
         layout = QVBoxLayout(self)
         layout.setContentsMargins(24, 20, 24, 20)
         heading = QHBoxLayout()
-        self.character = QLabel()
+        self.character = PreviewCanvas()
         self.character.setFixedSize(72, 72)
         heading.addWidget(self.character)
         labels = QVBoxLayout()
@@ -104,9 +109,12 @@ class UpdateCenter(QDialog):
         self.later.clicked.connect(self.close)
         buttons.addWidget(self.later)
         layout.addLayout(buttons)
-        assets = Path(__file__).resolve().parents[1] / "assets/characters/default/manifest.json"
-        self.animation = AnimationManager(load_clips(assets))
-        self.animation.frame_changed.connect(lambda frame: self.character.setPixmap(frame.scaled(72, 72, Qt.AspectRatioMode.KeepAspectRatio)))
+        assets = Path(__file__).resolve().parents[1] / "assets"
+        registry = DroidRegistry(assets)
+        profile = registry.profiles.get(self.theme_watcher.last_id, registry.active)
+        self.animation = AnimationManager(load_profile_clips(profile))
+        self.animation.frame_changed.connect(self.character.set_frame)
+        self.theme_watcher.profile_changed.connect(self.use_profile)
         self.animation.clip_finished.connect(lambda token: self.animation.play(State.WORK, 1) if self.state in {"checking", "download", "integrity", "preparing", "installing"} else None)
         self.poll = QTimer(self)
         self.poll.setInterval(500)
@@ -115,6 +123,15 @@ class UpdateCenter(QDialog):
         self.startup.setSingleShot(True)
         self.startup.timeout.connect(lambda: self.install_prepared(Path(resume)) if resume else self.check())
         self.startup.start(0)
+
+    def use_profile(self, profile):
+        try:
+            clips = load_profile_clips(profile)
+        except (OSError, ValueError, KeyError, TypeError):
+            return
+        self.animation.stop()
+        self.animation.clips = clips
+        self.animation.play(State.IDLE, 1)
 
     def set_state(self, state, text, detail):
         self.state = state
@@ -286,6 +303,7 @@ class UpdateCenter(QDialog):
             event.ignore()
             return
         self.startup.stop()
+        self.theme_watcher.timer.stop()
         self.poll.stop()
         self.animation.stop()
         event.accept()

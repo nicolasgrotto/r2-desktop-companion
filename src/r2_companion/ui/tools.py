@@ -11,6 +11,7 @@ from .theme import BLUE, MUTED, apply_theme, card, header, icon, label
 from .productivity import NotesPage, TasksPage
 from .minigames import MinigamesPage
 from .diagnostics import DiagnosticsPage
+from ..droids.themes import color, styled
 
 
 def timer_text(seconds: float) -> str:
@@ -32,15 +33,15 @@ class TimerDial(QWidget):
         p.setRenderHint(QPainter.RenderHint.Antialiasing)
         side = min(self.width() - 20, self.height() - 24)
         rect = QRectF((self.width() - side) / 2, (self.height() - side) / 2, side, side)
-        p.setPen(QPen(QColor("#e3edf6"), 9))
+        p.setPen(QPen(QColor(color("border", self)), 9))
         p.drawEllipse(rect)
-        p.setPen(QPen(QColor(BLUE), 9, Qt.PenStyle.SolidLine, Qt.PenCapStyle.RoundCap))
+        p.setPen(QPen(QColor(color("primary", self)), 9, Qt.PenStyle.SolidLine, Qt.PenCapStyle.RoundCap))
         progress = max(0, min(1, self.value / max(1, self.total)))
         p.drawArc(rect, 90 * 16, -round(progress * 360 * 16))
-        p.setPen(QColor("#15334e"))
+        p.setPen(QColor(color("text", self)))
         p.setFont(QFont("Consolas", 25 if self.value < 3600 else 19, QFont.Weight.Bold))
         p.drawText(rect.adjusted(0, -8, 0, -8), Qt.AlignmentFlag.AlignCenter, timer_text(self.value))
-        p.setPen(QColor(MUTED))
+        p.setPen(QColor(color("muted", self)))
         p.setFont(QFont("Segoe UI", 8, QFont.Weight.DemiBold))
         p.drawText(rect.adjusted(0, 55, 0, 0), Qt.AlignmentFlag.AlignCenter, self.status)
 
@@ -105,7 +106,7 @@ class ToolsDialog(QDialog):
         hero, content = card("hero")
         content.addWidget(label("HORA LOCAL / AGORA", "muted"))
         self.clock_label = label("00:00:00")
-        self.clock_label.setStyleSheet("font: 48px 'Consolas'; color: #f4faff;")
+        styled(self.clock_label, "font: 48px 'Consolas'; color: #f4faff;")
         content.addWidget(self.clock_label)
         self.date_label = label("", "muted")
         self.date_label.setWordWrap(True)
@@ -207,7 +208,7 @@ class ToolsDialog(QDialog):
             row = QHBoxLayout()
             row.addWidget(label(title))
             value = label("—")
-            value.setStyleSheet("font-size: 23px; font-weight: 700; color: #216eea;")
+            styled(value, "font-size: 23px; font-weight: 700; color: #216eea;")
             row.addStretch()
             row.addWidget(value)
             content.addLayout(row)

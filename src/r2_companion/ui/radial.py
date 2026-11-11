@@ -6,6 +6,7 @@ from PySide6.QtWidgets import QApplication, QPushButton, QWidget
 
 from ..pet.positioning import clamp
 from .theme import icon
+from ..droids.themes import color, styled
 
 
 class RadialMenu(QWidget):
@@ -20,7 +21,7 @@ class RadialMenu(QWidget):
         self.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground)
         self.setFixedSize(368, 368)
         self.setFocusPolicy(Qt.FocusPolicy.StrongFocus)
-        self.setStyleSheet("""
+        styled(self, """
             QPushButton { color: #eaf7ff; background: #153751; border: 1px solid #38647f;
               border-radius: 15px; font: 600 11px 'Segoe UI'; padding: 7px; }
             QPushButton:hover, QPushButton:focus { background: #216eea; border: 2px solid #67d8ff; }
@@ -59,23 +60,23 @@ class RadialMenu(QWidget):
     def paintEvent(self, event):
         p = QPainter(self)
         p.setRenderHint(QPainter.RenderHint.Antialiasing)
-        p.setBrush(QColor(8, 24, 42, 245))
-        p.setPen(QPen(QColor("#346383"), 1))
+        p.setBrush(QColor(color("hero", self)))
+        p.setPen(QPen(QColor(color("border", self)), 1))
         p.drawEllipse(QRectF(8, 8, 352, 352))
         p.setBrush(Qt.BrushStyle.NoBrush)
-        p.setPen(QPen(QColor("#1b4867"), 1))
+        p.setPen(QPen(QColor(color("decoration", self)), 1))
         p.drawEllipse(QRectF(24, 24, 320, 320))
         p.drawEllipse(QRectF(117, 117, 134, 134))
         for n in range(48):
             angle = math.radians(n * 7.5)
             inner = 157 if n % 4 else 152
-            p.setPen(QPen(QColor("#5196b7" if n % 4 == 0 else "#244e69"), 1))
+            p.setPen(QPen(QColor(color("accent" if n % 4 == 0 else "decoration", self)), 1))
             p.drawLine(QPointF(184 + inner * math.cos(angle), 184 + inner * math.sin(angle)),
                        QPointF(184 + 164 * math.cos(angle), 184 + 164 * math.sin(angle)))
-        p.setPen(QColor("#76a6c4"))
+        p.setPen(QColor(color("hero_text", self)))
         p.setFont(QFont("Segoe UI", 7, QFont.Weight.DemiBold))
         p.drawText(QRectF(122, 229, 124, 22), Qt.AlignmentFlag.AlignCenter, "ACESSO RÁPIDO")
-        p.setPen(QColor("#507c9d"))
+        p.setPen(QColor(color("hero_muted", self)))
         p.drawText(QRectF(122, 248, 124, 18), Qt.AlignmentFlag.AlignCenter, "ESC · FECHAR")
 
     def popup_near(self, pet, paused=False):

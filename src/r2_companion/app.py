@@ -44,6 +44,12 @@ from .ui.tray import Tray
 from .ui.radial import RadialMenu
 from .ui.targets import LaunchpadDialog
 from .ui.theme import fit_dialog, icon
+from .droids.profiles import DroidRegistry
+from .droids.preferences import preferences_for, select_droid
+from .droids.controller import DroidController
+from .droids.movement import create_movement, MOVEMENT_CONTROLLERS
+from .droids.visuals import load_profile_clips
+from .droids.themes import color, theme_manager
 
 ASSETS = Path(__file__).resolve().parent / "assets"
 log = logging.getLogger(__name__)
@@ -65,9 +71,30 @@ class Companion(QObject):
         self.settings_dialog = None
         self.warning_history: set[str] = set()
         self.quiet_active = False
+        self._switching_droid = False
+        self.droid_error = ""
+        self.garage_dialog = self.audio_dialog = self.gallery_dialog = None
+        self.droids = DroidRegistry(ASSETS)
+        identifier = store.settings.active_droid
+        if identifier not in self.droids.profiles:
+            store.notices.append("Personagem salvo indisponível; o padrão foi restaurado e suas preferências foram preservadas.")
+            identifier = "r2_default"
+        self.droids.active_id = identifier
+        self.profile = self.droids.active
+        try:
+            clips = load_profile_clips(self.profile)
+            if self.profile.movement not in MOVEMENT_CONTROLLERS:
+                raise ValueError("Controlador de locomoção indisponível.")
+        except (OSError, ValueError, RuntimeError):
+            store.notices.append("Recursos do personagem indisponíveis; usando o padrão.")
+            self.droids.active_id = "r2_default"
+            self.profile = self.droids.active
+            clips = load_profile_clips(self.profile)
+        store.apply(select_droid(store.settings, self.profile), notify=False)
         self.window = PetWindow()
         self.positioning = Positioner(self.window)
-        self.animation = AnimationManager(load_clips(ASSETS / "characters/default/manifest.json"))
+        self.positioning.movement = create_movement(self.profile, self.window)
+        self.animation = AnimationManager(clips)
         self.behavior = BehaviorManager()
         self.controller = PetController(self.animation, self.positioning, self.behavior)
         self.bubble = Bubble()
@@ -76,7 +103,8 @@ class Companion(QObject):
         self.locations_panel = LaunchpadDialog("locations")
         self.countdown = Countdown(uptime)
         self.monitor = SystemMonitor(SystemInfo())
-        self.audio = AudioService(ASSETS / "sounds")
+        self.audio = AudioService(ASSETS / "sounds", profile=self.profile.audio)
+        self.droid_controller = DroidController(self.droids, self.audio, self.window)
         self.productivity = ProductivityStore(store.directory, store.read_only)
         self.awareness = ContextReactions(self.controller, self.positioning, store, self.audio)
         self.updates = UpdateService(store.directory)
@@ -111,7 +139,7 @@ class Companion(QObject):
         self.reactions = ReactionDirector(self.controller, self.audio)
         self.window.petted.connect(lambda: self.reactions.start("affection"))
         self.tools.minigames_page.game_requested.connect(self.launch_minigame)
-        self.tools.diagnostics_page.provider = lambda: collect_diagnostics(self.awareness.info, self.audio)
+        self.tools.diagnostics_page.provider = self.droid_diagnostics
         self.tools.diagnostics_page.scan_requested.connect(lambda: self.reactions.start("diagnosis"))
         self.controller.notification_presented.connect(self.present_bubble)
         self.countdown.completed.connect(self.timer_completed)
@@ -154,7 +182,11 @@ class Companion(QObject):
     def apply_preferences(self, settings):
         self.behavior.settings = deepcopy(settings.behavior)
         self.positioning.display_size = settings.visual_scale
-        self.window.set_appearance(settings.appearance)
+        self.positioning.aspect = self.profile.canvas[0] / self.profile.canvas[1]
+        self.window.configure_droid(self.profile, preferences_for(settings, self.profile))
+        if theme_manager().active != self.profile.theme:
+            theme_manager().apply(self.profile.theme)
+        self.radial.center.setText(self.profile.name.split()[0][:2].upper())
         self.window.set_topmost(settings.window.topmost)
         self.positioning.reconcile()
         self.audio.configure(settings.sound_enabled, deepcopy(settings.audio))
@@ -162,14 +194,130 @@ class Companion(QObject):
         self.apps_panel.set_settings(settings)
         self.locations_panel.set_settings(settings)
         self.behavior.schedule(self.controller.state == State.IDLE and not self.controller.gates and not self.controller.paused)
-        self.controller.update_inactivity(0)
+        if not self._switching_droid:
+            self.controller.update_inactivity(0)
         self.session_events.bind(int(self.window.winId()))
         self.refresh_menu()
         if not self.initializing:
             self.check_desktop()
 
+    def droid_diagnostics(self):
+        result = collect_diagnostics(self.awareness.info, self.audio)
+        result.update({"Personagem": f"{self.profile.name} ({self.profile.id})",
+                       "Locomoção": type(self.positioning.movement).__name__,
+                       "Renderizador": self.profile.renderer, "Animações registradas": str(len(self.profile.animations)),
+                       "Perfil vocal": self.audio.profile_id, "Tema": self.profile.theme.name,
+                       "Arte": self.profile.art_status, "Perfis rejeitados": str(len(self.droids.errors))})
+        return result
+
+    def show_droid_dialog(self, attribute, factory):
+        self.radial.hide()
+        dialog = getattr(self, attribute)
+        if dialog is None:
+            dialog = factory(self)
+            setattr(self, attribute, dialog)
+        fit_dialog(dialog, self.window)
+        dialog.show()
+        dialog.raise_()
+        dialog.activateWindow()
+
+    def show_garage(self):
+        from .ui.droids import DroidGarage
+        self.show_droid_dialog("garage_dialog", DroidGarage)
+
+    def show_audio_center(self):
+        from .ui.droids import AudioCenter
+        self.show_droid_dialog("audio_dialog", AudioCenter)
+
+    def show_animation_gallery(self):
+        from .ui.droids import AnimationGallery
+        self.show_droid_dialog("gallery_dialog", AnimationGallery)
+
+    def equip_droid(self, identifier, preferences=None):
+        if self.closed or self._switching_droid or self.window.dragging:
+            self.droid_error = "Aguarde o término do arrasto ou da troca em andamento."
+            return False
+        prepared = None
+        try:
+            prepared = self.droid_controller.prepare(identifier)
+            selected = select_droid(self.store.settings, prepared.profile, preferences)
+        except (OSError, ValueError, KeyError, TypeError, RuntimeError) as error:
+            if prepared:
+                prepared.movement.close()
+                prepared.movement.deleteLater()
+                self.audio.release_bank(prepared.audio_bank)
+            self.droid_error = f"Não foi possível preparar o personagem: {error}"
+            return False
+        previous = deepcopy(self.store.settings)
+        previous_dirty = self.store.dirty
+        previous_state = self.controller.state
+        previous_inactive = self.controller.inactive
+        old_profile, old_clips = self.profile, self.animation.clips
+        old_movement = self.positioning.movement
+        old_bank = None
+        position = self.positioning.snapshot()
+        self._switching_droid = True
+        self.controller.set_gate("droid_swap", True)
+        self.reactions.close()
+        try:
+            self.animation.stop()
+            self.positioning.stop()
+            self.window.stop_effects()
+            old_bank = self.audio.activate_profile(prepared.audio_bank)
+            self.profile = prepared.profile
+            self.animation.clips = prepared.clips
+            self.positioning.movement = prepared.movement
+            self.apply_preferences(selected)
+            if position:
+                self.positioning.restore(position)
+            self.controller.enter(State.SLEEP if previous_inactive else State.IDLE)
+            snapshot = self.positioning.snapshot()
+            if snapshot:
+                selected.window = snapshot
+            self.store.apply(selected, notify=False)
+            if not self.store.flush():
+                raise OSError("Falha ao persistir a troca; o personagem anterior foi mantido.")
+            self.droids.profiles[identifier] = self.profile
+            self.droids.active_id = identifier
+            old_movement.close()
+            old_movement.deleteLater()
+            self.audio.release_bank(old_bank)
+            self.droid_error = ""
+            if self.settings_dialog is not None:
+                self.settings_dialog.close()
+            return True
+        except (OSError, ValueError, KeyError, TypeError, RuntimeError) as error:
+            self.animation.stop()
+            self.positioning.stop()
+            prepared.movement.close()
+            prepared.movement.deleteLater()
+            self.profile, self.animation.clips = old_profile, old_clips
+            self.positioning.movement = old_movement
+            if old_bank is not None:
+                rejected = self.audio.activate_profile(old_bank)
+                self.audio.release_bank(rejected)
+            else:
+                self.audio.release_bank(prepared.audio_bank)
+            self.store.timer.stop()
+            self.store.settings, self.store.dirty = previous, previous_dirty
+            if previous_dirty:
+                self.store.timer.start()
+            self.apply_preferences(previous)
+            if position:
+                self.positioning.restore(position)
+            self.controller.inactive = previous_inactive
+            self.controller.enter(previous_state if previous_state != State.WALK else State.IDLE)
+            self.droid_error = f"Troca cancelada: {error}"
+            log.warning("%s", self.droid_error)
+            return False
+        finally:
+            self._switching_droid = False
+            self.controller.set_gate("droid_swap", False)
+            self.refresh_menu()
+            self.check_desktop()
+
     def save_position(self, saved):
-        if self.closed:
+        if self.closed or self._switching_droid:
             return
         settings = deepcopy(self.store.settings)
         settings.window = saved
@@ -260,6 +408,9 @@ class Companion(QObject):
         self.controller.enter(State.DRAG)
 
     def drag_finished(self):
+        movement = self.positioning.movement
+        drag_tilt = getattr(movement, "head_tilt", 0)
+        drag_offset = getattr(movement, "head_offset", 0)
         self.last_activity = time.monotonic()
         self.positioning.settle()
         saved = self.positioning.snapshot()
@@ -272,6 +423,11 @@ class Companion(QObject):
             self.store.flush()
         self.controller.set_gate("drag", False)
         self.controller.react(State.RECOVER)
+        if movement and not self.controller.gates:
+            if hasattr(movement, "head_tilt"):
+                movement.head_tilt, movement.head_offset = drag_tilt, drag_offset
+                self.window.set_motion(movement.angle, drag_tilt, drag_offset)
+            movement.release()
 
     def check_idle(self):
         seconds = idle_seconds()
@@ -389,6 +545,7 @@ class Companion(QObject):
                    "pass_through": lambda: self.set_pass_through(not self.pass_through),
                    "passing": lambda: self.pass_through,
                    "screen": self.move_screen, "exit": self.shutdown, "target": self.open_target}
+        actions.update(garage=self.show_garage, audio=self.show_audio_center, gallery=self.show_animation_gallery)
         actions.update(tasks=lambda: self.show_tools_page(3), notes=lambda: self.show_tools_page(4),
                        updates=self.check_updates, minigames=lambda: self.show_tools_page(self.tools.tabs.indexOf(self.tools.minigames_page)),
                        diagnostics=lambda: self.show_tools_page(self.tools.tabs.indexOf(self.tools.diagnostics_page)))
@@ -427,7 +584,7 @@ class Companion(QObject):
 
     def project_tool(self, glyph):
         if self.store.settings.holograms and not self.controller.gates and not self.quiet_active:
-            self.window.project(icon(glyph).pixmap(32, 32))
+            self.window.project(icon(glyph, color("hologram")).pixmap(32, 32))
 
     def show_tools_page(self, index):
         self.tools.tabs.setCurrentIndex(index)
@@ -469,7 +626,7 @@ class Companion(QObject):
             status = "Registro indisponível ou conflitante; outros registros serão preservados."
         if not self.startup.available:
             status = "Para inicialização automática, copie a versão empacotada para um local estável fora de dist/build."
-        dialog = SettingsDialog(self.store.settings, self.startup.available, enabled, status)
+        dialog = SettingsDialog(self.store.settings, self.startup.available, enabled, status, self.profile)
         self.settings_dialog = dialog
         self.controller.set_gate("settings", True)
         self.bubble.stop()
@@ -487,6 +644,9 @@ class Companion(QObject):
 
     def save_settings(self, settings, startup_request):
         try:
+            if settings.active_droid != self.store.settings.active_droid:
+                raise ValueError("O personagem mudou. Reabra Configurações para editar o personagem equipado.")
+            settings.droid_preferences = deepcopy(self.store.settings.droid_preferences)
             settings.window = replace(self.store.settings.window, topmost=settings.window.topmost)
             settings.manual_position = deepcopy(self.store.settings.manual_position)
             if startup_request is not None:
@@ -528,6 +688,11 @@ class Companion(QObject):
         self.positioning.settle()
         self.closed = True
         self.reactions.close()
+        for dialog in (self.garage_dialog, self.audio_dialog, self.gallery_dialog):
+            if dialog is not None:
+                dialog.close()
+        if self.positioning.movement:
+            self.positioning.movement.close()
         self.window.stop_effects()
         self.idle_timer.stop()
         self.desktop_timer.stop()
@@ -535,6 +700,7 @@ class Companion(QObject):
         self.awareness.close()
         self.productivity.close()
         self.controller.close()
+        self.positioning.close()
         self.radial.stop()
         self.apps_panel.hide()
         self.locations_panel.hide()
@@ -572,6 +738,7 @@ def main(argv=None) -> int:
     parser = argparse.ArgumentParser(description="R2 Companion — mascote local para Windows")
     parser.add_argument("--data-dir", type=Path, help="Diretório alternativo de dados, útil para testes isolados")
     parser.add_argument("--smoke-test", action="store_true", help="Executa brevemente, grava diagnóstico e encerra")
+    parser.add_argument("--smoke-droids", action="store_true")
     parser.add_argument("--smoke-seconds", type=float, default=3)
     parser.add_argument("--update-center", action="store_true")
     parser.add_argument("--install-dir", type=Path)
@@ -587,6 +754,8 @@ def main(argv=None) -> int:
         parser.error("--smoke-seconds deve estar entre 1 e 3600")
     if args.smoke_test and args.data_dir is None:
         parser.error("--smoke-test requer --data-dir para isolar os dados de teste")
+    if args.smoke_droids and not args.smoke_test:
+        parser.error("--smoke-droids requer --smoke-test")
     app = QApplication([sys.argv[0]])
     app.setOrganizationName("R2DesktopCompanion")
     app.setApplicationName("R2Companion")
@@ -611,6 +780,15 @@ def main(argv=None) -> int:
             QMessageBox.critical(None, "R2 Companion", "Não foi possível iniciar. Consulte companion.log no diretório de dados.")
         return 1
     if args.smoke_test:
+        droid_checks = []
+        if args.smoke_droids:
+            for index, identifier in enumerate(companion.droids.profiles):
+                def check_droid(identifier=identifier):
+                    accepted = companion.equip_droid(identifier)
+                    companion.window.grab().save(str(directory / f"droid-{identifier}.png"))
+                    droid_checks.append({"id": identifier, "accepted": accepted, "error": companion.droid_error,
+                                         "diagnostics": companion.droid_diagnostics()})
+                QTimer.singleShot(200 + index * 450, check_droid)
         def finish_smoke():
             import psutil
             process = psutil.Process()
@@ -621,8 +799,12 @@ def main(argv=None) -> int:
                       "visible": companion.window.isVisible(), "state": companion.controller.state.value,
                       "working_set_bytes": process.memory_info().rss,
                       "geometry": companion.window.geometry().getRect()}
+            report["droids"] = droid_checks
+            report["active_droid"] = companion.profile.id
             companion.window.grab().save(str(directory / "smoke.png"))
             companion.shutdown()
+            report["movement_timer_after_shutdown"] = bool(getattr(companion.positioning.movement, "timer", None)
+                                                          and companion.positioning.movement.timer.isActive())
             report["active_timers_after_shutdown"] = sum(t.isActive() for t in
                 [companion.animation.timer, companion.behavior.timer, companion.positioning.timer,
                  companion.countdown.timer, companion.monitor.timer, companion.idle_timer,

@@ -4,6 +4,7 @@ from PySide6.QtWidgets import QFrame, QVBoxLayout
 
 from ..pet.positioning import clamp
 from .theme import label
+from ..droids.themes import styled
 
 
 class Bubble(QFrame):
@@ -13,8 +14,8 @@ class Bubble(QFrame):
                             | Qt.WindowType.WindowDoesNotAcceptFocus | Qt.WindowType.WindowTransparentForInput)
         self.setAttribute(Qt.WidgetAttribute.WA_ShowWithoutActivating)
         self.setObjectName("speech")
-        self.setStyleSheet("""
-            QFrame#speech { background: #102c48; border: 1px solid #62bfea; border-radius: 13px; }
+        styled(self, """
+            QFrame#speech { background: @notification; border: 1px solid #62bfea; border-radius: 13px; }
             QLabel { background: transparent; border: none; color: #f0f8ff; font-family: 'Segoe UI'; font-size: 13px; }
             QLabel[role='eyebrow'] { color: #6bcdf5; font-size: 10px; font-weight: 700; letter-spacing: 2px; }
         """)
