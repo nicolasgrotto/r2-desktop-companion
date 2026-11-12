@@ -1,5 +1,7 @@
 from dataclasses import replace
-import subprocess
+import hashlib
+import json
+from pathlib import Path
 
 import pytest
 from PySide6.QtCore import Qt
@@ -75,11 +77,11 @@ def test_garage_shows_effects_on_play_and_manual_frames_and_cleans_timers(pet, i
 
 
 def test_legacy_animation_assets_are_byte_identical_to_before_refinement():
-    root = ASSETS.parents[2]
-    git = ["git", "-c", "safe.directory="+root.as_posix()]
-    paths = subprocess.check_output(git + ["ls-tree", "-r", "--name-only", "e2753bd", "src/r2_companion/assets"], cwd=root).decode().splitlines()
-    for name in paths:
-        if any(segment in name for segment in ("/lumo/", "/vigia/", "/pico/", "/tranco/")):
-            continue
-        old = subprocess.check_output(git + ["show", "e2753bd:"+name], cwd=root)
-        assert (root/name).read_bytes().replace(b"\r\n", b"\n") == old.replace(b"\r\n", b"\n")
+    # Recorded from the pre-refinement tree. Works in shallow/source-only clones.
+    fixture = Path(__file__).with_name("fixtures") / "legacy_assets_sha256.json"
+    for name, expected in json.loads(fixture.read_text(encoding="utf-8")).items():
+        path = ASSETS / name
+        raw = path.read_bytes()
+        if path.suffix in {".json", ".md"}:
+            raw = raw.replace(b"\r\n", b"\n")
+        assert hashlib.sha256(raw).hexdigest() == expected, name
