@@ -16,6 +16,7 @@ class PetWindow(QWidget):
     drag_finished = Signal()
     exit_requested = Signal()
     geometry_changed = Signal()
+    interaction_event = Signal(str, object)
 
     def __init__(self):
         super().__init__()
@@ -238,6 +239,9 @@ class PetWindow(QWidget):
             if 0.28 <= self.anchor.x() <= 0.72 and 0.08 <= self.anchor.y() <= 0.36:
                 self.affection_timer.start()
             event.accept()
+        self.interaction_event.emit("mouse_press_received", {
+            "accepted": event.isAccepted(), "spontaneous": event.spontaneous(),
+            "source": event.source().name, "button": event.button().name})
 
     def mouseMoveEvent(self, event: QMouseEvent):
         if self.press_global is None or not (event.buttons() & Qt.MouseButton.LeftButton):
@@ -251,6 +255,10 @@ class PetWindow(QWidget):
         event.accept()
 
     def mouseReleaseEvent(self, event: QMouseEvent):
+        self.interaction_event.emit("mouse_release_received", {
+            "press_present": self.press_global is not None, "dragging": self.dragging,
+            "double_click": self.double_click, "affection": self.affection,
+            "spontaneous": event.spontaneous(), "source": event.source().name})
         if event.button() == Qt.MouseButton.LeftButton and self.press_global is not None:
             self.affection_timer.stop()
             was_dragging = self.dragging
@@ -262,6 +270,7 @@ class PetWindow(QWidget):
                 self.clicked.emit()
             self.double_click = False
             event.accept()
+        self.interaction_event.emit("mouse_release_delivered", {"accepted": event.isAccepted()})
 
     def contextMenuEvent(self, event):
         self.context_requested.emit(event.globalPos())

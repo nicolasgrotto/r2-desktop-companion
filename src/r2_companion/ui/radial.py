@@ -1,6 +1,7 @@
 import math
+from shiboken6 import isValid
 
-from PySide6.QtCore import QEasingCurve, QEvent, QPointF, QRect, QRectF, QSize, QSizeF, Qt, QTimer, Signal, QParallelAnimationGroup, QPropertyAnimation
+from PySide6.QtCore import QAbstractAnimation, QEasingCurve, QEvent, QPointF, QRect, QRectF, QSize, QSizeF, Qt, QTimer, Signal, QParallelAnimationGroup, QPropertyAnimation
 from PySide6.QtGui import QColor, QFont, QGuiApplication, QKeySequence, QPainter, QPen, QShortcut
 from PySide6.QtWidgets import QApplication, QGraphicsOpacityEffect, QPushButton, QWidget
 
@@ -10,10 +11,21 @@ from .navigation import LEVEL_TITLES, NAVIGATION
 from ..droids.themes import color, styled
 
 
+class RadialButton(QPushButton):
+    def event(self, event):
+        result = super().event(event)
+        if event.type() in {QEvent.Type.MouseButtonPress, QEvent.Type.MouseButtonRelease, QEvent.Type.KeyPress,
+                            QEvent.Type.KeyRelease}:
+            self.parentWidget().record("qt_event_delivered", detail=True, qt_event=event.type().name,
+                                       widget=self.objectName(), accepted=event.isAccepted(), handled=result)
+        return result
+
+
 class RadialMenu(QWidget):
     action_selected = Signal(str)
     opened = Signal()
     dismissed = Signal()
+    page_ready = Signal(str)
 
     def __init__(self):
         super().__init__()
@@ -31,32 +43,57 @@ class RadialMenu(QWidget):
               border-radius: 42px; font: 700 24px 'Segoe UI'; }
         """)
         self.buttons = {}
+        self.trace = None
+        self.begin_attempt = None
+        self.trigger_widget = None
+        self.dismissed_by_trigger_press = False
         self.level = "main"
         self.history = []
         self.transition = None
         self.transitioning = False
+        self.phase = "idle"
         self.paused = False
         self.center_text = "R2"
-        self.center = QPushButton("R2", self)
+        self.center = RadialButton("R2", self)
         self.center.setObjectName("center")
         self.center.setGeometry(142, 142, 84, 84)
         self.center.clicked.connect(self.back)
-        self.close_button = QPushButton("×", self)
+        self.close_button = RadialButton("×", self)
         self.close_button.setGeometry(316, 12, 36, 36)
         self.close_button.setAccessibleName("Fechar acesso rápido")
         self.close_button.setToolTip("Fechar acesso rápido · Esc")
-        self.close_button.clicked.connect(self.hide)
+        self.close_button.clicked.connect(lambda: self.dismiss("close_button"))
         self.render_level()
         self.escape = QShortcut(QKeySequence(Qt.Key.Key_Escape), self)
-        self.escape.activated.connect(self.hide)
+        self.escape.activated.connect(lambda: self.dismiss("escape"))
         self.dismiss_timer = QTimer(self)
         self.dismiss_timer.setSingleShot(True)
-        self.dismiss_timer.timeout.connect(self.hide)
+        self.dismiss_timer.timeout.connect(lambda: self.dismiss("inactivity_timeout"))
         self.deactivate_timer = QTimer(self)
         self.deactivate_timer.setSingleShot(True)
         self.deactivate_timer.setInterval(80)
-        self.deactivate_timer.timeout.connect(lambda: self.hide() if not self.isActiveWindow() else None)
+        self.deactivate_timer.timeout.connect(self.check_deactivation)
         QApplication.instance().installEventFilter(self)
+
+    def record(self, event, **fields):
+        if self.trace is None:
+            return
+        app = QApplication.instance()
+        focus, active = app.focusWidget(), app.activeWindow()
+        self.trace(event, level=self.level, history=list(self.history), phase=self.phase,
+                   transitioning=self.transitioning, visible=self.isVisible(), minimized=self.isMinimized(),
+                   active=self.isActiveWindow(), focus=type(focus).__name__ if focus else None,
+                   active_window=type(active).__name__ if active else None, **fields)
+
+    def check_deactivation(self):
+        self.record("deactivation_checked")
+        if not self.isActiveWindow():
+            self.record("dismiss_requested", reason="deactivated")
+            self.hide()
+
+    def dismiss(self, reason):
+        self.record("dismiss_requested", reason=reason)
+        self.hide()
 
     def button_rect(self, index, count, expanded=True):
         angle = math.radians(-90 + index * 360 / count)
@@ -74,7 +111,7 @@ class RadialMenu(QWidget):
         for index, item in enumerate(items):
             title = "Continuar" if item.id == "pause" and self.paused else item.title
             glyph = "play" if item.id == "pause" and self.paused else item.glyph
-            button = QPushButton(title, self)
+            button = RadialButton(title, self)
             button.setObjectName(item.id)
             button.setIcon(icon(glyph, "#a9e6ff"))
             button.setIconSize(QSize(20, 20))
@@ -107,38 +144,91 @@ class RadialMenu(QWidget):
             opacity.setDuration(160 if entering else 80)
             opacity.setStartValue(0.0 if entering else 1.0)
             opacity.setEndValue(1.0 if entering else 0.0)
-            button.setEnabled(False)
-        group.finished.connect(finished)
+            button.setEnabled(entering)
+        self.phase = "entering" if entering else "exiting"
+        group.finished.connect(lambda: self.animation_finished(group, finished))
+        group.stateChanged.connect(lambda state, previous: self.animation_state_changed(group, state))
+        group.destroyed.connect(lambda: self.animation_destroyed(group))
+        self.record("animation_started", duration_ms=group.duration())
         group.start()
+
+    def animation_finished(self, group, finished):
+        if self.transition is not group:
+            return
+        self.transition = None
+        group.deleteLater()
+        self.record("animation_finished")
+        try:
+            finished()
+        except Exception as error:
+            self.record("animation_callback_failed", error=error)
+            self.cancel_transition("callback_failed")
+            raise
+
+    def animation_state_changed(self, group, state):
+        if self.transition is not group:
+            return
+        if not isValid(group):
+            self.animation_destroyed(group)
+            return
+        if state == QAbstractAnimation.State.Paused:
+            self.cancel_transition("animation_paused")
+        elif state == QAbstractAnimation.State.Stopped and group.currentTime() < group.totalDuration():
+            self.cancel_transition("animation_stopped")
+
+    def animation_destroyed(self, group):
+        if self.transition is group:
+            self.transition = None
+            self.cancel_transition("animation_destroyed")
+
+    def cancel_transition(self, reason):
+        group, self.transition = self.transition, None
+        if group is not None:
+            group.stop()
+            group.deleteLater()
+        self.transitioning = False
+        self.phase = "idle"
+        for index, button in enumerate(self.buttons.values()):
+            button.setGeometry(self.button_rect(index, len(self.buttons)))
+            button.graphicsEffect().setOpacity(1)
+            button.setEnabled(True)
+        if self.isVisible():
+            self.dismiss_timer.start(12000)
+        self.record("transition_cancelled", reason=reason)
 
     def navigate(self, level, returning=False):
         if self.transitioning or level not in NAVIGATION or not self.isVisible():
+            self.record("navigation_rejected", target=level)
             return
         self.transitioning = True
         self.dismiss_timer.stop()
         def enter():
-            self.transition.deleteLater()
-            self.transition = None
             if returning:
                 self.history.pop()
             else:
                 self.history.append(self.level)
             self.level = level
             self.render_level()
+            self.record("page_entered")
             self.animate_items(True, self.finish_transition)
         self.animate_items(False, enter)
 
     def finish_transition(self):
-        self.transition.deleteLater()
-        self.transition = None
         self.transitioning = False
+        self.phase = "idle"
         for button in self.buttons.values():
             button.setEnabled(True)
-        next(iter(self.buttons.values())).setFocus(Qt.FocusReason.PopupFocusReason)
+        if self.isActiveWindow():
+            next(iter(self.buttons.values())).setFocus(Qt.FocusReason.PopupFocusReason)
         self.dismiss_timer.start(12000)
+        self.record("page_ready")
+        self.page_ready.emit(self.level)
 
     def back(self):
+        if self.phase == "entering":
+            self.cancel_transition("back_during_entry")
         if self.transitioning:
+            self.record("navigation_rejected", target="back")
             return
         if self.history:
             self.navigate(self.history[-1], returning=True)
@@ -147,10 +237,9 @@ class RadialMenu(QWidget):
 
     def reset_navigation(self):
         if self.transition is not None:
-            self.transition.stop()
-            self.transition.deleteLater()
-            self.transition = None
+            self.cancel_transition("reset")
         self.transitioning = False
+        self.phase = "idle"
         self.history.clear()
         self.level = "main"
         self.render_level()
@@ -177,11 +266,15 @@ class RadialMenu(QWidget):
         p.setPen(QColor(color("hero_muted", self)))
         p.drawText(QRectF(122, 248, 124, 18), Qt.AlignmentFlag.AlignCenter, "ESC · FECHAR")
 
-    def popup_near(self, pet, paused=False):
+    def popup_near(self, pet, paused=False, new_attempt=True):
+        if new_attempt and self.begin_attempt is not None:
+            self.begin_attempt()
+        self.record("open_requested")
         self.paused = paused
         self.reset_navigation()
         screen = QGuiApplication.screenAt(pet.geometry().center()) or QGuiApplication.primaryScreen()
         if screen is None:
+            self.record("open_rejected", reason="no_screen")
             return
         area = QRectF(screen.availableGeometry())
         x = pet.x() - self.width() - 16
@@ -195,14 +288,21 @@ class RadialMenu(QWidget):
         self.activateWindow()
         self.buttons["tools"].setFocus(Qt.FocusReason.PopupFocusReason)
         self.dismiss_timer.start(12000)
+        self.record("wheel_shown")
 
     def select(self, key):
+        self.record("selection_received", action=key)
+        if self.phase == "entering" and key in self.buttons and self.isVisible():
+            self.cancel_transition("selection_during_entry")
         if self.transitioning or not self.isVisible() or key not in self.buttons:
+            self.record("selection_rejected", action=key)
             return
+        self.record("item_selected", action=key)
         if key in NAVIGATION:
             self.navigate(key)
             return
         self.hide()
+        self.record("callback_emitted", action=key)
         self.action_selected.emit(key)
 
     def keyPressEvent(self, event):
@@ -213,17 +313,31 @@ class RadialMenu(QWidget):
             super().keyPressEvent(event)
 
     def eventFilter(self, obj, event):
+        kind = event.type()
+        if kind == QEvent.Type.MouseButtonPress and obj is self.trigger_widget:
+            self.dismissed_by_trigger_press = self.isVisible()
+        if isinstance(obj, QWidget) and (obj is self or self.isAncestorOf(obj)):
+            if kind in {QEvent.Type.MouseButtonPress, QEvent.Type.MouseButtonRelease, QEvent.Type.KeyPress,
+                        QEvent.Type.FocusIn, QEvent.Type.FocusOut, QEvent.Type.WindowActivate,
+                        QEvent.Type.WindowDeactivate, QEvent.Type.Show, QEvent.Type.Hide}:
+                self.record("qt_event_received", detail=True, qt_event=kind.name, widget=obj.objectName(),
+                            accepted_before=event.isAccepted(), spontaneous=event.spontaneous(),
+                            enabled=obj.isEnabled())
         if self.isVisible():
             if event.type() == QEvent.Type.MouseButtonPress:
                 if isinstance(obj, QWidget) and obj is not self and not self.isAncestorOf(obj):
+                    self.record("dismiss_requested", reason="trigger_press" if obj is self.trigger_widget else "outside_press")
                     self.hide()
             elif obj is self and event.type() == QEvent.Type.WindowDeactivate:
+                self.record("window_deactivated")
                 self.deactivate_timer.start()
             elif obj is self and event.type() == QEvent.Type.WindowActivate:
+                self.record("window_activated")
                 self.deactivate_timer.stop()
         return False
 
     def hideEvent(self, event):
+        self.record("wheel_hidden")
         self.dismiss_timer.stop()
         self.deactivate_timer.stop()
         self.reset_navigation()
@@ -240,6 +354,7 @@ class RadialMenu(QWidget):
         super().leaveEvent(event)
 
     def stop(self):
+        self.record("wheel_stopped")
         self.dismiss_timer.stop()
         self.hide()
         QApplication.instance().removeEventFilter(self)

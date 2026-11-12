@@ -9,7 +9,7 @@ import threading
 import time
 import traceback
 
-from .. import __version__
+from .. import __build__, __version__
 
 
 class NavigationTrace:
@@ -42,7 +42,7 @@ class NavigationTrace:
             self.omitted += 1
             return
         record = {"timestamp": datetime.now(timezone.utc).isoformat(timespec="microseconds"),
-                  "monotonic_ns": time.monotonic_ns(), "pid": os.getpid(), "version": __version__,
+                  "monotonic_ns": time.monotonic_ns(), "pid": os.getpid(), "version": __version__, "build": __build__,
                   "attempt": self.attempt, "event": event, **fields}
         if self.omitted:
             record["omitted_detail_records"] = self.omitted
