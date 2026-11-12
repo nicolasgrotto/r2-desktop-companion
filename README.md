@@ -1,21 +1,28 @@
 # R2 Desktop Companion
 
 Mascote desktop local para Windows 10/11, em Python/PySide6. Robô branco e azul com
-janela transparente, animações por atlas/PNG e comportamento convencional.
+janela transparente, animações por atlas/PNG e peças articuladas.
 **Não utiliza IA, backend, modelos locais ou telemetria.** O mascote funciona
 offline; somente o atualizador manual consulta o GitHub por solicitação do usuário.
 
-Esta versão funcional usa **arte provisória original**, não os sprites HD finais.
+Os personagens usam arte original em pixels; os recursos dos modelos anteriores
+permanecem preservados.
 O Companion é independente do casemod e não executa nem altera seus scripts de som.
 
-**Versão 1.1.2:** reinício da atualização com ambiente independente e confirmação
-da versão efetivamente carregada antes de anunciar a conclusão. Preserva os três
-droides, a roda por níveis, Droid Garage, ferramentas, minigames e projeções.
-Painéis minimizados são restaurados e a Central de Áudio acompanha as preferências
-salvas ao reabrir. Novidades completas no [changelog](packaging/docs/CHANGELOG.md).
+**Versão 1.2.0:** a Droid Garage reúne sete companheiros. Lumo equilibra-se em
+uma roda, Vigia flutua com sensores e manipuladores independentes, Pico caminha
+com pernas articuladas e cabeça binocular expressiva, e Tranco usa tração própria
+e braços retráteis. Sono, projeção do timer e ferramentas continuam disponíveis.
+Novidades no [changelog](packaging/docs/CHANGELOG.md).
 
-Equipe o Original, Vesper (grafite/bronze) ou Orbita (esférico branco/laranja) sem
-reiniciar. Cada um tem voz, personalidade, personalizações e tema próprios.
+A reação por CPU exige **90%**, com leitura a cada 15 segundos e intervalo mínimo
+de cinco minutos. Requer reações do sistema habilitadas, autonomia disponível e
+droide em repouso; não mede temperatura física.
+
+Equipe R2, Vesper (grafite/bronze), Orbita (esférico branco/laranja), Lumo,
+Vigia, Pico ou Tranco sem reiniciar. Cada um tem voz, personalidade,
+personalizações e tema próprios. A seleção e as preferências individuais são
+salvas automaticamente e mantidas ao reiniciar ou atualizar.
 Orbita rola com corpo e cabeça independentes. O Droid Garage permite explorar
 categorias, reproduzir, repetir, parar e inspecionar frames sem alterar o personagem
 ativo. A Central de Áudio mantém as preferências de cada personagem.
@@ -25,7 +32,7 @@ Consulte a [arquitetura](ARCHITECTURE.md).
 
 ## Executar pelo código
 
-Notas da release: [Changelog](packaging/docs/CHANGELOG.md) e [1.1.2](packaging/docs/release-notes/v1.1.2.md).
+Notas da release: [Changelog](packaging/docs/CHANGELOG.md) e [1.2.0](packaging/docs/release-notes/v1.2.0.md).
 
 Requer Python 3.12+ x64. Combinação exercitada: Python 3.13.12 e Qt/PySide6 6.10.2
 no Windows 10 22H2. Abra PowerShell na raiz deste repositório:
@@ -146,6 +153,16 @@ animações, UI Qt e um teste nativo Windows com uma janela temporária de outro
 processo. Esse teste verifica hit testing e foco sem enviar cliques a aplicações
 do usuário. Os testes gráficos precisam de uma sessão Windows interativa.
 
+`tools/preview_garage.py` exporta poses em 160 px e sequências animadas para
+`local_docs/v12-visual/animations.html`. `tools/generate_garage.py` reproduz
+somente os quatro novos modelos; não regrava os atlas anteriores.
+
+O estresse da roda registra cada sequência e preserva as falhas em uma pasta nova:
+
+```powershell
+.\.venv\Scripts\python.exe tools\stress_radial.py --data-dir .runtime-wheel-stress --cycles 140
+```
+
 Medição curta opcional (gera relatório local e encerra):
 
 ```powershell
@@ -169,7 +186,7 @@ e usa uma release fictícia apenas para validar a interface. O roteiro
 encerramento, backup e reinício com executáveis e transporte local de teste.
 Os relatórios ficam em pastas `.runtime-*`, sem alterar os dados normais.
 
-O ensaio `tools/verify_post_update.py --data-dir .runtime-upgrade-112` usa o build
+O ensaio `tools/verify_post_update.py --data-dir .runtime-upgrade-121` usa o build
 real anterior em `dist/1.1.1/R2Companion` e o ZIP atual. Abre ferramentas e Garage,
 atualiza em cópia isolada, testa a roda no primeiro reinício e compara com abertura
 direta. `--legacy-updater` exercita o instalador anterior; `--fail-startup` injeta
@@ -180,20 +197,28 @@ Para conferir os painéis novos e a reprodução Qt com dados isolados, execute
 `tools\verify_features.py` pelo mesmo Python do ambiente virtual. Esse ensaio
 reproduz um efeito a 5% de volume e salva capturas/diagnóstico em `.runtime-features-v03`.
 Depois do build, `tools\verify_package.py` verifica ZIP/hash e abre o EXE com PATH
-restrito ao Windows. `tools\verify_release.py` ensaia a migração real 1.1.1 → 1.1.2
+restrito ao Windows. `tools\verify_release.py` ensaia a migração real 1.1.1 → versão atual
 em cópias locais; requer também o build anterior preservado em dist/1.1.1.
 
 ## Gerar o executável
 
 ```powershell
 .\.venv\Scripts\python.exe tools\build_windows.py
-.\dist\1.1.2\R2Companion\R2Companion.exe
+.\dist\1.2.0\R2Companion\R2Companion.exe
 ```
 
 O build é Windows x64, one-folder, sem console e sem solicitação de elevação.
 O script mantém o cache do empacotador no projeto. Distribua **toda a pasta**
-`dist\1.1.2\R2Companion`, incluindo `_internal`, assets, `release.json` e licenças.
+`dist\1.2.0\R2Companion`, incluindo `_internal`, assets, `release.json` e licenças.
 O ZIP e SHA-256 são gerados em `dist\R2Companion-Windows-x64.zip` e `.zip.sha256`.
+Para validar uma candidata preservando esses artefatos, use
+`tools\build_windows.py --artifact-label garage-120-rc1`; o rótulo separa
+a pasta, o ZIP e o checksum. `verify_package.py --artifact-label` e os ensaios
+de atualização com `--archive` aceitam esses pacotes locais sem publicá-los.
+Ao testar a candidata com verify_post_update.py, use também
+`--require-navigation-trace`: o verificador aguarda a conclusão registrada do
+smoke antes de iniciar seu próprio fluxo de cliques, inclusive com o instalador
+legado sem confirmação de inicialização.
 Não copie somente o EXE. O spec inclui Qt Multimedia, seus plugins e dependências;
 exclui QML/Quick/Test e outros módulos não utilizados.
 O executável não tem assinatura digital nesta entrega. Antes de publicação,
@@ -203,12 +228,19 @@ das bibliotecas incluídas em [THIRD_PARTY_NOTICES.md](packaging/docs/THIRD_PART
 Diagnóstico do executável, sem usar o diretório normal de dados:
 
 ```powershell
-.\dist\1.1.2\R2Companion\R2Companion.exe --data-dir .runtime-exe --smoke-test
+.\dist\1.2.0\R2Companion\R2Companion.exe --data-dir .runtime-exe --smoke-test
 ```
 
 Se não abrir, consulte `companion.log` no diretório escolhido. Configuração inválida
 usa backup/default; erro de leitura do manifesto/PNG obrigatório impede início e
 gera mensagem/log. Caminho favorito indisponível mostra erro sem chamar um shell.
+
+A navegação também registra `navigation.jsonl` no diretório de dados, com PID,
+identificador da interação, página, animação, gate, callback e estado da ferramenta.
+O arquivo possui rotação de 1 MiB e até três backups. Para incluir os eventos Qt
+de entrada e foco, defina `$env:R2_NAV_TRACE = '1'` antes de iniciar. Remova essa
+variável ou use `0` para manter somente os registros essenciais. A gravação ocorre
+fora da thread da interface; o log não inclui textos de tarefas, notas ou favoritos.
 
 Para atualizar do pacote anterior, encerre a versão antiga pelo menu Sair e extraia
 o novo ZIP em outra pasta. As preferências/favoritos no diretório normal são reutilizados.
@@ -274,7 +306,7 @@ ser removidas com a central fechada. O instalador reconsulta a release e verific
 novamente o checksum publicado, além da validação feita no download pela interface.
 
 A versão 0.2.0 não incluía metadata nem atualizador. Para migrar dela, instale
-manualmente a pasta 1.1.2 completa uma vez; os dados normais serão reutilizados.
+manualmente a pasta 1.2.0 completa uma vez; os dados normais serão reutilizados.
 Mantenha `release.json` e o diretório `_internal` junto ao executável.
 
 Para iniciar com o Windows, copie a instalação para um local estável e marque
@@ -299,16 +331,16 @@ o build sem publicar release; a publicação depende de tag `v*`. A integração
 API pública sem credenciais e pressupõe releases e assets acessíveis publicamente.
 O checksum detecta corrupção; o pacote ainda não tem assinatura digital.
 
-O instalador já distribuído na versão 1.1.1 mantém seu protocolo anterior ao migrar
-para a 1.1.2. O novo executável verifica a correspondência entre código e bundle
-também nessa primeira migração; as atualizações iniciadas pela 1.1.2 usam a
-confirmação completa do reinício.
+O instalador já distribuído na versão 1.1.1 usa seu protocolo anterior de migração.
+O executável atual verifica a correspondência entre código e bundle
+também nessa primeira migração; as atualizações iniciadas a partir da 1.1.2 usam
+a confirmação completa do reinício.
 
 A arquitetura separa pet (estados, animação e movimento), services (áudio,
 Windows, persistência e updates), features (ferramentas) e ui (menus e painéis).
 A documentação interna e evidências ficam em `local_docs/`, ignorado pelo Git. Changelog, notas de versão e avisos de terceiros públicos ficam em `packaging/docs/`.
 
 Continuam pendentes validações físicas em Windows 11, monitores com DPI misto,
-suspensão real e teste prolongado. A versão 1.1.2 mantém a arte original provisória.
+suspensão real e teste prolongado. Os modelos anteriores mantêm seus recursos gráficos originais.
 
 As notas públicas descrevem funcionalidades, correções e instruções de uso. Resultados de testes, investigações e evidências permanecem na documentação interna.

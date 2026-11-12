@@ -1,5 +1,35 @@
 # Changelog
 
+## 1.2.0
+
+- Quatro companheiros na Droid Garage existente: Lumo, Vigia, Pico e Tranco.
+- Lumo equilibra-se sobre uma roda; Vigia flutua com cinco manipuladores; Pico usa passos articulados e cabeça binocular; Tranco oferece braços retráteis e gestos decididos.
+- Vinte animações por novo modelo, vozes, temas e iluminação próprios.
+- Prévia de locomoção independente; projeções acompanham o sensor de cada modelo.
+- Seleção e preferências individuais mantidas ao reiniciar e atualizar. Recursos anteriores preservados.
+- Recuperação de inicialização prioriza R2 quando os recursos do personagem salvo estão indisponíveis.
+
+[Notas da versão](release-notes/v1.2.0.md).
+
+## 1.1.4
+
+- Símbolos Z animados acompanham o sono de Original, Vesper e Orbita.
+- Nova opção **Projetar timer** no Temporizador: acompanhe a contagem pelo holograma do droide, inclusive ao pausar e retomar.
+- A preferência de projeção é salva. Fechar Ferramentas mantém a contagem e a projeção até o término do temporizador.
+- A projeção respeita a configuração de hologramas e pode ser encerrada ou substituída pelo menu Projetar.
+
+[Notas da versão](release-notes/v1.1.4.md).
+
+## 1.1.3
+
+- Correções na abertura da roda após cliques duplos e durante sequências rápidas de cliques.
+- Fechar a roda pelo mascote deixa de reabri-la ao soltar o botão do mouse.
+- Melhorias na seleção de submenus durante animações e na recuperação de transições interrompidas.
+- Correção na exibição de Ferramentas, Droid Garage, Central de Áudio, Preferências e Favoritos após atualizar.
+- A reação de confusão por cliques repetidos passa a aguardar a navegação.
+
+[Notas da versão](release-notes/v1.1.3.md).
+
 ## 1.1.2
 
 - Atualizações verificam a inicialização da nova versão antes de confirmar a conclusão, com recuperação do backup em caso de falha.

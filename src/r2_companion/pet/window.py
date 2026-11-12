@@ -16,6 +16,7 @@ class PetWindow(QWidget):
     drag_finished = Signal()
     exit_requested = Signal()
     geometry_changed = Signal()
+    interaction_event = Signal(str, object)
 
     def __init__(self):
         super().__init__()
@@ -29,6 +30,7 @@ class PetWindow(QWidget):
         self.setToolTip("R2 Companion · arte provisória\nArraste para mover · botão direito para opções")
         self.frame = QPixmap()
         self.visual = None
+        self.articulation = {}
         self.body_angle = self.head_tilt = self.head_offset = 0.0
         self.illumination = None
         self.decoration = False
@@ -59,6 +61,9 @@ class PetWindow(QWidget):
         self.projection_overlay = ProjectionOverlay(self)
         from ..ui.steam import SteamOverlay
         self.steam = SteamOverlay(self)
+        from ..ui.sleep import SleepOverlay
+        self.sleep_effect = SleepOverlay(self)
+        self.timer_projection_source = None
 
     def pet_head(self):
         if self.press_global is not None and not self.dragging:
@@ -78,7 +83,7 @@ class PetWindow(QWidget):
         self.update()
 
     def show_projection(self, kind):
-        if kind not in {"clock", "date"}:
+        if kind not in {"clock", "date", "timer"}:
             return False
         self.clear_projection()
         self.projection_kind = kind
@@ -91,8 +96,16 @@ class PetWindow(QWidget):
         if self.projection_kind is None:
             return
         time_text, date_text = local_clock().split("\n", 1)
+        if self.projection_kind == "timer":
+            value = self.timer_projection_source() if self.timer_projection_source else None
+            if value is None:
+                self.clear_projection()
+                return
+            time_text, date_text = value
         self.projection_text = time_text + ("\n" + date_text if self.projection_kind == "date" else "")
-        picture = QPixmap(320, 164 if self.projection_kind == "date" else 76)
+        if self.projection_kind == "timer":
+            self.projection_text = time_text + "\n" + date_text
+        picture = QPixmap(320, 164 if self.projection_kind in {"date", "timer"} else 76)
         picture.fill(Qt.GlobalColor.transparent)
         painter = QPainter(picture)
         painter.setRenderHint(QPainter.RenderHint.Antialiasing)
@@ -104,7 +117,7 @@ class PetWindow(QWidget):
         painter.setPen(QColor(color("hologram")))
         painter.setFont(QFont("Consolas", 30, QFont.Weight.Bold))
         painter.drawText(QRectF(8, 6, 304, 62), Qt.AlignmentFlag.AlignCenter, time_text)
-        if self.projection_kind == "date":
+        if self.projection_kind in {"date", "timer"}:
             painter.setFont(QFont("Segoe UI", 18))
             painter.drawText(QRectF(12, 67, 296, 90), Qt.AlignmentFlag.AlignCenter | Qt.TextFlag.TextWordWrap, date_text)
         painter.end()
@@ -122,12 +135,14 @@ class PetWindow(QWidget):
         self.update()
 
     def stop_effects(self):
+        self.sleep_effect.set_active(False)
         self.steam.set_active(False)
         self.affection_timer.stop()
         self.hologram_timer.stop()
         self.clear_projection()
 
     def showEvent(self, event):
+        self.sleep_effect.reposition()
         self.steam.reposition()
         if self.projection_kind:
             self.refresh_projection()
@@ -135,6 +150,8 @@ class PetWindow(QWidget):
         super().showEvent(event)
 
     def hideEvent(self, event):
+        self.sleep_effect.timer.stop()
+        self.sleep_effect.hide()
         self.projection_timer.stop()
         self.projection_overlay.hide()
         self.steam.timer.stop()
@@ -144,13 +161,17 @@ class PetWindow(QWidget):
     def mouseDoubleClickEvent(self, event):
         if event.button() == Qt.MouseButton.LeftButton:
             self.double_click = True
+            self.interaction_event.emit("mouse_double_click_received", {
+                "press_present": self.press_global is not None, "spontaneous": event.spontaneous()})
             self.double_clicked.emit()
             event.accept()
 
     def set_frame(self, frame: QPixmap) -> None:
-        from ..droids.visuals import DroidVisual
-        if isinstance(frame, DroidVisual):
+        from ..droids.visuals import VISUAL_TYPES
+        if isinstance(frame, VISUAL_TYPES):
             self.visual = frame
+            if self.projection_kind:
+                self.projection_overlay.reposition()
             self.update()
             return
         self.visual = None
@@ -180,9 +201,22 @@ class PetWindow(QWidget):
         self.body_angle, self.head_tilt, self.head_offset = angle, tilt, offset
         self.update()
 
+    def set_articulation(self, channels):
+        self.articulation = dict(channels)
+        if self.projection_kind:
+            self.projection_overlay.reposition()
+        self.update()
+
+    def projection_anchor(self):
+        from ..droids.rig import ArticulatedVisual
+        if isinstance(self.visual, ArticulatedVisual):
+            return self.visual.anchor(self.articulation)
+        return 0.54, 0.24
+
     def configure_droid(self, profile, preferences):
         self.tinted_frames.clear()
         self.set_motion(0, 0, 0)
+        self.set_articulation({})
         self.setWindowTitle(f"{profile.name} · R2 Companion")
         self.setToolTip(f"{profile.name}\nArraste para mover · botão direito para opções\n{profile.art_status}")
         custom = profile.customizations(preferences.customization)
@@ -222,7 +256,7 @@ class PetWindow(QWidget):
         if self.visual is not None:
             from ..droids.visuals import paint_visual
             paint_visual(painter, self.rect(), self.visual, self.body_angle, self.head_tilt,
-                         self.head_offset, self.illumination, self.decoration)
+                         self.head_offset, self.illumination, self.decoration, self.articulation)
         else:
             painter.drawPixmap(self.rect(), self.frame)
         if not self.hologram.isNull() and not self.projection_kind:
@@ -232,12 +266,16 @@ class PetWindow(QWidget):
 
     def mousePressEvent(self, event: QMouseEvent):
         if event.button() == Qt.MouseButton.LeftButton:
+            self.double_click = False
             self.press_global = event.globalPosition()
             self.anchor = QPointF(event.position().x() / max(1, self.width()), event.position().y() / max(1, self.height()))
             self.affection = False
             if 0.28 <= self.anchor.x() <= 0.72 and 0.08 <= self.anchor.y() <= 0.36:
                 self.affection_timer.start()
             event.accept()
+        self.interaction_event.emit("mouse_press_received", {
+            "accepted": event.isAccepted(), "spontaneous": event.spontaneous(),
+            "source": event.source().name, "button": event.button().name})
 
     def mouseMoveEvent(self, event: QMouseEvent):
         if self.press_global is None or not (event.buttons() & Qt.MouseButton.LeftButton):
@@ -251,6 +289,10 @@ class PetWindow(QWidget):
         event.accept()
 
     def mouseReleaseEvent(self, event: QMouseEvent):
+        self.interaction_event.emit("mouse_release_received", {
+            "press_present": self.press_global is not None, "dragging": self.dragging,
+            "double_click": self.double_click, "affection": self.affection,
+            "spontaneous": event.spontaneous(), "source": event.source().name})
         if event.button() == Qt.MouseButton.LeftButton and self.press_global is not None:
             self.affection_timer.stop()
             was_dragging = self.dragging
@@ -260,8 +302,10 @@ class PetWindow(QWidget):
                 self.drag_finished.emit()
             elif not self.double_click and not self.affection:
                 self.clicked.emit()
-            self.double_click = False
             event.accept()
+        if event.button() == Qt.MouseButton.LeftButton:
+            self.double_click = False
+        self.interaction_event.emit("mouse_release_delivered", {"accepted": event.isAccepted()})
 
     def contextMenuEvent(self, event):
         self.context_requested.emit(event.globalPos())

@@ -39,7 +39,9 @@ jobs:
           if ($null -eq $report.navigation -or @($report.navigation.PSObject.Properties).Count -lt 10 -or @($report.navigation.PSObject.Properties | Where-Object { $_.Value -ne $true }).Count -ne 0) { throw 'Navigation smoke failed' }
           if ($report.active_timers_after_shutdown -ne 0) { throw 'Timers remained active' }
           if ($report.movement_timer_after_shutdown) { throw 'Movement timer remained active' }
-          if ($report.droids.Count -ne 3 -or @($report.droids | Where-Object { -not $_.accepted }).Count -ne 0) { throw 'Droid smoke failed' }
+          $expectedDroids = @(Get-ChildItem 'src/r2_companion/assets/droids' -Filter profile.json -Recurse | ForEach-Object { (Get-Content $_.FullName -Raw | ConvertFrom-Json).id } | Sort-Object)
+          $actualDroids = @($report.droids | ForEach-Object { $_.id } | Sort-Object)
+          if (@(Compare-Object $expectedDroids $actualDroids).Count -ne 0 -or @($report.droids | Where-Object { -not $_.accepted }).Count -ne 0) { throw 'Droid smoke failed' }
           if ($report.audio_effects -le 0 -or ($report.audio_output_available -and ($report.audio_errors -ne 0 -or $report.audio_loaded_effects -ne $report.audio_effects))) { throw 'Audio resource smoke failed' }
       - uses: actions/upload-artifact@v4
         with:

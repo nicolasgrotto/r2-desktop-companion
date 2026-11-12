@@ -49,8 +49,10 @@ if not args.package_only:
 directory = root / "dist" / (version + ("-" + args.artifact_label if args.artifact_label else "")) / "R2Companion"
 if not (directory / "R2Companion.exe").is_file():
     raise SystemExit("Executavel nao encontrado.")
-(directory / "release.json").write_text(json.dumps({"schema_version": 1, "version": version,
-                                                   "repository": repository}, indent=2) + "\n", encoding="utf-8")
+metadata = {"schema_version": 1, "version": version, "repository": repository}
+if args.artifact_label:
+    metadata["build"] = args.artifact_label
+(directory / "release.json").write_text(json.dumps(metadata, indent=2) + "\n", encoding="utf-8")
 archive = root / ("dist/R2Companion-Windows-x64" + ("-" + args.artifact_label if args.artifact_label else "") + ".zip")
 with ZipFile(archive, "w", compression=ZIP_DEFLATED, compresslevel=6) as output:
     for path in sorted(directory.rglob("*")):

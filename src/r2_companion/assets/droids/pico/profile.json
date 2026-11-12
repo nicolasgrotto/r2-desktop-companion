@@ -1,0 +1,249 @@
+{
+  "profile_version": 1,
+  "id": "pico",
+  "name": "Pico",
+  "description": "Bípede de campo branco e vermelho. Seus olhos binoculares, pescoço e pernas articuladas revelam curiosidade.",
+  "manifest": "droids/pico/animations/manifest.json",
+  "renderer": "rigged",
+  "animations": {
+    "IDLE": "Repouso",
+    "BLINK": "Expressões",
+    "LOOK_AROUND": "Expressões",
+    "WALK": "Locomoção",
+    "HAPPY": "Expressões",
+    "CURIOUS": "Expressões",
+    "SLEEP": "Repouso",
+    "INTERACT": "Interações",
+    "NOTIFICATION": "Interações",
+    "SURPRISED": "Expressões",
+    "WORK": "Inspeção",
+    "CONFUSED": "Expressões",
+    "DRAG": "Locomoção",
+    "RECOVER": "Locomoção",
+    "WAKE": "Repouso",
+    "GREETING": "Interações",
+    "WORRIED": "Inspeção",
+    "OVERHEAT": "Inspeção",
+    "LOOK_LEFT": "Expressões",
+    "LOOK_RIGHT": "Expressões"
+  },
+  "audio": {
+    "voice": "droids/pico/audio/voice",
+    "sounds": "sounds",
+    "phrases": {
+      "curious": [
+        [
+          "rise",
+          "trill"
+        ],
+        [
+          "question",
+          "chirp",
+          "trill"
+        ],
+        [
+          "servo",
+          "rise",
+          "warble"
+        ]
+      ],
+      "happy": [
+        [
+          "bright",
+          "chirp",
+          "spark"
+        ],
+        [
+          "spark",
+          "bright",
+          "chirp"
+        ],
+        [
+          "chirp",
+          "trill",
+          "bright"
+        ]
+      ],
+      "confused": [
+        [
+          "answer",
+          "question",
+          "fall"
+        ],
+        [
+          "warble",
+          "answer",
+          "low"
+        ],
+        [
+          "question",
+          "warble",
+          "fall"
+        ]
+      ],
+      "surprised": [
+        [
+          "spark",
+          "question"
+        ],
+        [
+          "bright",
+          "spark"
+        ],
+        [
+          "spark",
+          "rise"
+        ]
+      ],
+      "worried": [
+        [
+          "low",
+          "fall"
+        ],
+        [
+          "warble",
+          "low"
+        ],
+        [
+          "answer",
+          "fall",
+          "low"
+        ]
+      ],
+      "greeting": [
+        [
+          "spark",
+          "chirp",
+          "rise"
+        ],
+        [
+          "trill",
+          "bright"
+        ],
+        [
+          "chirp",
+          "spark",
+          "answer"
+        ]
+      ],
+      "sleep": [
+        [
+          "soft",
+          "low"
+        ],
+        [
+          "soft",
+          "soft"
+        ],
+        [
+          "answer",
+          "soft"
+        ]
+      ],
+      "wake": [
+        [
+          "low",
+          "rise",
+          "chirp"
+        ],
+        [
+          "soft",
+          "question",
+          "bright"
+        ],
+        [
+          "rise",
+          "answer"
+        ]
+      ],
+      "celebrate": [
+        [
+          "rise",
+          "trill",
+          "spark",
+          "bright"
+        ],
+        [
+          "bright",
+          "chirp",
+          "trill",
+          "spark"
+        ],
+        [
+          "chirp",
+          "rise",
+          "bright"
+        ]
+      ],
+      "affection": [
+        [
+          "soft",
+          "warble",
+          "chirp"
+        ],
+        [
+          "warble",
+          "soft"
+        ],
+        [
+          "soft",
+          "answer",
+          "chirp"
+        ]
+      ]
+    }
+  },
+  "personality": "curious",
+  "movement": "biped",
+  "canvas": [
+    96,
+    96
+  ],
+  "speed": 0.86,
+  "theme": {
+    "name": "Expedição",
+    "radius": 12,
+    "colors": {
+      "primary": "#a23e39",
+      "secondary": "#183f68",
+      "accent": "#5ed4ff",
+      "background": "#edf3f9",
+      "panel": "#ffffff",
+      "border": "#b6c9db",
+      "text": "#14314c",
+      "muted": "#4e657a",
+      "hero": "#102c48",
+      "hero_text": "#f5faff",
+      "hero_muted": "#b5d0e7",
+      "selected": "#f6e1de",
+      "focus": "#a23e39",
+      "button_text": "#ffffff",
+      "error": "#b03131",
+      "disabled": "#637588",
+      "notification": "#102c48",
+      "hologram": "#ffb5a6",
+      "decoration": "#386685"
+    }
+  },
+  "customization": {
+    "illumination": {
+      "label": "Luz do sensor",
+      "default": "mint",
+      "options": {
+        "mint": {
+          "label": "Menta",
+          "color": "#9de6cf"
+        },
+        "amber": {
+          "label": "Âmbar",
+          "color": "#ffbf70"
+        },
+        "blue": {
+          "label": "Azul",
+          "color": "#8cdbff"
+        }
+      }
+    }
+  },
+  "art_status": "Pixel art original · peças articuladas em 96 × 96"
+}

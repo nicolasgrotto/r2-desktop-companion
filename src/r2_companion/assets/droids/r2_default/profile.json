@@ -1,7 +1,7 @@
 {
   "profile_version": 1,
   "id": "r2_default",
-  "name": "R2 · Original",
+  "name": "R2",
   "description": "Seu companheiro branco e azul, com o atlas e as preferências anteriores preservados.",
   "manifest": "characters/default/manifest.json",
   "renderer": "atlas",

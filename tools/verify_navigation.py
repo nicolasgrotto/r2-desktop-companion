@@ -113,7 +113,7 @@ def main():
         updates.closing = True
         updates.close()
         pet.shutdown()
-    report["passed"] = not report["callback_errors"] and len(report["profiles"]) == 3
+    report["passed"] = not report["callback_errors"] and set(report["profiles"]) == set(pet.droids.profiles)
     (directory / "validation.json").write_text(json.dumps(report, ensure_ascii=False, indent=2), encoding="utf-8")
     print(json.dumps(report, ensure_ascii=False))
     return 0 if report["passed"] else 1

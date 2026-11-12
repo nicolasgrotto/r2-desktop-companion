@@ -8,7 +8,7 @@ from pathlib import Path
 import sys
 import time
 
-from PySide6.QtCore import QObject, QPointF, QRectF, QSizeF, QStandardPaths, QTimer, QUrl, Qt, qVersion
+from PySide6.QtCore import QEvent, QObject, QPointF, QRectF, QSizeF, QStandardPaths, QTimer, QUrl, Qt, qVersion
 from PySide6.QtGui import QDesktopServices, QGuiApplication, QIcon
 from PySide6.QtWidgets import QApplication, QMessageBox, QSystemTrayIcon
 
@@ -16,7 +16,7 @@ from . import __version__
 from .features.launcher import launch
 from .features.locations import validate_location
 from .features.system_monitor import SystemMonitor
-from .features.timer import Countdown
+from .features.timer import Countdown, TimerState
 from .features.productivity import ProductivityStore
 from .features.minigames import open_game
 from .features.diagnostics import collect_diagnostics
@@ -33,13 +33,15 @@ from .services.audio import AudioService
 from .services.storage import ConfigStore
 from .services.system_info import SystemInfo
 from .services.tasks import LocalTasks
+from .services.navigation_trace import NavigationTrace
 from .services.updates import UpdateService, confirm_startup, runtime_identity
 from .services.windows import (SessionEvents, StartupService, foreground_fullscreen, idle_seconds,
                                packaged_executable, uptime, foreground_window_rect)
+from .services.windows import reveal_requested_window
 from .ui.bubble import Bubble
 from .ui.context_menu import create_menu
 from .ui.settings import SettingsDialog
-from .ui.tools import ToolsDialog
+from .ui.tools import ToolsDialog, timer_text
 from .ui.tray import Tray
 from .ui.radial import RadialMenu
 from .ui.targets import LaunchpadDialog
@@ -79,7 +81,7 @@ class Companion(QObject):
         if identifier not in self.droids.profiles:
             store.notices.append("Personagem salvo indisponível; o padrão foi restaurado e suas preferências foram preservadas.")
             identifier = self.droids.default_id
-        candidates = [identifier] + [key for key in self.droids.profiles if key != identifier]
+        candidates = list(dict.fromkeys([identifier, self.droids.default_id, *self.droids.profiles]))
         for candidate in candidates:
             try:
                 profile = self.droids.get(candidate)
@@ -112,7 +114,21 @@ class Companion(QObject):
         self.updates = UpdateService(store.directory)
         self.tasks = LocalTasks()
         self.startup = StartupService(packaged_executable())
-        self.tools = ToolsDialog(self.countdown, self.monitor, store.settings.timer_seconds, self.productivity)
+        self.tools = ToolsDialog(self.countdown, self.monitor, store.settings.timer_seconds, self.productivity,
+                                 project_timer=store.settings.timer_projection)
+        self._timer_projection_run = 0
+        self.window.timer_projection_source = self.timer_projection_text
+        self.countdown.changed.connect(self.update_timer_projection)
+        self.tools.project_timer.toggled.connect(self.timer_projection_toggled)
+        self.navigation_trace = NavigationTrace(store.directory)
+        self.radial.trace = self.trace_navigation
+        self.radial.begin_attempt = self.navigation_trace.begin
+        self.radial.trigger_widget = self.window
+        self._pet_press_pending = False
+        self._pending_confused_reaction = False
+        self._destination_attempts = {}
+        self.window.interaction_event.connect(self.trace_pet_input)
+        self.qt_app.installEventFilter(self)
         self.icon = QIcon(str(ASSETS / "icons/companion.png"))
         self.qt_app.setWindowIcon(self.icon)
         self.tray = Tray(self.icon)
@@ -129,7 +145,7 @@ class Companion(QObject):
         self.window.drag_finished.connect(self.drag_finished)
         self.window.exit_requested.connect(self.shutdown)
         self.radial.opened.connect(lambda: self.controller.set_gate("radial", True))
-        self.radial.dismissed.connect(lambda: self.controller.set_gate("radial", False))
+        self.radial.dismissed.connect(self.radial_dismissed)
         self.radial.action_selected.connect(self.radial_action)
         for panel in (self.apps_panel, self.locations_panel):
             panel.target_requested.connect(self.open_target)
@@ -180,8 +196,55 @@ class Companion(QObject):
         self.greeting_timer.start(750)
         for notice in store.notices + self.productivity.notices:
             QTimer.singleShot(100, lambda message=notice: self.warning(message))
+        self.radial.record("companion_ready")
+
+    def trace_navigation(self, event, **fields):
+        self.navigation_trace.record(event, gates=sorted(self.controller.gates),
+            controller_state=self.controller.state.value, pet_visible=self.window.isVisible(),
+            pet_minimized=self.window.isMinimized(), pet_active=self.window.isActiveWindow(), **fields)
+
+    def trace_pet_input(self, event, fields):
+        if event in {"mouse_press_received", "mouse_double_click_received"}:
+            self.navigation_trace.begin()
+            self._pet_press_pending = event == "mouse_press_received"
+        elif event == "mouse_release_received" and (not fields["press_present"] or fields["dragging"]
+                or fields["double_click"] or fields["affection"]):
+            self.radial.dismissed_by_trigger_press = False
+        self.radial.record(event, **fields)
+
+    def navigation_destination(self, action):
+        if action in self.tools.pages or action in {"tools", "tools_center"}:
+            return self.tools
+        return {"garage": self.garage_dialog, "audio": self.audio_dialog,
+                "settings": self.settings_dialog, "apps": self.apps_panel,
+                "locations": self.locations_panel}.get(action)
+
+    def navigation_role(self, action):
+        if action in self.tools.pages or action in {"tools", "tools_center"}:
+            return "tools"
+        return action
+
+    def eventFilter(self, obj, event):
+        if event.type() in {QEvent.Type.Show, QEvent.Type.Hide, QEvent.Type.WindowActivate,
+                            QEvent.Type.WindowDeactivate, QEvent.Type.WindowStateChange, QEvent.Type.Close, QEvent.Type.Expose}:
+            for role, widget in (("pet", self.window), ("tools", self.tools),
+                    ("garage", self.garage_dialog), ("audio", self.audio_dialog),
+                    ("settings", self.settings_dialog), ("apps", self.apps_panel), ("locations", self.locations_panel)):
+                if widget is not None and (obj is widget or obj is widget.windowHandle()):
+                    context = self._destination_attempts.get(role, {})
+                    self.radial.record("component_event", component=role, qt_event=event.type().name,
+                        component_visible=widget.isVisible(), component_minimized=widget.isMinimized(),
+                        component_active=widget.isActiveWindow(), component_exposed=bool(
+                            widget.windowHandle() and widget.windowHandle().isExposed()), **context)
+                    break
+        return False
 
     def apply_preferences(self, settings):
+        blocked = self.tools.project_timer.blockSignals(True)
+        self.tools.project_timer.setChecked(settings.timer_projection)
+        self.tools.project_timer.blockSignals(blocked)
+        self.tools.project_timer.setEnabled(settings.holograms)
+        self.update_timer_projection()
         self.behavior.settings = deepcopy(settings.behavior)
         self.positioning.display_size = settings.visual_scale
         self.positioning.aspect = self.profile.canvas[0] / self.profile.canvas[1]
@@ -223,7 +286,7 @@ class Companion(QObject):
             dialog = factory(self)
             setattr(self, attribute, dialog)
         fit_dialog(dialog, self.window)
-        dialog.showNormal()
+        self.present_dialog(dialog)
         dialog.raise_()
         dialog.activateWindow()
 
@@ -330,7 +393,33 @@ class Companion(QObject):
         settings.timer_seconds = seconds
         self.store.apply(settings, notify=False)
 
+    def timer_projection_toggled(self, enabled):
+        settings = deepcopy(self.store.settings)
+        settings.timer_projection = enabled
+        self.store.apply(settings, notify=False)
+        self.update_timer_projection(force=True)
+
+    def timer_projection_text(self):
+        if self.closed or self.countdown.state not in {TimerState.RUNNING, TimerState.PAUSED}:
+            return None
+        return timer_text(self.countdown.remaining), self.countdown.state.value
+
+    def update_timer_projection(self, force=False):
+        new_run = self._timer_projection_run != self.countdown.run_id
+        self._timer_projection_run = self.countdown.run_id
+        active = (not self.closed and self.store.settings.holograms and self.tools.project_timer.isChecked()
+                  and self.countdown.state in {TimerState.RUNNING, TimerState.PAUSED})
+        if not active:
+            if self.window.projection_kind == "timer":
+                self.window.clear_projection()
+            return
+        if force or new_run:
+            self.window.show_projection("timer")
+        elif self.window.projection_kind == "timer":
+            self.window.refresh_projection()
+
     def state_changed(self, state):
+        self.window.sleep_effect.set_active(state == State.SLEEP)
         self.window.steam.set_active(state == State.OVERHEAT)
         self.audio.set_context(bool(self.controller.gates - {"radial"}) or self.fullscreen_active,
                                state == State.SLEEP or self.controller.inactive)
@@ -357,20 +446,36 @@ class Companion(QObject):
         self.controller.interact()
 
     def left_click(self):
+        if not self._pet_press_pending:
+            self.navigation_trace.begin()
+        self._pet_press_pending = False
+        self.radial.record("click_recognized")
+        if self.radial.dismissed_by_trigger_press:
+            self.radial.dismissed_by_trigger_press = False
+            self.radial.record("click_completed", reason="wheel_dismissed_on_press")
+            return
         if self.controller.state in {State.SLEEP, State.WAKE}:
+            self.radial.record("open_redirected", reason="wake")
             self.radial.hide()
             self.last_activity = time.monotonic()
             self.controller.wake_by_click()
             return
-        if self.awareness.click():
-            self.radial.hide()
-            self.controller.react(State.CONFUSED)
-            return
         if self.radial.isVisible():
+            self.radial.record("dismiss_requested", reason="pet_toggle")
             self.radial.hide()
             return
+        if self.awareness.click():
+            self._pending_confused_reaction = True
+            self.radial.record("reaction_queued", reason="repeated_pet_clicks")
         self.interact()
-        self.radial.popup_near(self.window, self.controller.paused)
+        self.radial.popup_near(self.window, self.controller.paused, new_attempt=False)
+
+    def radial_dismissed(self):
+        self.controller.set_gate("radial", False)
+        if self._pending_confused_reaction and not self.closed:
+            if self.controller.react(State.CONFUSED):
+                self._pending_confused_reaction = False
+                self.radial.record("reaction_started", reaction="CONFUSED")
 
     def double_click(self):
         if self.controller.state in {State.SLEEP, State.WAKE}:
@@ -396,15 +501,37 @@ class Companion(QObject):
         return actions
 
     def radial_action(self, action):
+        self.radial.record("callback_started", action=action)
         callback = self.navigation_actions().get(action)
-        if callback is not None:
-            callback()
+        if not callable(callback):
+            error = ValueError("Ação de navegação sem callback válido")
+            self.radial.record("callback_invalid", action=action, error=error)
+            raise error
+        self.radial.record("controller_dispatch", action=action)
+        self.radial.record("destination_requested", action=action)
+        self._destination_attempts[self.navigation_role(action)] = {
+            "attempt": self.navigation_trace.attempt, "action": action}
+        try:
+            result = callback()
+        except Exception as error:
+            self.radial.record("callback_failed", action=action, error=error)
+            raise
+        destination = self.navigation_destination(action)
+        if destination is not None:
+            self.radial.record("destination_observed", action=action,
+                destination_visible=destination.isVisible(), destination_minimized=destination.isMinimized(),
+                destination_active=destination.isActiveWindow(), destination_page=next(
+                    (name for name, page in self.tools.pages.items() if page is self.tools.tabs.currentWidget()), None)
+                    if destination is self.tools else None)
+        self.radial.record("callback_completed", action=action,
+                           outcome="rejected" if result is False else "returned")
+        return result
 
     def show_launchpad(self, panel):
         self.radial.hide()
         panel.set_settings(self.store.settings)
         fit_dialog(panel, self.window)
-        panel.showNormal()
+        self.present_dialog(panel)
         panel.raise_()
         panel.activateWindow()
 
@@ -422,13 +549,13 @@ class Companion(QObject):
                 self.behavior.accepted(State.WALK)
 
     def drag_started(self):
+        self.radial.hide()
         self.controller.set_gate("drag", True)
         self.controller.enter(State.DRAG)
 
     def drag_finished(self):
         movement = self.positioning.movement
-        drag_tilt = getattr(movement, "head_tilt", 0)
-        drag_offset = getattr(movement, "head_offset", 0)
+        captured_motion = movement.capture() if movement else None
         self.last_activity = time.monotonic()
         self.positioning.settle()
         saved = self.positioning.snapshot()
@@ -442,9 +569,7 @@ class Companion(QObject):
         self.controller.set_gate("drag", False)
         self.controller.react(State.RECOVER)
         if movement and not self.controller.gates:
-            if hasattr(movement, "head_tilt"):
-                movement.head_tilt, movement.head_offset = drag_tilt, drag_offset
-                self.window.set_motion(movement.angle, drag_tilt, drag_offset)
+            movement.restore(captured_motion)
             movement.release()
 
     def check_idle(self):
@@ -599,9 +724,18 @@ class Companion(QObject):
     def show_tools(self):
         self.radial.hide()
         fit_dialog(self.tools, self.window)
-        self.tools.showNormal()
+        self.present_dialog(self.tools)
         self.tools.raise_()
         self.tools.activateWindow()
+
+    def present_dialog(self, dialog):
+        dialog.showNormal()
+        native = reveal_requested_window(dialog)
+        if native is not None:
+            self.radial.record("window_presentation", component=type(dialog).__name__, **native)
+            if not native["native_visible"]:
+                dialog.close()
+                raise RuntimeError("A janela solicitada não foi exibida pelo Windows")
 
     def project_tool(self, kind):
         if kind not in {"clock", "date"}:
@@ -634,14 +768,15 @@ class Companion(QObject):
 
     def check_updates(self):
         try:
-            self.updates.launch_center()
+            return self.updates.launch_center()
         except (OSError, ValueError) as error:
             QMessageBox.information(self.tools if self.tools.isVisible() else None, "Atualizações do R2", str(error))
+            return False
 
     def show_settings(self):
         self.radial.hide()
         if self.settings_dialog is not None:
-            self.settings_dialog.showNormal()
+            self.present_dialog(self.settings_dialog)
             self.settings_dialog.raise_()
             self.settings_dialog.activateWindow()
             return
@@ -661,7 +796,9 @@ class Companion(QObject):
         dialog.applied.connect(self.save_settings)
         dialog.finished.connect(self.settings_closed)
         fit_dialog(dialog, self.window)
-        dialog.show()
+        self.present_dialog(dialog)
+        dialog.raise_()
+        dialog.activateWindow()
 
     def settings_closed(self, result):
         dialog = self.settings_dialog
@@ -716,6 +853,7 @@ class Companion(QObject):
             return
         self.positioning.settle()
         self.closed = True
+        self.radial.record("shutdown_started")
         self.reactions.close()
         for dialog in (self.garage_dialog, self.audio_dialog):
             if dialog is not None:
@@ -751,6 +889,8 @@ class Companion(QObject):
         self.qt_app.removeNativeEventFilter(self.session_events)
         self.qt_app.aboutToQuit.disconnect(self.shutdown)
         self.store.close()
+        self.qt_app.removeEventFilter(self)
+        self.navigation_trace.close()
         log.info("R2 Companion encerrado; timers interrompidos")
         self.qt_app.quit()
 
@@ -841,22 +981,17 @@ def main(argv=None) -> int:
     if args.smoke_test:
         droid_checks = []
         navigation_checks = {}
-        if args.smoke_droids:
-            for index, identifier in enumerate(companion.droids.profiles):
-                def check_droid(identifier=identifier):
-                    accepted = companion.equip_droid(identifier)
-                    companion.window.grab().save(str(directory / f"droid-{identifier}.png"))
-                    droid_checks.append({"id": identifier, "accepted": accepted, "error": companion.droid_error,
-                                         "diagnostics": companion.droid_diagnostics()})
-                QTimer.singleShot(200 + index * 450, check_droid)
         if args.smoke_navigation:
+            navigation_checks.update(tools_level=False, tools_visible=False)
             def start_navigation_smoke():
+                companion.radial.page_ready.connect(navigation_page_ready)
                 companion.radial.popup_near(companion.window)
                 companion.radial.buttons["tools"].click()
+            def navigation_page_ready(level):
+                if level == "tools":
+                    companion.radial.page_ready.disconnect(navigation_page_ready)
+                    finish_navigation_smoke()
             def finish_navigation_smoke():
-                if companion.radial.transitioning:
-                    QTimer.singleShot(25, finish_navigation_smoke)
-                    return
                 navigation_checks["tools_level"] = companion.radial.level == "tools"
                 companion.radial.grab().save(str(directory / "wheel-tools.png"))
                 if "tools_center" in companion.radial.buttons:
@@ -876,8 +1011,35 @@ def main(argv=None) -> int:
                 garage.grab().save(str(directory / "garage.png"))
                 garage.close()
                 navigation_checks["gallery_removed"] = not any("Galeria" in action.text() for action in companion.menu.action_refs)
-            QTimer.singleShot(1500, start_navigation_smoke)
-            QTimer.singleShot(2000, finish_navigation_smoke)
+                companion.controller.enter(State.SLEEP)
+                navigation_checks["sleep_symbols"] = (companion.window.sleep_effect.active
+                    and companion.window.sleep_effect.isVisible() and companion.window.sleep_effect.timer.isActive())
+                companion.window.sleep_effect.grab().save(str(directory / "sleep-symbols.png"))
+                companion.controller.enter(State.IDLE)
+                companion.tools.project_timer.setChecked(True)
+                companion.tools.set_duration(60)
+                companion.tools.start_button.click()
+                navigation_checks["timer_projection"] = (companion.window.projection_kind == "timer"
+                    and "01:00" in companion.window.projection_text)
+                companion.countdown.pause()
+                navigation_checks["timer_projection_pause"] = "Pausado" in companion.window.projection_text
+                companion.window.projection_overlay.grab().save(str(directory / "projection-timer.png"))
+                companion.tools.project_timer.setChecked(False)
+                companion.countdown.close()
+                navigation_checks["timer_projection_off"] = companion.window.projection_kind is None
+                companion.radial.record("navigation_smoke_completed", passed=all(navigation_checks.values()))
+        def check_next_droid(index=0):
+            identifiers = list(companion.droids.profiles) if args.smoke_droids else []
+            if index < len(identifiers):
+                identifier = identifiers[index]
+                accepted = companion.equip_droid(identifier)
+                companion.window.grab().save(str(directory / f"droid-{identifier}.png"))
+                droid_checks.append({"id": identifier, "accepted": accepted, "error": companion.droid_error,
+                                     "diagnostics": companion.droid_diagnostics()})
+                QTimer.singleShot(0, lambda: check_next_droid(index + 1))
+            elif args.smoke_navigation:
+                start_navigation_smoke()
+        QTimer.singleShot(0, check_next_droid)
         def finish_smoke():
             import psutil
             process = psutil.Process()
@@ -907,7 +1069,8 @@ def main(argv=None) -> int:
                  companion.desktop_timer, companion.tools.clock_timer, companion.bubble.timer,
                  companion.radial.dismiss_timer, companion.radial.deactivate_timer, companion.greeting_timer, companion.awareness.timer,
                  companion.productivity.timer, companion.tray.notice.timer, companion.window.affection_timer,
-                 companion.window.hologram_timer, companion.window.projection_timer, companion.window.steam.timer, companion.tools.diagnostics_page.timer, store.timer])
+                 companion.window.hologram_timer, companion.window.projection_timer, companion.window.steam.timer,
+                 companion.window.sleep_effect.timer, companion.tools.diagnostics_page.timer, store.timer])
             (directory / "smoke.json").write_text(json.dumps(report, indent=2), encoding="utf-8")
         QTimer.singleShot(round(args.smoke_seconds * 1000), finish_smoke)
     return app.exec()

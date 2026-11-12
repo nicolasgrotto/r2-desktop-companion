@@ -8,6 +8,7 @@ from ..core.config import number
 from ..pet.animation import Clip, Frame, load_clips
 from ..pet.state import State
 from .profiles import resource
+from .rig import ArticulatedVisual, load_rig_clips
 
 
 @dataclass(frozen=True)
@@ -21,7 +22,13 @@ class DroidVisual:
     lift: float = 0
 
 
-def paint_visual(painter, rect, visual, angle=0, tilt=0, offset=0, illumination=None, decoration=False):
+VISUAL_TYPES = (DroidVisual, ArticulatedVisual)
+
+
+def paint_visual(painter, rect, visual, angle=0, tilt=0, offset=0, illumination=None, decoration=False, motion=None):
+    if isinstance(visual, ArticulatedVisual):
+        visual.paint(painter, rect, illumination, motion)
+        return
     painter.save()
     painter.translate(rect.x(), rect.y())
     painter.scale(rect.width() / 64, rect.height() / 64)
@@ -46,6 +53,8 @@ def paint_visual(painter, rect, visual, angle=0, tilt=0, offset=0, illumination=
 def load_profile_clips(profile):
     if profile.renderer == "atlas":
         return load_clips(profile.manifest, fill_missing=False, resource_root=profile.manifest.parent.parent)
+    if profile.renderer == "rigged":
+        return load_rig_clips(profile)
     data = json.loads(profile.manifest.read_text(encoding="utf-8"))
     root = profile.manifest.parent
     images = []

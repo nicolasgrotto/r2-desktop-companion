@@ -1,6 +1,13 @@
 # Arquitetura do R2 Desktop Companion
 
-Versão 1.1.2. Aplicativo local Python/PySide6 para Windows 10/11, com uma
+SleepOverlay desenha símbolos Z durante SLEEP, sem capturar entrada. Ocultar o
+mascote suspende o efeito; despertar e encerramento param seu timer. Countdown
+continua como fonte única da contagem projetada, atualizada pelo timer de
+hologramas. A preferência timer_projection é aditiva no schema 1 e começa
+desativada em configurações antigas. Pausa, retomada, reinício e conclusão usam
+os sinais existentes; ticks não substituem projeções escolhidas manualmente.
+
+Versão 1.2.0. Aplicativo local Python/PySide6 para Windows 10/11, com uma
 QApplication por processo, sem backend, modelos de IA ou telemetria.
 
 ## Composição
@@ -28,16 +35,33 @@ flowchart LR
 
 ## Personagens, movimento e áudio
 
-DroidRegistry valida e registra perfis de Original, Vesper e Orbita em
+DroidRegistry valida e registra perfis de R2, Vesper, Orbita, Lumo, Vigia, Pico e Tranco em
 `assets/droids/`. DroidProfile descreve tema, catálogo, renderer, áudio,
 personalidade e personalizações. Os atlas PNG anteriores continuam preservados;
 DroidVisual permite corpo e cabeça independentes na renderização em camadas.
 
+ArticulatedVisual acrescenta o manifesto v3 (`renderer: rigged`), sem alterar
+os formatos v1/v2. Cada PNG de 96 × 96 tem junta, pai, ordem de desenho e canais
+de movimento opcionais. Poses contêm ângulo, deslocamento, retração/escala e
+opacidade. Transformações hierárquicas mantêm sensores, pernas e garras conectados.
+O loader limita peças, frames, coordenadas, duração e tamanho; rejeita ciclos,
+PNG corrompido, referências externas e canais desconhecidos antes da troca.
+
+O mesmo paint_visual atende PetWindow, Garage e Central de Atualizações. A prévia
+possui seu próprio controlador e libera timers ao parar, ocultar ou fechar.
+O sensor definido no manifesto fornece a origem móvel dos feixes de projeção.
+
 DroidController prepara recursos antes de uma troca. Companion preserva a posição
 e transfere os recursos ao controlador existente; falhas restauram o estado
 anterior. Positioner continua responsável por limites, monitores e posição em DIP.
-Os controladores de movimento adaptam locomoção comum ou esférica sem duplicar a
-máquina de estados. Tokens invalidam callbacks de ações interrompidas.
+Os controladores de movimento adaptam locomoção sem duplicar a máquina de estados.
+MonocycleMovementController transforma distância em rotação de roda e inclinação
+por velocidade/aceleração; HoverMovementController usa aceleração suave e balanço
+aéreo; BipedMovementController alterna quadris, joelhos e pés pela distância;
+TractionMovementController oferece partida decidida, rodas e pequenos solavancos.
+Um contrato capture/restore/release preserva a recuperação após arrasto para cada
+estrutura física. O timer de recuperação é transitório; a flutuação contínua e os
+gestos autônomos pertencem aos clips. Tokens invalidam callbacks interrompidos.
 
 AudioService mantém QSoundEffect, bancos por perfil, frases geradas com sílabas
 originais, volume, categorias, cooldowns e contexto. ReactionDirector coordena
@@ -59,9 +83,37 @@ inatividade fecham e restauram a raiz. A desativação da janela é confirmada a
 80 ms para tolerar eventos transitórios de foco do Windows.
 
 QParallelAnimationGroup coordena geometria e opacidade: saída de 80 ms e entrada
-de 160 ms. A transição desabilita seleções duplicadas. Fechar interrompe e libera
-os grupos; nenhum loop de animação bloqueia a GUI. O gate radial suspende autonomia
-durante toda a navegação e é liberado no fechamento.
+de 160 ms. A saída bloqueia seleções dos itens que estão desaparecendo; os itens
+da página de entrada já aceitam seleção. Selecionar nessa fase conclui a interação
+na página exibida e cancela sua animação. Parada, pausa, destruição e fechamento
+liberam a transição, restaurando geometria, opacidade e botões da página atual.
+Callbacks verificam a identidade do grupo e a validade do objeto C++ antes de agir.
+O gate radial suspende autonomia enquanto a roda está aberta e é liberado ao fechar.
+
+Um pressionamento no mascote fecha a roda existente e marca essa interação; sua
+soltura consome o mesmo fechamento. Cliques rápidos continuam contando para a
+reação CONFUSED, executada depois da navegação em vez de impedir sua abertura.
+Sono e despertar mantêm sua política anterior e registram o redirecionamento.
+
+NavigationTrace grava JSONL por uma fila e uma thread dedicada, com rotação de
+1 MiB e três backups. Registros essenciais incluem abertura, seleção, despacho,
+callback, visibilidade, exposição e ativação dos componentes, cancelamentos e erros.
+R2_NAV_TRACE=1 acrescenta entrada, aceitação, foco e eventos Qt. Cada interação tem
+identificador, relógio monotônico, UTC, PID, versão e identificação da candidata.
+O encerramento drena a fila com espera limitada. Os logs omitem conteúdo de dados
+do usuário. Exceções de ações são registradas e continuam chegando ao excepthook.
+O smoke encadeia a troca dos droides e a navegação pelos sinais de conclusão.
+
+No Windows, um reinício com STARTUPINFO/SW_HIDE pode deixar a primeira janela
+Dialog oculta nativamente, apesar de QWidget.isVisible retornar verdadeiro. Os
+widgets Tool do mascote e da roda usam outra política nativa de exibição. Após
+uma solicitação explícita de painel, present_dialog confronta o estado Qt com
+IsWindowVisible. Somente com lançamento SW_HIDE, widget visível, não minimizado
+e HWND oculto, reveal_requested_window faz uma única apresentação nativa sem
+ativação. Os pedidos existentes de raise/activate continuam no fluxo da ação.
+Não há timer, repetição ou mudança de foco no tratamento dessa divergência.
+Se a janela nativa continuar oculta, o componente fecha e a ação reporta erro.
+Isso mantém compatibilidade com os instaladores anteriores que iniciam oculto.
 
 DroidGarage é a única janela de personagens e animações. Reutiliza DroidStudio,
 PreviewCanvas e AnimationManager para categorias, sequências, repetição, frames e
@@ -139,6 +191,14 @@ recuperação de corrupção e proteção de schema futuro. Campos antigos desco
 são ignorados pela leitura sem remover catálogos de recursos. ProductivityStore
 reutiliza escrita atômica em tools.json, com backup e limites próprios.
 
+Os IDs persistidos anteriores continuam válidos. Os novos IDs são `lumo`, `vigia`,
+`pico` e `tranco`. A versão da aplicação não participa da escolha do personagem;
+não há migração destrutiva de preferências na expansão. Se os recursos do perfil
+salvo falharem, a inicialização tenta R2 antes dos outros perfis e preserva as
+preferências do modelo indisponível. Adicionar um modelo articulado exige perfil,
+PNG e manifesto; uma nova estrutura física pode registrar um controlador no mapa
+MOVEMENT_CONTROLLERS. Ferramentas continuam usando intenções e State.
+
 Contagem regressiva usa deadline e run ID; continua oculta ou em sono. Gates de
 arraste, menu, roda, configurações, ocultação e sessão suspendem autonomia.
 Tela cheia respeita o modo salvo e o canto manual. ContextReactions solicita ações
@@ -156,7 +216,7 @@ console.
 manifesto asInvoker e assets existentes. Empacota script de atualização, metadata,
 plugins Qt Multimedia e licenças. Gera ZIP e SHA-256; pastas por versão preservam
 builds anteriores. Testes incluem Qt, integração Windows, persistência e segurança
-do instalador. `tools/verify_navigation.py` captura os três temas e a navegação;
+do instalador. `tools/verify_navigation.py` captura os temas e a navegação;
 `tools/verify_update_center.py` testa a instalação real com transporte local.
 
 README e este documento são as referências principais da raiz. Changelog, notas

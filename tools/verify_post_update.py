@@ -35,6 +35,19 @@ def wait_until(predicate, seconds=30):
     raise RuntimeError("Tempo excedido aguardando a condição de teste.")
 
 
+def navigation_records(directory, pid):
+    records = []
+    for path in directory.glob("navigation.jsonl*"):
+        for line in path.read_text(encoding="utf-8").splitlines():
+            try:
+                record = json.loads(line)
+            except json.JSONDecodeError:
+                continue
+            if record.get("pid") == pid:
+                records.append(record)
+    return records
+
+
 user32 = ctypes.WinDLL("user32", use_last_error=True)
 callback_type = ctypes.WINFUNCTYPE(wintypes.BOOL, wintypes.HWND, wintypes.LPARAM)
 user32.EnumWindows.argtypes = [callback_type, wintypes.LPARAM]
@@ -71,7 +84,7 @@ def mouse_click(handle, x, y):
 
 def open_wheel(pid):
     pet = wait_until(lambda: next((handle for title, handle in windows(pid).items()
-                                  if title.endswith(" · R2 Companion") and title.startswith(("R2", "Vesper", "Orbita"))), None))
+                                  if title.endswith(" · R2 Companion") and title.startswith(("R2", "Vesper", "Orbita", "Lumo", "Vigia", "Pico", "Tranco"))), None))
     rectangle = wintypes.RECT()
     user32.GetClientRect(pet, ctypes.byref(rectangle))
     mouse_click(pet, rectangle.right / 2, rectangle.bottom * 0.7)
@@ -102,6 +115,8 @@ def main():
     parser.add_argument("--previous-install", type=Path, default=Path("dist/1.1.1/R2Companion"))
     parser.add_argument("--legacy-updater", action="store_true")
     parser.add_argument("--fail-startup", action="store_true")
+    parser.add_argument("--archive", type=Path)
+    parser.add_argument("--require-navigation-trace", action="store_true")
     args = parser.parse_args()
     root = Path(__file__).resolve().parents[1]
     version = tomllib.loads((root / "pyproject.toml").read_text())["project"]["version"]
@@ -116,13 +131,16 @@ def main():
         parser.error("É necessário um executável anterior real para este ensaio.")
     data = workspace / "dados do usuário"
     data.mkdir()
-    settings = Settings(suppress_fullscreen=False)
+    settings = Settings(suppress_fullscreen=False, fullscreen_mode="quiet")
     registry = DroidRegistry(root / "src/r2_companion/assets")
     for index, profile in enumerate(registry.profiles.values()):
         settings = select_droid(settings, profile)
         settings.audio.volume = 0.13 + index * 0.1
         settings.behavior.movement = False
         settings.behavior.cursor_attention = False
+        # Native navigation checks run independently of OS idle/fullscreen state.
+        # Sleep/wake policy has its own tests; a click during WAKE is consumed.
+        settings.behavior.frequency = "off"
         settings.capture_droid()
     expected_preferences = settings.to_dict()["droid_preferences"]
     (data / "config.json").write_text(json.dumps(settings.to_dict()), encoding="utf-8")
@@ -130,7 +148,17 @@ def main():
              "notes": [{"id": "two", "title": "Minha nota", "body": "Conteúdo preservado após atualização."}]}
     original_tools = json.dumps(tools, ensure_ascii=False).encode("utf-8")
     (data / "tools.json").write_bytes(original_tools)
-    archive = root / "dist/R2Companion-Windows-x64.zip"
+    archive = args.archive.resolve() if args.archive else root / "dist/R2Companion-Windows-x64.zip"
+    if archive.name != "R2Companion-Windows-x64.zip":
+        transport = workspace / "transport"
+        transport.mkdir()
+        source_archive = archive
+        archive = transport / "R2Companion-Windows-x64.zip"
+        shutil.copyfile(source_archive, archive)
+        digest = hashlib.sha256(archive.read_bytes()).hexdigest()
+        if source_archive.with_suffix(".zip.sha256").read_text().split()[0] != digest:
+            raise ValueError("Checksum da candidata divergente")
+        archive.with_suffix(".zip.sha256").write_text(digest + "  " + archive.name + "\n")
     checksum = archive.with_suffix(".zip.sha256")
     metadata = json.loads((installed / "release.json").read_text())
     response = {"draft": False, "prerelease": False, "tag_name": f"v{version}", "assets": [
@@ -206,7 +234,26 @@ try {{ Invoke-R2Update }} catch {{ Write-R2Status 'error' $_.Exception.Message; 
         report["old_exited"] = old.poll() is not None
         restarted = wait_until(lambda: next((process for process in installation_processes(installed)
                                              if process.pid != old.pid), None), 10)
-        time.sleep(3)
+        if args.require_navigation_trace or (data / "navigation.jsonl").exists():
+            completed = wait_until(lambda: next((r for r in navigation_records(data, restarted.pid)
+                if r["event"] == "navigation_smoke_completed"), None), 10)
+            if not completed["passed"]:
+                raise RuntimeError("Navegação inicial pós-atualização falhou")
+            if completed.get("controller_state") == "WAKE":
+                # The smoke scene explicitly sleeps and wakes the character.
+                # Respect the wake animation before issuing a native menu click.
+                assets = installed / "_internal/r2_companion/assets"
+                active = json.loads((data / "config.json").read_text(encoding="utf-8"))["active_droid"]
+                profiles = (json.loads(path.read_text(encoding="utf-8")) for path in
+                            (assets / "droids").glob("*/profile.json"))
+                profile = next(profile for profile in profiles if profile["id"] == active)
+                manifest = json.loads((assets / profile["manifest"]).read_text(encoding="utf-8"))
+                duration = sum(frame["duration_ms"] for frame in manifest["clips"]["WAKE"]["frames"])
+                ready_at = completed["monotonic_ns"] / 1e9 + duration / 1000 + 0.15
+                wait_until(lambda: time.monotonic() >= ready_at, duration / 1000 + 3)
+                report["wake_animation_wait_ms"] = duration
+        else:
+            time.sleep(3)
         report["native_post_update_tools"] = {}
         for page in ("clock", "timer", "system", "tasks", "notes", "minigames", "diagnostics"):
             wheel = open_wheel(restarted.pid)
@@ -217,6 +264,11 @@ try {{ Invoke-R2Update }} catch {{ Write-R2Status 'error' $_.Exception.Message; 
                 select_item(wheel, "main", page)
             tools_window = wait_until(lambda: windows(restarted.pid).get("Central de ferramentas · R2 Companion"), 5)
             report["native_post_update_tools"][page] = bool(tools_window)
+            if (data / "navigation.jsonl").exists():
+                observed = wait_until(lambda: next((r for r in reversed(navigation_records(data, restarted.pid))
+                    if r["event"] == "destination_observed" and r.get("action") == page), None), 3)
+                if not observed["destination_visible"] or observed["destination_page"] != page:
+                    raise RuntimeError("A roda abriu uma ferramenta diferente da seleção")
             user32.PostMessageW(tools_window, 0x0010, 0, 0)
             time.sleep(0.15)
         smoke_file = data / "smoke.json"
@@ -242,11 +294,13 @@ try {{ Invoke-R2Update }} catch {{ Write-R2Status 'error' $_.Exception.Message; 
         report["direct_launch"] = direct_smoke
         report["same_navigation_on_first_and_direct_launch"] = smoke["navigation"] == direct_smoke["navigation"]
         expected_version = original_version if args.fail_startup else version
+        installed_droids = {json.loads(path.read_text(encoding="utf-8"))["id"] for path in
+                            (installed / "_internal/r2_companion/assets/droids").glob("*/profile.json")}
         report["passed"] = (report["old_exited"] and report["tools_preserved"] and report["all_droid_preferences_preserved"]
                             and len(report["native_post_update_tools"]) == 7 and all(report["native_post_update_tools"].values())
                             and report["installed_version"] == expected_version and smoke["version"] == expected_version
                             and bool(smoke["navigation"]) and all(smoke["navigation"].values())
-                            and len(smoke["droids"]) == 3 and all(item["accepted"] for item in smoke["droids"])
+                            and {item["id"] for item in smoke["droids"]} == installed_droids and all(item["accepted"] for item in smoke["droids"])
                             and smoke["active_timers_after_shutdown"] == 0 and not smoke["movement_timer_after_shutdown"]
                             and direct.returncode == 0 and report["same_navigation_on_first_and_direct_launch"]
                             and (bool(report["failed_versions"]) if args.fail_startup else report["backup_versions"] == [original_version])

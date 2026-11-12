@@ -1,0 +1,249 @@
+{
+  "profile_version": 1,
+  "id": "vigia",
+  "name": "Vigia",
+  "description": "Sentinela suspensa em grafite, com sensores atentos e cinco manipuladores independentes. Patrulha flutuando.",
+  "manifest": "droids/vigia/animations/manifest.json",
+  "renderer": "rigged",
+  "animations": {
+    "IDLE": "Repouso",
+    "BLINK": "Expressões",
+    "LOOK_AROUND": "Expressões",
+    "WALK": "Locomoção",
+    "HAPPY": "Expressões",
+    "CURIOUS": "Expressões",
+    "SLEEP": "Repouso",
+    "INTERACT": "Interações",
+    "NOTIFICATION": "Interações",
+    "SURPRISED": "Expressões",
+    "WORK": "Inspeção",
+    "CONFUSED": "Expressões",
+    "DRAG": "Locomoção",
+    "RECOVER": "Locomoção",
+    "WAKE": "Repouso",
+    "GREETING": "Interações",
+    "WORRIED": "Inspeção",
+    "OVERHEAT": "Inspeção",
+    "LOOK_LEFT": "Expressões",
+    "LOOK_RIGHT": "Expressões"
+  },
+  "audio": {
+    "voice": "droids/vigia/audio/voice",
+    "sounds": "sounds",
+    "phrases": {
+      "curious": [
+        [
+          "rise",
+          "trill"
+        ],
+        [
+          "question",
+          "chirp",
+          "trill"
+        ],
+        [
+          "servo",
+          "rise",
+          "warble"
+        ]
+      ],
+      "happy": [
+        [
+          "bright",
+          "chirp",
+          "spark"
+        ],
+        [
+          "spark",
+          "bright",
+          "chirp"
+        ],
+        [
+          "chirp",
+          "trill",
+          "bright"
+        ]
+      ],
+      "confused": [
+        [
+          "answer",
+          "question",
+          "fall"
+        ],
+        [
+          "warble",
+          "answer",
+          "low"
+        ],
+        [
+          "question",
+          "warble",
+          "fall"
+        ]
+      ],
+      "surprised": [
+        [
+          "spark",
+          "question"
+        ],
+        [
+          "bright",
+          "spark"
+        ],
+        [
+          "spark",
+          "rise"
+        ]
+      ],
+      "worried": [
+        [
+          "low",
+          "fall"
+        ],
+        [
+          "warble",
+          "low"
+        ],
+        [
+          "answer",
+          "fall",
+          "low"
+        ]
+      ],
+      "greeting": [
+        [
+          "spark",
+          "chirp",
+          "rise"
+        ],
+        [
+          "trill",
+          "bright"
+        ],
+        [
+          "chirp",
+          "spark",
+          "answer"
+        ]
+      ],
+      "sleep": [
+        [
+          "soft",
+          "low"
+        ],
+        [
+          "soft",
+          "soft"
+        ],
+        [
+          "answer",
+          "soft"
+        ]
+      ],
+      "wake": [
+        [
+          "low",
+          "rise",
+          "chirp"
+        ],
+        [
+          "soft",
+          "question",
+          "bright"
+        ],
+        [
+          "rise",
+          "answer"
+        ]
+      ],
+      "celebrate": [
+        [
+          "rise",
+          "trill",
+          "spark",
+          "bright"
+        ],
+        [
+          "bright",
+          "chirp",
+          "trill",
+          "spark"
+        ],
+        [
+          "chirp",
+          "rise",
+          "bright"
+        ]
+      ],
+      "affection": [
+        [
+          "soft",
+          "warble",
+          "chirp"
+        ],
+        [
+          "warble",
+          "soft"
+        ],
+        [
+          "soft",
+          "answer",
+          "chirp"
+        ]
+      ]
+    }
+  },
+  "personality": "calm",
+  "movement": "hover",
+  "canvas": [
+    96,
+    96
+  ],
+  "speed": 0.68,
+  "theme": {
+    "name": "Observatório",
+    "radius": 8,
+    "colors": {
+      "primary": "#bd824c",
+      "secondary": "#513928",
+      "accent": "#ff6957",
+      "background": "#11151b",
+      "panel": "#1e252d",
+      "border": "#896d52",
+      "text": "#f3e8db",
+      "muted": "#bdaf9f",
+      "hero": "#15191f",
+      "hero_text": "#fff1dc",
+      "hero_muted": "#d7bc98",
+      "selected": "#513928",
+      "focus": "#f0b16e",
+      "button_text": "#17120f",
+      "error": "#ff9383",
+      "disabled": "#aca297",
+      "notification": "#231c18",
+      "hologram": "#ffb65e",
+      "decoration": "#9e7350"
+    }
+  },
+  "customization": {
+    "illumination": {
+      "label": "Luz do sensor",
+      "default": "mint",
+      "options": {
+        "mint": {
+          "label": "Menta",
+          "color": "#9de6cf"
+        },
+        "amber": {
+          "label": "Âmbar",
+          "color": "#ffbf70"
+        },
+        "blue": {
+          "label": "Azul",
+          "color": "#8cdbff"
+        }
+      }
+    }
+  },
+  "art_status": "Pixel art original · peças articuladas em 96 × 96"
+}

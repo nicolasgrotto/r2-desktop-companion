@@ -100,6 +100,7 @@ class Settings:
     bubbles: bool = True
     suppress_fullscreen: bool = True
     timer_seconds: int = 300
+    timer_projection: bool = False
     startup: bool = False
     applications: list[Target] = field(default_factory=list)
     locations: list[Target] = field(default_factory=list)
@@ -212,7 +213,8 @@ class Settings:
         result = cls(window=window, behavior=behavior, visual_scale=int(number(data["visual_scale"], 64, 256)),
                    sound_enabled=boolean(data["sound_enabled"]), bubbles=boolean(data["bubbles"]),
                    suppress_fullscreen=boolean(data["suppress_fullscreen"]),
-                   timer_seconds=int(number(data["timer_seconds"], 1, 86400)), startup=boolean(data["startup"]),
+                    timer_seconds=int(number(data["timer_seconds"], 1, 86400)),
+                    timer_projection=boolean(data["timer_projection"]), startup=boolean(data["startup"]),
                    shortcuts=shortcuts, audio=audio, fullscreen_mode=mode, manual_position=manual_position,
                    personality=data["personality"], appearance=data["appearance"],
                    quiet_enabled=boolean(data["quiet_enabled"]), quiet_start=int(number(data["quiet_start"], 0, 1439)),

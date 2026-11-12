@@ -10,7 +10,10 @@ from PySide6.QtWidgets import (QCheckBox, QComboBox, QDialog, QFormLayout, QHBox
 
 from ..droids.preferences import defaults_for, preferences_for
 from ..droids.themes import color, theme_manager
-from ..droids.visuals import DroidVisual, load_profile_clips, paint_visual
+from ..droids.visuals import VISUAL_TYPES, load_profile_clips, paint_visual
+from ..droids.movement import create_movement
+from ..droids.expressions import paint_expression
+from ..droids.rig import ArticulatedVisual
 from ..pet.animation import AnimationManager
 from ..pet.personality import apply_profile
 from ..pet.state import State
@@ -33,6 +36,14 @@ class PreviewCanvas(QWidget):
         self.illumination = None
         self.decoration = False
         self.appearance = "blue"
+        self.articulation = {}
+        self.movement = None
+        self.previous_roll = 0
+        self.state = None
+        self.effect_started = time.monotonic()
+        self.effect_timer = QTimer(self)
+        self.effect_timer.setInterval(50)
+        self.effect_timer.timeout.connect(self.update)
         self.started = time.monotonic()
         self.roll_timer = QTimer(self)
         self.roll_timer.setInterval(33)
@@ -48,7 +59,27 @@ class PreviewCanvas(QWidget):
         eased = t * t * (3 - 2 * t)
         self.angle = 360 * eased
         self.tilt = 8 * math.sin(t * math.pi * 2)
+        if self.movement:
+            travel = 30 * math.sin(t * math.pi * 2)
+            self.movement.displaced(travel - self.previous_roll, 0)
+            self.previous_roll = travel
         self.update()
+
+    def set_articulation(self, channels):
+        self.articulation = dict(channels)
+        self.update()
+
+    def configure_movement(self, profile):
+        self.close_movement()
+        if profile.renderer == "rigged":
+            self.movement = create_movement(profile, self)
+
+    def close_movement(self):
+        if self.movement:
+            self.movement.close()
+            self.movement.deleteLater()
+            self.movement = None
+        self.articulation = {}
 
     def paintEvent(self, event):
         p = QPainter(self)
@@ -61,8 +92,8 @@ class PreviewCanvas(QWidget):
             p.drawLine(0, y, self.width(), y)
         side = min(self.width() - 36, self.height() - 32, 256)
         rect = QRectF((self.width() - side) / 2, (self.height() - side) / 2, side, side)
-        if isinstance(self.frame, DroidVisual):
-            paint_visual(p, rect, self.frame, self.angle, self.tilt, 0, self.illumination, self.decoration)
+        if isinstance(self.frame, VISUAL_TYPES):
+            paint_visual(p, rect, self.frame, self.angle, self.tilt, 0, self.illumination, self.decoration, self.articulation)
         elif not self.frame.isNull():
             p.setRenderHint(QPainter.RenderHint.SmoothPixmapTransform, False)
             frame = self.frame
@@ -82,6 +113,10 @@ class PreviewCanvas(QWidget):
                             picture.setPixel(x, y, mapping[value])
                 frame = QPixmap.fromImage(picture)
             p.drawPixmap(rect.toRect(), frame)
+        if self.state in {State.SLEEP, State.OVERHEAT} and not (
+                isinstance(self.frame, ArticulatedVisual) and self.frame.expression_style):
+            phase = ((time.monotonic()-self.effect_started)/2.8) % 1 if self.effect_timer.isActive() else 0.35
+            paint_expression(p, self.state, phase, rect=rect)
 
 
 class DroidStudio(QDialog):
@@ -106,6 +141,8 @@ class DroidStudio(QDialog):
         self.layout_main.setContentsMargins(24, 20, 24, 20)
         self.layout_main.addWidget(header(title, "Explore a identidade e as animações de cada companheiro."))
         self.selector = QComboBox()
+        self.selector.setAccessibleName("Personagem da Droid Garage")
+        self.selector.setMaxVisibleItems(7)
         for profile in self.registry.profiles.values():
             self.selector.addItem(profile.name, profile.id)
         self.layout_main.addWidget(self.selector)
@@ -144,6 +181,7 @@ class DroidStudio(QDialog):
         self.layout_main.addWidget(self.status)
         self.animation.frame_changed.connect(self.preview.set_frame)
         self.animation.clip_finished.connect(lambda token: self.preview.roll_timer.stop())
+        self.animation.clip_finished.connect(lambda token: self.preview.effect_timer.stop())
         self.animations.currentRowChanged.connect(self.animation_selected)
         self.frame_variant.currentIndexChanged.connect(self.show_variant)
         self.repeat.toggled.connect(self.play)
@@ -163,6 +201,7 @@ class DroidStudio(QDialog):
             self.status.setText(f"Prévia indisponível: {error}")
             return
         self.profile, self.clips = profile, clips
+        self.preview.configure_movement(profile)
         self.droid_preview_theme = profile.theme
         self.animation.clips = clips
         self.name.setText(profile.name)
@@ -229,14 +268,22 @@ class DroidStudio(QDialog):
         self.frame_variant.setCurrentIndex(0)
         self.frame_variant.blockSignals(False)
         self.animation.clips = {state: replace(self.clips[state], loop=self.repeat.isChecked())}
+        self.preview.state = state
+        self.preview.effect_started = time.monotonic()
+        if state in {State.SLEEP, State.OVERHEAT} and self.profile.renderer != "rigged":
+            self.preview.effect_timer.start()
         self.animation.play(state, 1)
-        if state == State.WALK and self.profile.renderer == "layered":
+        if state == State.WALK and self.profile.renderer in {"layered", "rigged"}:
             self.preview.started = time.monotonic()
+            self.preview.previous_roll = 0
             self.preview.roll_timer.start()
 
     def stop(self):
         self.animation.stop()
+        self.preview.effect_timer.stop()
         self.preview.roll_timer.stop()
+        if self.preview.movement:
+            self.preview.movement.stop()
         self.preview.angle = self.preview.tilt = 0
         self.preview.update()
 
@@ -255,11 +302,20 @@ class DroidStudio(QDialog):
         if count:
             self.animations.setCurrentRow((self.animations.currentRow() + direction) % count)
 
-    def hideEvent(self, event):
+    def release_preview(self):
         self.stop()
+        self.preview.state = None
         self.animation.clips = {}
         self.clips = {}
         self.preview.set_frame(QPixmap())
+        self.preview.close_movement()
+
+    def closeEvent(self, event):
+        self.release_preview()
+        super().closeEvent(event)
+
+    def hideEvent(self, event):
+        self.release_preview()
         super().hideEvent(event)
 
     def showEvent(self, event):
