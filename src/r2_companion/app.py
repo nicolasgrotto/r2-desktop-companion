@@ -1014,6 +1014,22 @@ def main(argv=None) -> int:
                 garage.grab().save(str(directory / "garage.png"))
                 garage.close()
                 navigation_checks["gallery_removed"] = not any("Galeria" in action.text() for action in companion.menu.action_refs)
+                companion.controller.enter(State.SLEEP)
+                navigation_checks["sleep_symbols"] = (companion.window.sleep_effect.active
+                    and companion.window.sleep_effect.isVisible() and companion.window.sleep_effect.timer.isActive())
+                companion.window.sleep_effect.grab().save(str(directory / "sleep-symbols.png"))
+                companion.controller.enter(State.IDLE)
+                companion.tools.project_timer.setChecked(True)
+                companion.tools.set_duration(60)
+                companion.tools.start_button.click()
+                navigation_checks["timer_projection"] = (companion.window.projection_kind == "timer"
+                    and "01:00" in companion.window.projection_text)
+                companion.countdown.pause()
+                navigation_checks["timer_projection_pause"] = "Pausado" in companion.window.projection_text
+                companion.window.projection_overlay.grab().save(str(directory / "projection-timer.png"))
+                companion.tools.project_timer.setChecked(False)
+                companion.countdown.close()
+                navigation_checks["timer_projection_off"] = companion.window.projection_kind is None
                 companion.radial.record("navigation_smoke_completed", passed=all(navigation_checks.values()))
         def check_next_droid(index=0):
             identifiers = list(companion.droids.profiles) if args.smoke_droids else []
