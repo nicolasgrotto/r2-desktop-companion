@@ -81,7 +81,7 @@ class Companion(QObject):
         if identifier not in self.droids.profiles:
             store.notices.append("Personagem salvo indisponível; o padrão foi restaurado e suas preferências foram preservadas.")
             identifier = self.droids.default_id
-        candidates = [identifier] + [key for key in self.droids.profiles if key != identifier]
+        candidates = list(dict.fromkeys([identifier, self.droids.default_id, *self.droids.profiles]))
         for candidate in candidates:
             try:
                 profile = self.droids.get(candidate)
@@ -555,8 +555,7 @@ class Companion(QObject):
 
     def drag_finished(self):
         movement = self.positioning.movement
-        drag_tilt = getattr(movement, "head_tilt", 0)
-        drag_offset = getattr(movement, "head_offset", 0)
+        captured_motion = movement.capture() if movement else None
         self.last_activity = time.monotonic()
         self.positioning.settle()
         saved = self.positioning.snapshot()
@@ -570,9 +569,7 @@ class Companion(QObject):
         self.controller.set_gate("drag", False)
         self.controller.react(State.RECOVER)
         if movement and not self.controller.gates:
-            if hasattr(movement, "head_tilt"):
-                movement.head_tilt, movement.head_offset = drag_tilt, drag_offset
-                self.window.set_motion(movement.angle, drag_tilt, drag_offset)
+            movement.restore(captured_motion)
             movement.release()
 
     def check_idle(self):

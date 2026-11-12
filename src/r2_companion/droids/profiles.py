@@ -88,11 +88,16 @@ class DroidProfile:
         if not isinstance(identifier, str) or not re.fullmatch(r"[a-z][a-z0-9_]{0,63}", identifier):
             raise ValueError("ID de droide inválido.")
         manifest = resource(assets, data["manifest"], ".json")
+        if manifest.stat().st_size > 1024 * 1024:
+            raise ValueError("Manifesto muito grande.")
         animation_data = json.loads(manifest.read_text(encoding="utf-8"))
+        if not isinstance(animation_data, dict) or not isinstance(animation_data.get("clips"), dict):
+            raise ValueError("Manifesto de animação inválido.")
         renderer = data["renderer"]
-        if renderer not in ("atlas", "layered"):
+        versions = {"atlas": 1, "layered": 2, "rigged": 3}
+        if renderer not in versions:
             raise ValueError("Renderizador desconhecido.")
-        if animation_data.get("manifest_version") != (1 if renderer == "atlas" else 2):
+        if animation_data.get("manifest_version") != versions[renderer]:
             raise ValueError("Manifesto incompatível com renderizador.")
         animations = {State(k): text(v, 80) for k, v in data["animations"].items()}
         if State.IDLE not in animations or set(animations) != {State(k) for k in animation_data["clips"]}:
@@ -104,6 +109,13 @@ class DroidProfile:
         if renderer == "layered":
             for component in ("body", "head"):
                 resource(assets, str(manifest.parent.relative_to(assets) / animation_data[component]), ".png")
+        if renderer == "rigged":
+            if not isinstance(animation_data.get("parts"), list):
+                raise ValueError("Peças articuladas inválidas.")
+            for part in animation_data["parts"]:
+                if not isinstance(part, dict):
+                    raise ValueError("Peça articulada inválida.")
+                resource(assets, str(manifest.parent.relative_to(assets) / part["image"]), ".png")
         if data["personality"] not in PROFILES.keys() | {"custom"}:
             raise ValueError("Personalidade desconhecida.")
         from .movement import MOVEMENT_CONTROLLERS

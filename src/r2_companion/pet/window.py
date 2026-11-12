@@ -30,6 +30,7 @@ class PetWindow(QWidget):
         self.setToolTip("R2 Companion · arte provisória\nArraste para mover · botão direito para opções")
         self.frame = QPixmap()
         self.visual = None
+        self.articulation = {}
         self.body_angle = self.head_tilt = self.head_offset = 0.0
         self.illumination = None
         self.decoration = False
@@ -166,9 +167,11 @@ class PetWindow(QWidget):
             event.accept()
 
     def set_frame(self, frame: QPixmap) -> None:
-        from ..droids.visuals import DroidVisual
-        if isinstance(frame, DroidVisual):
+        from ..droids.visuals import VISUAL_TYPES
+        if isinstance(frame, VISUAL_TYPES):
             self.visual = frame
+            if self.projection_kind:
+                self.projection_overlay.reposition()
             self.update()
             return
         self.visual = None
@@ -198,9 +201,22 @@ class PetWindow(QWidget):
         self.body_angle, self.head_tilt, self.head_offset = angle, tilt, offset
         self.update()
 
+    def set_articulation(self, channels):
+        self.articulation = dict(channels)
+        if self.projection_kind:
+            self.projection_overlay.reposition()
+        self.update()
+
+    def projection_anchor(self):
+        from ..droids.rig import ArticulatedVisual
+        if isinstance(self.visual, ArticulatedVisual):
+            return self.visual.anchor(self.articulation)
+        return 0.54, 0.24
+
     def configure_droid(self, profile, preferences):
         self.tinted_frames.clear()
         self.set_motion(0, 0, 0)
+        self.set_articulation({})
         self.setWindowTitle(f"{profile.name} · R2 Companion")
         self.setToolTip(f"{profile.name}\nArraste para mover · botão direito para opções\n{profile.art_status}")
         custom = profile.customizations(preferences.customization)
@@ -240,7 +256,7 @@ class PetWindow(QWidget):
         if self.visual is not None:
             from ..droids.visuals import paint_visual
             paint_visual(painter, self.rect(), self.visual, self.body_angle, self.head_tilt,
-                         self.head_offset, self.illumination, self.decoration)
+                         self.head_offset, self.illumination, self.decoration, self.articulation)
         else:
             painter.drawPixmap(self.rect(), self.frame)
         if not self.hologram.isNull() and not self.projection_kind:

@@ -36,7 +36,8 @@ class ProjectionOverlay(QWidget):
         point = clamp(QPointF(pet.geometry().center().x() - width / 2, y), area,
                       QSizeF(width, height))
         card = QRectF(point.x(), point.y(), width, height)
-        eye = QPointF(pet.x() + pet.width() * 0.54, pet.y() + pet.height() * 0.24)
+        anchor_x, anchor_y = pet.projection_anchor()
+        eye = QPointF(pet.x() + pet.width() * anchor_x, pet.y() + pet.height() * anchor_y)
         bounds = card.united(QRectF(eye.x() - 4, eye.y() - 4, 8, 8)).adjusted(-4, -4, 4, 4).toAlignedRect()
         self.setGeometry(bounds)
         self.card = card.translated(-bounds.x(), -bounds.y())
