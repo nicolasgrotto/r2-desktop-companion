@@ -9,11 +9,12 @@ from PySide6.QtGui import QColor, QImageReader, QPixmap, QTransform
 from ..pet.animation import Clip, Frame
 from ..pet.state import State
 from .profiles import resource
+from .expressions import STYLES, paint_expression
 
 
 CHANNELS = {"wheel", "lean", "head", "bank", "lift", "left_step", "right_step",
             "left_knee", "right_knee", "left_foot", "right_foot"}
-PROPERTIES = {"angle", "x", "y", "scale_y", "opacity"}
+PROPERTIES = {"angle", "x", "y", "scale_y", "opacity", "light"}
 
 
 def bounded(value, low, high):
@@ -46,6 +47,9 @@ class ArticulatedVisual:
     pose: tuple[dict, ...]
     canvas: tuple[int, int]
     emitter: tuple
+    expression_style: str = ""
+    state: State | None = None
+    phase: float = 0
 
     def transforms(self, motion=None):
         motion = motion or {}
@@ -80,8 +84,12 @@ class ArticulatedVisual:
             painter.drawPixmap(QPointF(-part.pivot[0], -part.pivot[1]), part.image)
             if part.lamp:
                 x, y, width, height = part.lamp
-                painter.fillRect(QRectF(x, y, width, height), QColor(illumination or "#8fe9d2"))
+                lamp_color = QColor(illumination or "#8fe9d2").darker(
+                    round(100 + 250*(1-self.pose[index].get("light", 1))))
+                painter.fillRect(QRectF(x, y, width, height), lamp_color)
             painter.restore()
+        if self.expression_style:
+            paint_expression(painter, self.state, self.phase, self.expression_style)
         painter.restore()
 
 
@@ -92,6 +100,9 @@ def load_rig_clips(profile):
     if not isinstance(data, dict) or data.get("manifest_version") != 3 or data.get("canvas") != list(profile.canvas):
         raise ValueError("Canvas articulado incompatível com o perfil.")
     specs = data.get("parts")
+    style = data.get("expression_style", "")
+    if style and style not in STYLES:
+        raise ValueError("Estilo de expressão desconhecido.")
     if not isinstance(specs, list) or not 2 <= len(specs) <= 32:
         raise ValueError("Quantidade de peças inválida.")
     parts, indices = [], {}
@@ -161,9 +172,11 @@ def load_rig_clips(profile):
                 if not isinstance(props, dict) or set(props) - PROPERTIES:
                     raise ValueError("Propriedade de pose inválida.")
                 limits = {"angle": (-180, 180), "x": (-24, 24), "y": (-24, 24),
-                          "scale_y": (0.05, 2), "opacity": (0, 1)}
+                          "scale_y": (0.05, 2), "opacity": (0, 1), "light": (0, 1)}
                 values.append({key: bounded(value, *limits[key]) for key, value in props.items()})
-            frames.append(Frame(canvas, duration, ArticulatedVisual(tuple(parts), tuple(values), profile.canvas, emitter)))
+            phase = (len(frames) + 0.5) / len(spec["frames"])
+            frames.append(Frame(canvas, duration, ArticulatedVisual(tuple(parts), tuple(values), profile.canvas, emitter,
+                                                                  style, state, phase)))
         if not frames:
             raise ValueError("Animação articulada vazia.")
         clips[state] = Clip(tuple(frames), spec["loop"])

@@ -4,6 +4,7 @@
     96,
     96
   ],
+  "expression_style": "vigia",
   "parts": [
     {
       "name": "body",
@@ -742,10 +743,9 @@
           "duration_ms": 85,
           "pose": {
             "head": {
-              "angle": 0.0,
+              "angle": 0,
               "x": 0,
-              "scale_y": 1,
-              "opacity": 1
+              "light": 1
             },
             "body": {
               "y": 0.0,
@@ -787,10 +787,9 @@
           "duration_ms": 85,
           "pose": {
             "head": {
-              "angle": 1.125,
+              "angle": 0,
               "x": 0,
-              "scale_y": 1,
-              "opacity": 1
+              "light": 1
             },
             "body": {
               "y": 1.2,
@@ -832,10 +831,9 @@
           "duration_ms": 85,
           "pose": {
             "head": {
-              "angle": 1.9485000000000001,
+              "angle": 0,
               "x": 0,
-              "scale_y": 1,
-              "opacity": 1
+              "light": 1
             },
             "body": {
               "y": 2.08,
@@ -877,10 +875,9 @@
           "duration_ms": 85,
           "pose": {
             "head": {
-              "angle": 2.25,
+              "angle": 0,
               "x": 0,
-              "scale_y": 1,
-              "opacity": 1
+              "light": 1
             },
             "body": {
               "y": 2.4,
@@ -922,10 +919,9 @@
           "duration_ms": 85,
           "pose": {
             "head": {
-              "angle": 1.9485000000000001,
+              "angle": 0,
               "x": 0,
-              "scale_y": 0.92,
-              "opacity": 0.55
+              "light": 0.3
             },
             "body": {
               "y": 2.08,
@@ -967,10 +963,9 @@
           "duration_ms": 85,
           "pose": {
             "head": {
-              "angle": 1.125,
+              "angle": 0,
               "x": 0,
-              "scale_y": 0.92,
-              "opacity": 0.55
+              "light": 0.3
             },
             "body": {
               "y": 1.2,
@@ -1012,10 +1007,9 @@
           "duration_ms": 85,
           "pose": {
             "head": {
-              "angle": 0.0,
+              "angle": 0,
               "x": 0,
-              "scale_y": 1,
-              "opacity": 1
+              "light": 1
             },
             "body": {
               "y": 0.0,
@@ -1057,10 +1051,9 @@
           "duration_ms": 85,
           "pose": {
             "head": {
-              "angle": -1.125,
+              "angle": 0,
               "x": 0,
-              "scale_y": 1,
-              "opacity": 1
+              "light": 1
             },
             "body": {
               "y": -1.2,
@@ -1102,10 +1095,9 @@
           "duration_ms": 85,
           "pose": {
             "head": {
-              "angle": -1.9485000000000001,
+              "angle": 0,
               "x": 0,
-              "scale_y": 1,
-              "opacity": 1
+              "light": 1
             },
             "body": {
               "y": -2.08,
@@ -1147,10 +1139,9 @@
           "duration_ms": 85,
           "pose": {
             "head": {
-              "angle": -2.25,
+              "angle": 0,
               "x": 0,
-              "scale_y": 1,
-              "opacity": 1
+              "light": 1
             },
             "body": {
               "y": -2.4,
@@ -1192,10 +1183,9 @@
           "duration_ms": 85,
           "pose": {
             "head": {
-              "angle": -1.9485000000000001,
+              "angle": 0,
               "x": 0,
-              "scale_y": 1,
-              "opacity": 1
+              "light": 1
             },
             "body": {
               "y": -2.08,
@@ -1237,10 +1227,9 @@
           "duration_ms": 85,
           "pose": {
             "head": {
-              "angle": -1.125,
+              "angle": 0,
               "x": 0,
-              "scale_y": 1,
-              "opacity": 1
+              "light": 1
             },
             "body": {
               "y": -1.2,
@@ -1330,8 +1319,8 @@
           "duration_ms": 120,
           "pose": {
             "head": {
-              "angle": 3.375,
-              "x": 1.0
+              "angle": 2.4999999999999996,
+              "x": 0.9999999999999999
             },
             "body": {
               "y": 1.2,
@@ -1373,8 +1362,8 @@
           "duration_ms": 120,
           "pose": {
             "head": {
-              "angle": 5.8455,
-              "x": 1.73
+              "angle": 4.330127018922193,
+              "x": 1.7320508075688772
             },
             "body": {
               "y": 2.08,
@@ -1416,7 +1405,7 @@
           "duration_ms": 120,
           "pose": {
             "head": {
-              "angle": 6.75,
+              "angle": 5.0,
               "x": 2.0
             },
             "body": {
@@ -1459,8 +1448,8 @@
           "duration_ms": 120,
           "pose": {
             "head": {
-              "angle": 5.8455,
-              "x": 1.73
+              "angle": 4.330127018922194,
+              "x": 1.7320508075688774
             },
             "body": {
               "y": 2.08,
@@ -1502,8 +1491,8 @@
           "duration_ms": 120,
           "pose": {
             "head": {
-              "angle": 3.375,
-              "x": 1.0
+              "angle": 2.4999999999999996,
+              "x": 0.9999999999999999
             },
             "body": {
               "y": 1.2,
@@ -1545,8 +1534,8 @@
           "duration_ms": 120,
           "pose": {
             "head": {
-              "angle": 0.0,
-              "x": 0.0
+              "angle": 6.123233995736766e-16,
+              "x": 2.4492935982947064e-16
             },
             "body": {
               "y": 0.0,
@@ -1588,8 +1577,8 @@
           "duration_ms": 120,
           "pose": {
             "head": {
-              "angle": -3.375,
-              "x": -1.0
+              "angle": -2.4999999999999987,
+              "x": -0.9999999999999994
             },
             "body": {
               "y": -1.2,
@@ -1631,8 +1620,8 @@
           "duration_ms": 120,
           "pose": {
             "head": {
-              "angle": -5.8455,
-              "x": -1.73
+              "angle": -4.330127018922192,
+              "x": -1.7320508075688767
             },
             "body": {
               "y": -2.08,
@@ -1674,7 +1663,7 @@
           "duration_ms": 120,
           "pose": {
             "head": {
-              "angle": -6.75,
+              "angle": -5.0,
               "x": -2.0
             },
             "body": {
@@ -1717,8 +1706,8 @@
           "duration_ms": 120,
           "pose": {
             "head": {
-              "angle": -5.8455,
-              "x": -1.73
+              "angle": -4.330127018922193,
+              "x": -1.7320508075688772
             },
             "body": {
               "y": -2.08,
@@ -1760,8 +1749,8 @@
           "duration_ms": 120,
           "pose": {
             "head": {
-              "angle": -3.375,
-              "x": -1.0
+              "angle": -2.500000000000002,
+              "x": -1.0000000000000009
             },
             "body": {
               "y": -1.2,
@@ -2340,31 +2329,31 @@
               "angle": 0.0
             },
             "rear_left_claw": {
-              "angle": 8.18
+              "angle": 0.0
             },
             "rear_right_arm": {
-              "angle": 4.66
+              "angle": -0.0
             },
             "rear_right_claw": {
-              "angle": 1.27
+              "angle": 0.0
             },
             "left_arm": {
-              "angle": 3.38
+              "angle": 0.0
             },
             "left_claw": {
-              "angle": -6.81
+              "angle": 0.0
             },
             "right_arm": {
-              "angle": -2.21
+              "angle": -0.0
             },
             "right_claw": {
-              "angle": -8.63
+              "angle": 0.0
             },
             "center_arm": {
-              "angle": -4.98
+              "angle": 0.0
             },
             "center_claw": {
-              "angle": -2.51
+              "angle": -0.0
             }
           }
         },
@@ -2372,7 +2361,7 @@
           "duration_ms": 120,
           "pose": {
             "head": {
-              "angle": 3.375,
+              "angle": 1.4999999999999998,
               "x": 0
             },
             "body": {
@@ -2380,34 +2369,34 @@
               "angle": 1.32
             },
             "rear_left_arm": {
-              "angle": 2.5
+              "angle": 2.2538604547314374
             },
             "rear_left_claw": {
-              "angle": 5.21
+              "angle": 2.0501835826879993
             },
             "rear_right_arm": {
-              "angle": 4.94
+              "angle": -2.2538604547314374
             },
             "rear_right_claw": {
-              "angle": -3.36
+              "angle": 1.8955776567133067
             },
             "left_arm": {
-              "angle": 1.08
+              "angle": 2.2538604547314374
             },
             "left_claw": {
-              "angle": -8.84
+              "angle": -0.0018136249393505572
             },
             "right_arm": {
-              "angle": -4.16
+              "angle": -2.2538604547314374
             },
             "right_claw": {
-              "angle": -6.2
+              "angle": -1.8975374681867287
             },
             "center_arm": {
-              "angle": -4.09
+              "angle": 2.2538604547314374
             },
             "center_claw": {
-              "angle": 2.14
+              "angle": -2.048674114125612
             }
           }
         },
@@ -2415,7 +2404,7 @@
           "duration_ms": 120,
           "pose": {
             "head": {
-              "angle": 5.8455,
+              "angle": 2.598076211353316,
               "x": 0
             },
             "body": {
@@ -2423,34 +2412,34 @@
               "angle": 1.38
             },
             "rear_left_arm": {
-              "angle": 4.33
+              "angle": 4.32512653964478
             },
             "rear_left_claw": {
-              "angle": 0.85
+              "angle": 3.268712541364849
             },
             "rear_right_arm": {
-              "angle": 3.9
+              "angle": -4.32512653964478
             },
             "rear_right_claw": {
-              "angle": -7.08
+              "angle": -0.617252082383329
             },
             "left_arm": {
-              "angle": -1.5
+              "angle": 4.32512653964478
             },
             "left_claw": {
-              "angle": -8.5
+              "angle": -3.935717988192097
             },
             "right_arm": {
-              "angle": -4.99
+              "angle": -4.32512653964478
             },
             "right_claw": {
-              "angle": -2.1
+              "angle": -3.635702926150481
             },
             "center_arm": {
-              "angle": -2.11
+              "angle": 4.32512653964478
             },
             "center_claw": {
-              "angle": 6.23
+              "angle": 0.006960639290801543
             }
           }
         },
@@ -2458,7 +2447,7 @@
           "duration_ms": 120,
           "pose": {
             "head": {
-              "angle": 6.75,
+              "angle": 3.0,
               "x": 0
             },
             "body": {
@@ -2466,34 +2455,34 @@
               "angle": 1.07
             },
             "rear_left_arm": {
-              "angle": 5.0
+              "angle": 6.045996594834066
             },
             "rear_left_claw": {
-              "angle": -3.75
+              "angle": -1.703354079317177
             },
             "rear_right_arm": {
-              "angle": 1.81
+              "angle": -6.045996594834066
             },
             "rear_right_claw": {
-              "angle": -8.91
+              "angle": -5.801776104906759
             },
             "left_arm": {
-              "angle": -3.69
+              "angle": 6.045996594834066
             },
             "left_claw": {
-              "angle": -5.88
+              "angle": -4.566071935906415
             },
             "right_arm": {
-              "angle": -4.48
+              "angle": -6.045996594834066
             },
             "right_claw": {
-              "angle": 2.55
+              "angle": 0.867657713446686
             },
             "center_arm": {
-              "angle": 0.44
+              "angle": 6.045996594834066
             },
             "center_claw": {
-              "angle": 8.64
+              "angle": 5.503666862465459
             }
           }
         },
@@ -2501,7 +2490,7 @@
           "duration_ms": 120,
           "pose": {
             "head": {
-              "angle": 5.8455,
+              "angle": 2.598076211353316,
               "x": 0
             },
             "body": {
@@ -2509,34 +2498,34 @@
               "angle": 0.48
             },
             "rear_left_arm": {
-              "angle": 4.33
+              "angle": 7.277055962836147
             },
             "rear_left_claw": {
-              "angle": -7.34
+              "angle": -7.202986025782714
             },
             "rear_right_arm": {
-              "angle": -0.76
+              "angle": -7.277055962836147
             },
             "rear_right_claw": {
-              "angle": -8.35
+              "angle": -4.763245115002002
             },
             "left_arm": {
-              "angle": -4.88
+              "angle": 7.277055962836147
             },
             "left_claw": {
-              "angle": -1.69
+              "angle": 2.055801387681246
             },
             "right_arm": {
-              "angle": -2.78
+              "angle": -7.277055962836147
             },
             "right_claw": {
-              "angle": 6.53
+              "angle": 6.984753575344199
             },
             "center_arm": {
-              "angle": 2.87
+              "angle": 7.277055962836147
             },
             "center_claw": {
-              "angle": 8.74
+              "angle": 5.491955537677158
             }
           }
         },
@@ -2544,7 +2533,7 @@
           "duration_ms": 120,
           "pose": {
             "head": {
-              "angle": 3.375,
+              "angle": 1.4999999999999998,
               "x": 0
             },
             "body": {
@@ -2552,34 +2541,34 @@
               "angle": -0.25
             },
             "rear_left_arm": {
-              "angle": 2.5
+              "angle": 7.9185715350474615
             },
             "rear_left_claw": {
-              "angle": -8.96
+              "angle": -4.281102987788691
             },
             "rear_right_arm": {
-              "angle": -3.13
+              "angle": -7.9185715350474615
             },
             "rear_right_claw": {
-              "angle": -5.55
+              "angle": 3.292391262213844
             },
             "left_arm": {
-              "angle": -4.77
+              "angle": 7.9185715350474615
             },
             "left_claw": {
-              "angle": 2.96
+              "angle": 7.838876169377201
             },
             "right_arm": {
-              "angle": -0.33
+              "angle": -7.9185715350474615
             },
             "right_claw": {
-              "angle": 8.75
+              "angle": 5.178334477244774
             },
             "center_arm": {
-              "angle": 4.53
+              "angle": 7.9185715350474615
             },
             "center_claw": {
-              "angle": 6.5
+              "angle": -2.2431440521535233
             }
           }
         },
@@ -2587,7 +2576,7 @@
           "duration_ms": 120,
           "pose": {
             "head": {
-              "angle": 0.0,
+              "angle": 3.6739403974420594e-16,
               "x": 0
             },
             "body": {
@@ -2595,34 +2584,34 @@
               "angle": -0.9
             },
             "rear_left_arm": {
-              "angle": 0.0
+              "angle": 7.918571535047462
             },
             "rear_left_claw": {
-              "angle": -8.18
+              "angle": 4.281102987788683
             },
             "rear_right_arm": {
-              "angle": -4.66
+              "angle": -7.918571535047462
             },
             "rear_right_claw": {
-              "angle": -1.27
+              "angle": 7.918570894136269
             },
             "left_arm": {
-              "angle": -3.38
+              "angle": 7.918571535047462
             },
             "left_claw": {
-              "angle": 6.81
+              "angle": 4.275741238775644
             },
             "right_arm": {
-              "angle": 2.21
+              "angle": -7.918571535047462
             },
             "right_claw": {
-              "angle": 8.63
+              "angle": -3.2981851929243162
             },
             "center_arm": {
-              "angle": 4.98
+              "angle": 7.918571535047462
             },
             "center_claw": {
-              "angle": 2.51
+              "angle": -7.8397753686099705
             }
           }
         },
@@ -2630,7 +2619,7 @@
           "duration_ms": 120,
           "pose": {
             "head": {
-              "angle": -3.375,
+              "angle": -1.4999999999999991,
               "x": 0
             },
             "body": {
@@ -2638,34 +2627,34 @@
               "angle": -1.32
             },
             "rear_left_arm": {
-              "angle": -2.5
+              "angle": 7.2770559628361475
             },
             "rear_left_claw": {
-              "angle": -5.21
+              "angle": 7.202986025782716
             },
             "rear_right_arm": {
-              "angle": -4.94
+              "angle": -7.2770559628361475
             },
             "rear_right_claw": {
-              "angle": 3.36
+              "angle": 3.0203348027307833
             },
             "left_arm": {
-              "angle": -1.08
+              "angle": 7.2770559628361475
             },
             "left_claw": {
-              "angle": 8.84
+              "angle": -3.9391983089642455
             },
             "right_arm": {
-              "angle": 4.16
+              "angle": -7.2770559628361475
             },
             "right_claw": {
-              "angle": 6.2
+              "angle": -7.277050661941301
             },
             "center_arm": {
-              "angle": 4.09
+              "angle": 7.2770559628361475
             },
             "center_claw": {
-              "angle": -2.14
+              "angle": -3.924416196168069
             }
           }
         },
@@ -2673,7 +2662,7 @@
           "duration_ms": 120,
           "pose": {
             "head": {
-              "angle": -5.8455,
+              "angle": -2.598076211353315,
               "x": 0
             },
             "body": {
@@ -2681,34 +2670,34 @@
               "angle": -1.38
             },
             "rear_left_arm": {
-              "angle": -4.33
+              "angle": 6.045996594834066
             },
             "rear_left_claw": {
-              "angle": -0.85
+              "angle": 1.7033540793171802
             },
             "rear_right_arm": {
-              "angle": -3.9
+              "angle": -6.045996594834066
             },
             "rear_right_claw": {
-              "angle": 7.08
+              "angle": -3.9611238313768107
             },
             "left_arm": {
-              "angle": 1.5
+              "angle": 6.045996594834066
             },
             "left_claw": {
-              "angle": 8.5
+              "angle": -5.983762759161443
             },
             "right_arm": {
-              "angle": 4.99
+              "angle": -6.045996594834066
             },
             "right_claw": {
-              "angle": 2.1
+              "angle": -2.504957801708848
             },
             "center_arm": {
-              "angle": 2.11
+              "angle": 6.045996594834066
             },
             "center_claw": {
-              "angle": -6.23
+              "angle": 3.2768938064300888
             }
           }
         },
@@ -2716,7 +2705,7 @@
           "duration_ms": 120,
           "pose": {
             "head": {
-              "angle": -6.75,
+              "angle": -3.0,
               "x": 0
             },
             "body": {
@@ -2724,34 +2713,34 @@
               "angle": -1.07
             },
             "rear_left_arm": {
-              "angle": -5.0
+              "angle": 4.325126539644779
             },
             "rear_left_claw": {
-              "angle": 3.75
+              "angle": -3.2687125413648497
             },
             "rear_right_arm": {
-              "angle": -1.81
+              "angle": -4.325126539644779
             },
             "rear_right_claw": {
-              "angle": 8.91
+              "angle": -4.149437929022397
             },
             "left_arm": {
-              "angle": 3.69
+              "angle": 4.325126539644779
             },
             "left_claw": {
-              "angle": 5.88
+              "angle": -1.2151892208501878
             },
             "right_arm": {
-              "angle": 4.48
+              "angle": -4.325126539644779
             },
             "right_claw": {
-              "angle": -2.55
+              "angle": 2.8362988528394673
             },
             "center_arm": {
-              "angle": -0.44
+              "angle": 4.325126539644779
             },
             "center_claw": {
-              "angle": -8.64
+              "angle": 4.280106841490835
             }
           }
         },
@@ -2759,7 +2748,7 @@
           "duration_ms": 120,
           "pose": {
             "head": {
-              "angle": -5.8455,
+              "angle": -2.598076211353316,
               "x": 0
             },
             "body": {
@@ -2767,34 +2756,34 @@
               "angle": -0.48
             },
             "rear_left_arm": {
-              "angle": -4.33
+              "angle": 2.2538604547314405
             },
             "rear_left_claw": {
-              "angle": 7.34
+              "angle": -2.0501835826880037
             },
             "rear_right_arm": {
-              "angle": 0.76
+              "angle": -2.2538604547314405
             },
             "rear_right_claw": {
-              "angle": 8.35
+              "angle": -0.31986017764535707
             },
             "left_arm": {
-              "angle": 4.88
+              "angle": 2.2538604547314405
             },
             "left_claw": {
-              "angle": 1.69
+              "angle": 1.7045411996136453
             },
             "right_arm": {
-              "angle": 2.78
+              "angle": -2.2538604547314405
             },
             "right_claw": {
-              "angle": -6.53
+              "angle": 2.1617952588423526
             },
             "center_arm": {
-              "angle": -2.87
+              "angle": 2.2538604547314405
             },
             "center_claw": {
-              "angle": -8.74
+              "angle": 0.6315047267210244
             }
           }
         },
@@ -2802,7 +2791,7 @@
           "duration_ms": 120,
           "pose": {
             "head": {
-              "angle": -3.375,
+              "angle": -1.5000000000000013,
               "x": 0
             },
             "body": {
@@ -2810,34 +2799,34 @@
               "angle": 0.25
             },
             "rear_left_arm": {
-              "angle": -2.5
+              "angle": 9.797174393178826e-16
             },
             "rear_left_claw": {
-              "angle": 8.96
+              "angle": -4.799231304517944e-31
             },
             "rear_right_arm": {
-              "angle": 3.13
+              "angle": -9.797174393178826e-16
             },
             "rear_right_claw": {
-              "angle": 5.55
+              "angle": 8.24403798496289e-16
             },
             "left_arm": {
-              "angle": 4.77
+              "angle": 9.797174393178826e-16
             },
             "left_claw": {
-              "angle": -2.96
+              "angle": 8.908545465879968e-16
             },
             "right_arm": {
-              "angle": 0.33
+              "angle": -9.797174393178826e-16
             },
             "right_claw": {
-              "angle": -8.75
+              "angle": 1.3825773293293255e-16
             },
             "center_arm": {
-              "angle": -4.53
+              "angle": 9.797174393178826e-16
             },
             "center_claw": {
-              "angle": -6.5
+              "angle": -7.414526027724669e-16
             }
           }
         }
@@ -3371,43 +3360,43 @@
           "duration_ms": 210,
           "pose": {
             "head": {
-              "angle": 0.0,
+              "angle": 0,
               "x": 0,
-              "opacity": 0.6
+              "light": 0.32
             },
             "body": {
               "y": 0.0,
               "angle": 0.9
             },
             "rear_left_arm": {
-              "angle": 0.0
+              "angle": 7
             },
             "rear_left_claw": {
-              "angle": 8.18
+              "angle": -10
             },
             "rear_right_arm": {
-              "angle": 4.66
+              "angle": -7
             },
             "rear_right_claw": {
-              "angle": 1.27
+              "angle": 10
             },
             "left_arm": {
-              "angle": 3.38
+              "angle": 7
             },
             "left_claw": {
-              "angle": -6.81
+              "angle": -10
             },
             "right_arm": {
-              "angle": -2.21
+              "angle": -7
             },
             "right_claw": {
-              "angle": -8.63
+              "angle": 10
             },
             "center_arm": {
-              "angle": -4.98
+              "angle": 7
             },
             "center_claw": {
-              "angle": -2.51
+              "angle": -10
             }
           }
         },
@@ -3415,43 +3404,43 @@
           "duration_ms": 210,
           "pose": {
             "head": {
-              "angle": 1.125,
+              "angle": 0,
               "x": 0,
-              "opacity": 0.6
+              "light": 0.32
             },
             "body": {
               "y": 0.4,
               "angle": 1.32
             },
             "rear_left_arm": {
-              "angle": 2.5
+              "angle": 7
             },
             "rear_left_claw": {
-              "angle": 5.21
+              "angle": -10
             },
             "rear_right_arm": {
-              "angle": 4.94
+              "angle": -7
             },
             "rear_right_claw": {
-              "angle": -3.36
+              "angle": 10
             },
             "left_arm": {
-              "angle": 1.08
+              "angle": 7
             },
             "left_claw": {
-              "angle": -8.84
+              "angle": -10
             },
             "right_arm": {
-              "angle": -4.16
+              "angle": -7
             },
             "right_claw": {
-              "angle": -6.2
+              "angle": 10
             },
             "center_arm": {
-              "angle": -4.09
+              "angle": 7
             },
             "center_claw": {
-              "angle": 2.14
+              "angle": -10
             }
           }
         },
@@ -3459,43 +3448,43 @@
           "duration_ms": 210,
           "pose": {
             "head": {
-              "angle": 1.9485000000000001,
+              "angle": 0,
               "x": 0,
-              "opacity": 0.6
+              "light": 0.32
             },
             "body": {
               "y": 0.69,
               "angle": 1.38
             },
             "rear_left_arm": {
-              "angle": 4.33
+              "angle": 7
             },
             "rear_left_claw": {
-              "angle": 0.85
+              "angle": -10
             },
             "rear_right_arm": {
-              "angle": 3.9
+              "angle": -7
             },
             "rear_right_claw": {
-              "angle": -7.08
+              "angle": 10
             },
             "left_arm": {
-              "angle": -1.5
+              "angle": 7
             },
             "left_claw": {
-              "angle": -8.5
+              "angle": -10
             },
             "right_arm": {
-              "angle": -4.99
+              "angle": -7
             },
             "right_claw": {
-              "angle": -2.1
+              "angle": 10
             },
             "center_arm": {
-              "angle": -2.11
+              "angle": 7
             },
             "center_claw": {
-              "angle": 6.23
+              "angle": -10
             }
           }
         },
@@ -3503,43 +3492,43 @@
           "duration_ms": 210,
           "pose": {
             "head": {
-              "angle": 2.25,
+              "angle": 0,
               "x": 0,
-              "opacity": 0.6
+              "light": 0.32
             },
             "body": {
               "y": 0.8,
               "angle": 1.07
             },
             "rear_left_arm": {
-              "angle": 5.0
+              "angle": 7
             },
             "rear_left_claw": {
-              "angle": -3.75
+              "angle": -10
             },
             "rear_right_arm": {
-              "angle": 1.81
+              "angle": -7
             },
             "rear_right_claw": {
-              "angle": -8.91
+              "angle": 10
             },
             "left_arm": {
-              "angle": -3.69
+              "angle": 7
             },
             "left_claw": {
-              "angle": -5.88
+              "angle": -10
             },
             "right_arm": {
-              "angle": -4.48
+              "angle": -7
             },
             "right_claw": {
-              "angle": 2.55
+              "angle": 10
             },
             "center_arm": {
-              "angle": 0.44
+              "angle": 7
             },
             "center_claw": {
-              "angle": 8.64
+              "angle": -10
             }
           }
         },
@@ -3547,43 +3536,43 @@
           "duration_ms": 210,
           "pose": {
             "head": {
-              "angle": 1.9485000000000001,
+              "angle": 0,
               "x": 0,
-              "opacity": 0.6
+              "light": 0.32
             },
             "body": {
               "y": 0.69,
               "angle": 0.48
             },
             "rear_left_arm": {
-              "angle": 4.33
+              "angle": 7
             },
             "rear_left_claw": {
-              "angle": -7.34
+              "angle": -10
             },
             "rear_right_arm": {
-              "angle": -0.76
+              "angle": -7
             },
             "rear_right_claw": {
-              "angle": -8.35
+              "angle": 10
             },
             "left_arm": {
-              "angle": -4.88
+              "angle": 7
             },
             "left_claw": {
-              "angle": -1.69
+              "angle": -10
             },
             "right_arm": {
-              "angle": -2.78
+              "angle": -7
             },
             "right_claw": {
-              "angle": 6.53
+              "angle": 10
             },
             "center_arm": {
-              "angle": 2.87
+              "angle": 7
             },
             "center_claw": {
-              "angle": 8.74
+              "angle": -10
             }
           }
         },
@@ -3591,43 +3580,43 @@
           "duration_ms": 210,
           "pose": {
             "head": {
-              "angle": 1.125,
+              "angle": 0,
               "x": 0,
-              "opacity": 0.6
+              "light": 0.32
             },
             "body": {
               "y": 0.4,
               "angle": -0.25
             },
             "rear_left_arm": {
-              "angle": 2.5
+              "angle": 7
             },
             "rear_left_claw": {
-              "angle": -8.96
+              "angle": -10
             },
             "rear_right_arm": {
-              "angle": -3.13
+              "angle": -7
             },
             "rear_right_claw": {
-              "angle": -5.55
+              "angle": 10
             },
             "left_arm": {
-              "angle": -4.77
+              "angle": 7
             },
             "left_claw": {
-              "angle": 2.96
+              "angle": -10
             },
             "right_arm": {
-              "angle": -0.33
+              "angle": -7
             },
             "right_claw": {
-              "angle": 8.75
+              "angle": 10
             },
             "center_arm": {
-              "angle": 4.53
+              "angle": 7
             },
             "center_claw": {
-              "angle": 6.5
+              "angle": -10
             }
           }
         },
@@ -3635,43 +3624,43 @@
           "duration_ms": 210,
           "pose": {
             "head": {
-              "angle": 0.0,
+              "angle": 0,
               "x": 0,
-              "opacity": 0.6
+              "light": 0.32
             },
             "body": {
               "y": 0.0,
               "angle": -0.9
             },
             "rear_left_arm": {
-              "angle": 0.0
+              "angle": 7
             },
             "rear_left_claw": {
-              "angle": -8.18
+              "angle": -10
             },
             "rear_right_arm": {
-              "angle": -4.66
+              "angle": -7
             },
             "rear_right_claw": {
-              "angle": -1.27
+              "angle": 10
             },
             "left_arm": {
-              "angle": -3.38
+              "angle": 7
             },
             "left_claw": {
-              "angle": 6.81
+              "angle": -10
             },
             "right_arm": {
-              "angle": 2.21
+              "angle": -7
             },
             "right_claw": {
-              "angle": 8.63
+              "angle": 10
             },
             "center_arm": {
-              "angle": 4.98
+              "angle": 7
             },
             "center_claw": {
-              "angle": 2.51
+              "angle": -10
             }
           }
         },
@@ -3679,43 +3668,43 @@
           "duration_ms": 210,
           "pose": {
             "head": {
-              "angle": -1.125,
+              "angle": 0,
               "x": 0,
-              "opacity": 0.6
+              "light": 0.32
             },
             "body": {
               "y": -0.4,
               "angle": -1.32
             },
             "rear_left_arm": {
-              "angle": -2.5
+              "angle": 7
             },
             "rear_left_claw": {
-              "angle": -5.21
+              "angle": -10
             },
             "rear_right_arm": {
-              "angle": -4.94
+              "angle": -7
             },
             "rear_right_claw": {
-              "angle": 3.36
+              "angle": 10
             },
             "left_arm": {
-              "angle": -1.08
+              "angle": 7
             },
             "left_claw": {
-              "angle": 8.84
+              "angle": -10
             },
             "right_arm": {
-              "angle": 4.16
+              "angle": -7
             },
             "right_claw": {
-              "angle": 6.2
+              "angle": 10
             },
             "center_arm": {
-              "angle": 4.09
+              "angle": 7
             },
             "center_claw": {
-              "angle": -2.14
+              "angle": -10
             }
           }
         },
@@ -3723,43 +3712,43 @@
           "duration_ms": 210,
           "pose": {
             "head": {
-              "angle": -1.9485000000000001,
+              "angle": 0,
               "x": 0,
-              "opacity": 0.6
+              "light": 0.32
             },
             "body": {
               "y": -0.69,
               "angle": -1.38
             },
             "rear_left_arm": {
-              "angle": -4.33
+              "angle": 7
             },
             "rear_left_claw": {
-              "angle": -0.85
+              "angle": -10
             },
             "rear_right_arm": {
-              "angle": -3.9
+              "angle": -7
             },
             "rear_right_claw": {
-              "angle": 7.08
+              "angle": 10
             },
             "left_arm": {
-              "angle": 1.5
+              "angle": 7
             },
             "left_claw": {
-              "angle": 8.5
+              "angle": -10
             },
             "right_arm": {
-              "angle": 4.99
+              "angle": -7
             },
             "right_claw": {
-              "angle": 2.1
+              "angle": 10
             },
             "center_arm": {
-              "angle": 2.11
+              "angle": 7
             },
             "center_claw": {
-              "angle": -6.23
+              "angle": -10
             }
           }
         },
@@ -3767,43 +3756,43 @@
           "duration_ms": 210,
           "pose": {
             "head": {
-              "angle": -2.25,
+              "angle": 0,
               "x": 0,
-              "opacity": 0.6
+              "light": 0.32
             },
             "body": {
               "y": -0.8,
               "angle": -1.07
             },
             "rear_left_arm": {
-              "angle": -5.0
+              "angle": 7
             },
             "rear_left_claw": {
-              "angle": 3.75
+              "angle": -10
             },
             "rear_right_arm": {
-              "angle": -1.81
+              "angle": -7
             },
             "rear_right_claw": {
-              "angle": 8.91
+              "angle": 10
             },
             "left_arm": {
-              "angle": 3.69
+              "angle": 7
             },
             "left_claw": {
-              "angle": 5.88
+              "angle": -10
             },
             "right_arm": {
-              "angle": 4.48
+              "angle": -7
             },
             "right_claw": {
-              "angle": -2.55
+              "angle": 10
             },
             "center_arm": {
-              "angle": -0.44
+              "angle": 7
             },
             "center_claw": {
-              "angle": -8.64
+              "angle": -10
             }
           }
         },
@@ -3811,43 +3800,43 @@
           "duration_ms": 210,
           "pose": {
             "head": {
-              "angle": -1.9485000000000001,
+              "angle": 0,
               "x": 0,
-              "opacity": 0.6
+              "light": 0.32
             },
             "body": {
               "y": -0.69,
               "angle": -0.48
             },
             "rear_left_arm": {
-              "angle": -4.33
+              "angle": 7
             },
             "rear_left_claw": {
-              "angle": 7.34
+              "angle": -10
             },
             "rear_right_arm": {
-              "angle": 0.76
+              "angle": -7
             },
             "rear_right_claw": {
-              "angle": 8.35
+              "angle": 10
             },
             "left_arm": {
-              "angle": 4.88
+              "angle": 7
             },
             "left_claw": {
-              "angle": 1.69
+              "angle": -10
             },
             "right_arm": {
-              "angle": 2.78
+              "angle": -7
             },
             "right_claw": {
-              "angle": -6.53
+              "angle": 10
             },
             "center_arm": {
-              "angle": -2.87
+              "angle": 7
             },
             "center_claw": {
-              "angle": -8.74
+              "angle": -10
             }
           }
         },
@@ -3855,43 +3844,43 @@
           "duration_ms": 210,
           "pose": {
             "head": {
-              "angle": -1.125,
+              "angle": 0,
               "x": 0,
-              "opacity": 0.6
+              "light": 0.32
             },
             "body": {
               "y": -0.4,
               "angle": 0.25
             },
             "rear_left_arm": {
-              "angle": -2.5
+              "angle": 7
             },
             "rear_left_claw": {
-              "angle": 8.96
+              "angle": -10
             },
             "rear_right_arm": {
-              "angle": 3.13
+              "angle": -7
             },
             "rear_right_claw": {
-              "angle": 5.55
+              "angle": 10
             },
             "left_arm": {
-              "angle": 4.77
+              "angle": 7
             },
             "left_claw": {
-              "angle": -2.96
+              "angle": -10
             },
             "right_arm": {
-              "angle": 0.33
+              "angle": -7
             },
             "right_claw": {
-              "angle": -8.75
+              "angle": 10
             },
             "center_arm": {
-              "angle": -4.53
+              "angle": 7
             },
             "center_claw": {
-              "angle": -6.5
+              "angle": -10
             }
           }
         }
@@ -3904,7 +3893,7 @@
           "duration_ms": 120,
           "pose": {
             "head": {
-              "angle": 0.0,
+              "angle": -0.0,
               "x": 0
             },
             "body": {
@@ -3915,31 +3904,31 @@
               "angle": 0.0
             },
             "rear_left_claw": {
-              "angle": 8.18
+              "angle": 0.0
             },
             "rear_right_arm": {
-              "angle": 4.66
+              "angle": -0.0
             },
             "rear_right_claw": {
-              "angle": 1.27
+              "angle": 0.0
             },
             "left_arm": {
-              "angle": 3.38
+              "angle": 0.0
             },
             "left_claw": {
-              "angle": -6.81
+              "angle": 0.0
             },
             "right_arm": {
-              "angle": -2.21
+              "angle": -0.0
             },
             "right_claw": {
-              "angle": -8.63
+              "angle": 0.0
             },
             "center_arm": {
-              "angle": -4.98
+              "angle": 0.0
             },
             "center_claw": {
-              "angle": -2.51
+              "angle": -0.0
             }
           }
         },
@@ -3947,7 +3936,7 @@
           "duration_ms": 120,
           "pose": {
             "head": {
-              "angle": 3.375,
+              "angle": -1.690395341048578,
               "x": 0
             },
             "body": {
@@ -3955,34 +3944,34 @@
               "angle": 1.32
             },
             "rear_left_arm": {
-              "angle": 2.5
+              "angle": 2.817325568414297
             },
             "rear_left_claw": {
-              "angle": 5.21
+              "angle": 2.562729478359999
             },
             "rear_right_arm": {
-              "angle": 4.94
+              "angle": -2.817325568414297
             },
             "rear_right_claw": {
-              "angle": -3.36
+              "angle": 2.3694720708916335
             },
             "left_arm": {
-              "angle": 1.08
+              "angle": 2.817325568414297
             },
             "left_claw": {
-              "angle": -8.84
+              "angle": -0.0022670311741881965
             },
             "right_arm": {
-              "angle": -4.16
+              "angle": -2.817325568414297
             },
             "right_claw": {
-              "angle": -6.2
+              "angle": -2.371921835233411
             },
             "center_arm": {
-              "angle": -4.09
+              "angle": 2.817325568414297
             },
             "center_claw": {
-              "angle": 2.14
+              "angle": -2.5608426426570152
             }
           }
         },
@@ -3990,7 +3979,7 @@
           "duration_ms": 120,
           "pose": {
             "head": {
-              "angle": 5.8455,
+              "angle": -3.243844904733585,
               "x": 0
             },
             "body": {
@@ -3998,34 +3987,34 @@
               "angle": 1.38
             },
             "rear_left_arm": {
-              "angle": 4.33
+              "angle": 5.406408174555976
             },
             "rear_left_claw": {
-              "angle": 0.85
+              "angle": 4.085890676706061
             },
             "rear_right_arm": {
-              "angle": 3.9
+              "angle": -5.406408174555976
             },
             "rear_right_claw": {
-              "angle": -7.08
+              "angle": -0.7715651029791611
             },
             "left_arm": {
-              "angle": -1.5
+              "angle": 5.406408174555976
             },
             "left_claw": {
-              "angle": -8.5
+              "angle": -4.919647485240121
             },
             "right_arm": {
-              "angle": -4.99
+              "angle": -5.406408174555976
             },
             "right_claw": {
-              "angle": -2.1
+              "angle": -4.544628657688101
             },
             "center_arm": {
-              "angle": -2.11
+              "angle": 5.406408174555976
             },
             "center_claw": {
-              "angle": 6.23
+              "angle": 0.008700799113501927
             }
           }
         },
@@ -4033,7 +4022,7 @@
           "duration_ms": 120,
           "pose": {
             "head": {
-              "angle": 6.75,
+              "angle": -4.53449744612555,
               "x": 0
             },
             "body": {
@@ -4041,34 +4030,34 @@
               "angle": 1.07
             },
             "rear_left_arm": {
-              "angle": 5.0
+              "angle": 7.5574957435425825
             },
             "rear_left_claw": {
-              "angle": -3.75
+              "angle": -2.1291925991464713
             },
             "rear_right_arm": {
-              "angle": 1.81
+              "angle": -7.5574957435425825
             },
             "rear_right_claw": {
-              "angle": -8.91
+              "angle": -7.252220131133449
             },
             "left_arm": {
-              "angle": -3.69
+              "angle": 7.5574957435425825
             },
             "left_claw": {
-              "angle": -5.88
+              "angle": -5.707589919883019
             },
             "right_arm": {
-              "angle": -4.48
+              "angle": -7.5574957435425825
             },
             "right_claw": {
-              "angle": 2.55
+              "angle": 1.0845721418083574
             },
             "center_arm": {
-              "angle": 0.44
+              "angle": 7.5574957435425825
             },
             "center_claw": {
-              "angle": 8.64
+              "angle": 6.8795835780818235
             }
           }
         },
@@ -4076,7 +4065,7 @@
           "duration_ms": 120,
           "pose": {
             "head": {
-              "angle": 5.8455,
+              "angle": -5.45779197212711,
               "x": 0
             },
             "body": {
@@ -4084,34 +4073,34 @@
               "angle": 0.48
             },
             "rear_left_arm": {
-              "angle": 4.33
+              "angle": 9.096319953545184
             },
             "rear_left_claw": {
-              "angle": -7.34
+              "angle": -9.00373253222839
             },
             "rear_right_arm": {
-              "angle": -0.76
+              "angle": -9.096319953545184
             },
             "rear_right_claw": {
-              "angle": -8.35
+              "angle": -5.954056393752502
             },
             "left_arm": {
-              "angle": -4.88
+              "angle": 9.096319953545184
             },
             "left_claw": {
-              "angle": -1.69
+              "angle": 2.5697517346015575
             },
             "right_arm": {
-              "angle": -2.78
+              "angle": -9.096319953545184
             },
             "right_claw": {
-              "angle": 6.53
+              "angle": 8.730941969180249
             },
             "center_arm": {
-              "angle": 2.87
+              "angle": 9.096319953545184
             },
             "center_claw": {
-              "angle": 8.74
+              "angle": 6.864944422096447
             }
           }
         },
@@ -4119,7 +4108,7 @@
           "duration_ms": 120,
           "pose": {
             "head": {
-              "angle": 3.375,
+              "angle": -5.938928651285596,
               "x": 0
             },
             "body": {
@@ -4127,34 +4116,34 @@
               "angle": -0.25
             },
             "rear_left_arm": {
-              "angle": 2.5
+              "angle": 9.898214418809326
             },
             "rear_left_claw": {
-              "angle": -8.96
+              "angle": -5.351378734735864
             },
             "rear_right_arm": {
-              "angle": -3.13
+              "angle": -9.898214418809326
             },
             "rear_right_claw": {
-              "angle": -5.55
+              "angle": 4.115489077767305
             },
             "left_arm": {
-              "angle": -4.77
+              "angle": 9.898214418809326
             },
             "left_claw": {
-              "angle": 2.96
+              "angle": 9.7985952117215
             },
             "right_arm": {
-              "angle": -0.33
+              "angle": -9.898214418809326
             },
             "right_claw": {
-              "angle": 8.75
+              "angle": 6.472918096555968
             },
             "center_arm": {
-              "angle": 4.53
+              "angle": 9.898214418809326
             },
             "center_claw": {
-              "angle": 6.5
+              "angle": -2.803930065191904
             }
           }
         },
@@ -4162,7 +4151,7 @@
           "duration_ms": 120,
           "pose": {
             "head": {
-              "angle": 0.0,
+              "angle": -5.938928651285597,
               "x": 0
             },
             "body": {
@@ -4170,34 +4159,34 @@
               "angle": -0.9
             },
             "rear_left_arm": {
-              "angle": 0.0
+              "angle": 9.898214418809328
             },
             "rear_left_claw": {
-              "angle": -8.18
+              "angle": 5.351378734735853
             },
             "rear_right_arm": {
-              "angle": -4.66
+              "angle": -9.898214418809328
             },
             "rear_right_claw": {
-              "angle": -1.27
+              "angle": 9.898213617670336
             },
             "left_arm": {
-              "angle": -3.38
+              "angle": 9.898214418809328
             },
             "left_claw": {
-              "angle": 6.81
+              "angle": 5.344676548469555
             },
             "right_arm": {
-              "angle": 2.21
+              "angle": -9.898214418809328
             },
             "right_claw": {
-              "angle": 8.63
+              "angle": -4.122731491155395
             },
             "center_arm": {
-              "angle": 4.98
+              "angle": 9.898214418809328
             },
             "center_claw": {
-              "angle": 2.51
+              "angle": -9.799719210762463
             }
           }
         },
@@ -4205,7 +4194,7 @@
           "duration_ms": 120,
           "pose": {
             "head": {
-              "angle": -3.375,
+              "angle": -5.457791972127111,
               "x": 0
             },
             "body": {
@@ -4213,34 +4202,34 @@
               "angle": -1.32
             },
             "rear_left_arm": {
-              "angle": -2.5
+              "angle": 9.096319953545184
             },
             "rear_left_claw": {
-              "angle": -5.21
+              "angle": 9.003732532228394
             },
             "rear_right_arm": {
-              "angle": -4.94
+              "angle": -9.096319953545184
             },
             "rear_right_claw": {
-              "angle": 3.36
+              "angle": 3.775418503413479
             },
             "left_arm": {
-              "angle": -1.08
+              "angle": 9.096319953545184
             },
             "left_claw": {
-              "angle": 8.84
+              "angle": -4.923997886205307
             },
             "right_arm": {
-              "angle": 4.16
+              "angle": -9.096319953545184
             },
             "right_claw": {
-              "angle": 6.2
+              "angle": -9.096313327426627
             },
             "center_arm": {
-              "angle": 4.09
+              "angle": 9.096319953545184
             },
             "center_claw": {
-              "angle": -2.14
+              "angle": -4.905520245210086
             }
           }
         },
@@ -4248,7 +4237,7 @@
           "duration_ms": 120,
           "pose": {
             "head": {
-              "angle": -5.8455,
+              "angle": -4.53449744612555,
               "x": 0
             },
             "body": {
@@ -4256,34 +4245,34 @@
               "angle": -1.38
             },
             "rear_left_arm": {
-              "angle": -4.33
+              "angle": 7.5574957435425825
             },
             "rear_left_claw": {
-              "angle": -0.85
+              "angle": 2.1291925991464753
             },
             "rear_right_arm": {
-              "angle": -3.9
+              "angle": -7.5574957435425825
             },
             "rear_right_claw": {
-              "angle": 7.08
+              "angle": -4.951404789221013
             },
             "left_arm": {
-              "angle": 1.5
+              "angle": 7.5574957435425825
             },
             "left_claw": {
-              "angle": 8.5
+              "angle": -7.4797034489518035
             },
             "right_arm": {
-              "angle": 4.99
+              "angle": -7.5574957435425825
             },
             "right_claw": {
-              "angle": 2.1
+              "angle": -3.13119725213606
             },
             "center_arm": {
-              "angle": 2.11
+              "angle": 7.5574957435425825
             },
             "center_claw": {
-              "angle": -6.23
+              "angle": 4.09611725803761
             }
           }
         },
@@ -4291,7 +4280,7 @@
           "duration_ms": 120,
           "pose": {
             "head": {
-              "angle": -6.75,
+              "angle": -3.2438449047335842,
               "x": 0
             },
             "body": {
@@ -4299,34 +4288,34 @@
               "angle": -1.07
             },
             "rear_left_arm": {
-              "angle": -5.0
+              "angle": 5.406408174555973
             },
             "rear_left_claw": {
-              "angle": 3.75
+              "angle": -4.085890676706063
             },
             "rear_right_arm": {
-              "angle": -1.81
+              "angle": -5.406408174555973
             },
             "rear_right_claw": {
-              "angle": 8.91
+              "angle": -5.186797411277995
             },
             "left_arm": {
-              "angle": 3.69
+              "angle": 5.406408174555973
             },
             "left_claw": {
-              "angle": 5.88
+              "angle": -1.5189865260627349
             },
             "right_arm": {
-              "angle": 4.48
+              "angle": -5.406408174555973
             },
             "right_claw": {
-              "angle": -2.55
+              "angle": 3.545373566049334
             },
             "center_arm": {
-              "angle": -0.44
+              "angle": 5.406408174555973
             },
             "center_claw": {
-              "angle": -8.64
+              "angle": 5.350133551863544
             }
           }
         },
@@ -4334,7 +4323,7 @@
           "duration_ms": 120,
           "pose": {
             "head": {
-              "angle": -5.8455,
+              "angle": -1.6903953410485804,
               "x": 0
             },
             "body": {
@@ -4342,34 +4331,34 @@
               "angle": -0.48
             },
             "rear_left_arm": {
-              "angle": -4.33
+              "angle": 2.817325568414301
             },
             "rear_left_claw": {
-              "angle": 7.34
+              "angle": -2.562729478360005
             },
             "rear_right_arm": {
-              "angle": 0.76
+              "angle": -2.817325568414301
             },
             "rear_right_claw": {
-              "angle": 8.35
+              "angle": -0.3998252220566963
             },
             "left_arm": {
-              "angle": 4.88
+              "angle": 2.817325568414301
             },
             "left_claw": {
-              "angle": 1.69
+              "angle": 2.130676499517057
             },
             "right_arm": {
-              "angle": 2.78
+              "angle": -2.817325568414301
             },
             "right_claw": {
-              "angle": -6.53
+              "angle": 2.7022440735529405
             },
             "center_arm": {
-              "angle": -2.87
+              "angle": 2.817325568414301
             },
             "center_claw": {
-              "angle": -8.74
+              "angle": 0.7893809084012806
             }
           }
         },
@@ -4377,7 +4366,7 @@
           "duration_ms": 120,
           "pose": {
             "head": {
-              "angle": -3.375,
+              "angle": -7.347880794884119e-16,
               "x": 0
             },
             "body": {
@@ -4385,34 +4374,34 @@
               "angle": 0.25
             },
             "rear_left_arm": {
-              "angle": -2.5
+              "angle": 1.2246467991473533e-15
             },
             "rear_left_claw": {
-              "angle": 8.96
+              "angle": -5.999039130647431e-31
             },
             "rear_right_arm": {
-              "angle": 3.13
+              "angle": -1.2246467991473533e-15
             },
             "rear_right_claw": {
-              "angle": 5.55
+              "angle": 1.0305047481203614e-15
             },
             "left_arm": {
-              "angle": 4.77
+              "angle": 1.2246467991473533e-15
             },
             "left_claw": {
-              "angle": -2.96
+              "angle": 1.113568183234996e-15
             },
             "right_arm": {
-              "angle": 0.33
+              "angle": -1.2246467991473533e-15
             },
             "right_claw": {
-              "angle": -8.75
+              "angle": 1.7282216616616568e-16
             },
             "center_arm": {
-              "angle": -4.53
+              "angle": 1.2246467991473533e-15
             },
             "center_claw": {
-              "angle": -6.5
+              "angle": -9.268157534655836e-16
             }
           }
         }
@@ -4425,7 +4414,7 @@
           "duration_ms": 120,
           "pose": {
             "head": {
-              "angle": 0.0,
+              "angle": -0.0,
               "x": 0
             },
             "body": {
@@ -4436,31 +4425,31 @@
               "angle": 0.0
             },
             "rear_left_claw": {
-              "angle": 8.18
+              "angle": 0.0
             },
             "rear_right_arm": {
-              "angle": 4.66
+              "angle": -0.0
             },
             "rear_right_claw": {
-              "angle": 1.27
+              "angle": 0.0
             },
             "left_arm": {
-              "angle": 3.38
+              "angle": 0.0
             },
             "left_claw": {
-              "angle": -6.81
+              "angle": 0.0
             },
             "right_arm": {
-              "angle": -2.21
+              "angle": -0.0
             },
             "right_claw": {
-              "angle": -8.63
+              "angle": 0.0
             },
             "center_arm": {
-              "angle": -4.98
+              "angle": 0.0
             },
             "center_claw": {
-              "angle": -2.51
+              "angle": -0.0
             }
           }
         },
@@ -4468,7 +4457,7 @@
           "duration_ms": 120,
           "pose": {
             "head": {
-              "angle": 3.375,
+              "angle": -2.535593011572867,
               "x": 0
             },
             "body": {
@@ -4476,34 +4465,34 @@
               "angle": 1.32
             },
             "rear_left_arm": {
-              "angle": 2.5
+              "angle": 3.9442557957800153
             },
             "rear_left_claw": {
-              "angle": 5.21
+              "angle": 3.587821269703999
             },
             "rear_right_arm": {
-              "angle": 4.94
+              "angle": -3.9442557957800153
             },
             "rear_right_claw": {
-              "angle": -3.36
+              "angle": 3.3172608992482866
             },
             "left_arm": {
-              "angle": 1.08
+              "angle": 3.9442557957800153
             },
             "left_claw": {
-              "angle": -8.84
+              "angle": -0.003173843643863475
             },
             "right_arm": {
-              "angle": -4.16
+              "angle": -3.9442557957800153
             },
             "right_claw": {
-              "angle": -6.2
+              "angle": -3.3206905693267754
             },
             "center_arm": {
-              "angle": -4.09
+              "angle": 3.9442557957800153
             },
             "center_claw": {
-              "angle": 2.14
+              "angle": -3.5851796997198213
             }
           }
         },
@@ -4511,7 +4500,7 @@
           "duration_ms": 120,
           "pose": {
             "head": {
-              "angle": 5.8455,
+              "angle": -4.865767357100378,
               "x": 0
             },
             "body": {
@@ -4519,34 +4508,34 @@
               "angle": 1.38
             },
             "rear_left_arm": {
-              "angle": 4.33
+              "angle": 7.5689714443783656
             },
             "rear_left_claw": {
-              "angle": 0.85
+              "angle": 5.720246947388485
             },
             "rear_right_arm": {
-              "angle": 3.9
+              "angle": -7.5689714443783656
             },
             "rear_right_claw": {
-              "angle": -7.08
+              "angle": -1.0801911441708256
             },
             "left_arm": {
-              "angle": -1.5
+              "angle": 7.5689714443783656
             },
             "left_claw": {
-              "angle": -8.5
+              "angle": -6.88750647933617
             },
             "right_arm": {
-              "angle": -4.99
+              "angle": -7.5689714443783656
             },
             "right_claw": {
-              "angle": -2.1
+              "angle": -6.362480120763342
             },
             "center_arm": {
-              "angle": -2.11
+              "angle": 7.5689714443783656
             },
             "center_claw": {
-              "angle": 6.23
+              "angle": 0.0121811187589027
             }
           }
         },
@@ -4554,7 +4543,7 @@
           "duration_ms": 120,
           "pose": {
             "head": {
-              "angle": 6.75,
+              "angle": -6.801746169188324,
               "x": 0
             },
             "body": {
@@ -4562,34 +4551,34 @@
               "angle": 1.07
             },
             "rear_left_arm": {
-              "angle": 5.0
+              "angle": 10.580494040959616
             },
             "rear_left_claw": {
-              "angle": -3.75
+              "angle": -2.98086963880506
             },
             "rear_right_arm": {
-              "angle": 1.81
+              "angle": -10.580494040959616
             },
             "rear_right_claw": {
-              "angle": -8.91
+              "angle": -10.153108183586829
             },
             "left_arm": {
-              "angle": -3.69
+              "angle": 10.580494040959616
             },
             "left_claw": {
-              "angle": -5.88
+              "angle": -7.9906258878362255
             },
             "right_arm": {
-              "angle": -4.48
+              "angle": -10.580494040959616
             },
             "right_claw": {
-              "angle": 2.55
+              "angle": 1.5184009985317004
             },
             "center_arm": {
-              "angle": 0.44
+              "angle": 10.580494040959616
             },
             "center_claw": {
-              "angle": 8.64
+              "angle": 9.631417009314553
             }
           }
         },
@@ -4597,7 +4586,7 @@
           "duration_ms": 120,
           "pose": {
             "head": {
-              "angle": 5.8455,
+              "angle": -8.186687958190666,
               "x": 0
             },
             "body": {
@@ -4605,34 +4594,34 @@
               "angle": 0.48
             },
             "rear_left_arm": {
-              "angle": 4.33
+              "angle": 12.734847934963257
             },
             "rear_left_claw": {
-              "angle": -7.34
+              "angle": -12.60522554511975
             },
             "rear_right_arm": {
-              "angle": -0.76
+              "angle": -12.734847934963257
             },
             "rear_right_claw": {
-              "angle": -8.35
+              "angle": -8.335678951253502
             },
             "left_arm": {
-              "angle": -4.88
+              "angle": 12.734847934963257
             },
             "left_claw": {
-              "angle": -1.69
+              "angle": 3.59765242844218
             },
             "right_arm": {
-              "angle": -2.78
+              "angle": -12.734847934963257
             },
             "right_claw": {
-              "angle": 6.53
+              "angle": 12.22331875685235
             },
             "center_arm": {
-              "angle": 2.87
+              "angle": 12.734847934963257
             },
             "center_claw": {
-              "angle": 8.74
+              "angle": 9.610922190935026
             }
           }
         },
@@ -4640,7 +4629,7 @@
           "duration_ms": 120,
           "pose": {
             "head": {
-              "angle": 3.375,
+              "angle": -8.908392976928393,
               "x": 0
             },
             "body": {
@@ -4648,34 +4637,34 @@
               "angle": -0.25
             },
             "rear_left_arm": {
-              "angle": 2.5
+              "angle": 13.857500186333057
             },
             "rear_left_claw": {
-              "angle": -8.96
+              "angle": -7.491930228630209
             },
             "rear_right_arm": {
-              "angle": -3.13
+              "angle": -13.857500186333057
             },
             "rear_right_claw": {
-              "angle": -5.55
+              "angle": 5.761684708874228
             },
             "left_arm": {
-              "angle": -4.77
+              "angle": 13.857500186333057
             },
             "left_claw": {
-              "angle": 2.96
+              "angle": 13.718033296410102
             },
             "right_arm": {
-              "angle": -0.33
+              "angle": -13.857500186333057
             },
             "right_claw": {
-              "angle": 8.75
+              "angle": 9.062085335178354
             },
             "center_arm": {
-              "angle": 4.53
+              "angle": 13.857500186333057
             },
             "center_claw": {
-              "angle": 6.5
+              "angle": -3.9255020912686653
             }
           }
         },
@@ -4683,7 +4672,7 @@
           "duration_ms": 120,
           "pose": {
             "head": {
-              "angle": 0.0,
+              "angle": -8.908392976928395,
               "x": 0
             },
             "body": {
@@ -4691,34 +4680,34 @@
               "angle": -0.9
             },
             "rear_left_arm": {
-              "angle": 0.0
+              "angle": 13.85750018633306
             },
             "rear_left_claw": {
-              "angle": -8.18
+              "angle": 7.491930228630194
             },
             "rear_right_arm": {
-              "angle": -4.66
+              "angle": -13.85750018633306
             },
             "rear_right_claw": {
-              "angle": -1.27
+              "angle": 13.857499064738471
             },
             "left_arm": {
-              "angle": -3.38
+              "angle": 13.85750018633306
             },
             "left_claw": {
-              "angle": 6.81
+              "angle": 7.482547167857377
             },
             "right_arm": {
-              "angle": 2.21
+              "angle": -13.85750018633306
             },
             "right_claw": {
-              "angle": 8.63
+              "angle": -5.771824087617554
             },
             "center_arm": {
-              "angle": 4.98
+              "angle": 13.85750018633306
             },
             "center_claw": {
-              "angle": 2.51
+              "angle": -13.719606895067447
             }
           }
         },
@@ -4726,7 +4715,7 @@
           "duration_ms": 120,
           "pose": {
             "head": {
-              "angle": -3.375,
+              "angle": -8.186687958190666,
               "x": 0
             },
             "body": {
@@ -4734,34 +4723,34 @@
               "angle": -1.32
             },
             "rear_left_arm": {
-              "angle": -2.5
+              "angle": 12.734847934963259
             },
             "rear_left_claw": {
-              "angle": -5.21
+              "angle": 12.605225545119751
             },
             "rear_right_arm": {
-              "angle": -4.94
+              "angle": -12.734847934963259
             },
             "rear_right_claw": {
-              "angle": 3.36
+              "angle": 5.285585904778871
             },
             "left_arm": {
-              "angle": -1.08
+              "angle": 12.734847934963259
             },
             "left_claw": {
-              "angle": 8.84
+              "angle": -6.89359704068743
             },
             "right_arm": {
-              "angle": 4.16
+              "angle": -12.734847934963259
             },
             "right_claw": {
-              "angle": 6.2
+              "angle": -12.734838658397276
             },
             "center_arm": {
-              "angle": 4.09
+              "angle": 12.734847934963259
             },
             "center_claw": {
-              "angle": -2.14
+              "angle": -6.867728343294121
             }
           }
         },
@@ -4769,7 +4758,7 @@
           "duration_ms": 120,
           "pose": {
             "head": {
-              "angle": -5.8455,
+              "angle": -6.801746169188324,
               "x": 0
             },
             "body": {
@@ -4777,34 +4766,34 @@
               "angle": -1.38
             },
             "rear_left_arm": {
-              "angle": -4.33
+              "angle": 10.580494040959616
             },
             "rear_left_claw": {
-              "angle": -0.85
+              "angle": 2.980869638805065
             },
             "rear_right_arm": {
-              "angle": -3.9
+              "angle": -10.580494040959616
             },
             "rear_right_claw": {
-              "angle": 7.08
+              "angle": -6.931966704909418
             },
             "left_arm": {
-              "angle": 1.5
+              "angle": 10.580494040959616
             },
             "left_claw": {
-              "angle": 8.5
+              "angle": -10.471584828532523
             },
             "right_arm": {
-              "angle": 4.99
+              "angle": -10.580494040959616
             },
             "right_claw": {
-              "angle": 2.1
+              "angle": -4.383676152990484
             },
             "center_arm": {
-              "angle": 2.11
+              "angle": 10.580494040959616
             },
             "center_claw": {
-              "angle": -6.23
+              "angle": 5.7345641612526554
             }
           }
         },
@@ -4812,7 +4801,7 @@
           "duration_ms": 120,
           "pose": {
             "head": {
-              "angle": -6.75,
+              "angle": -4.865767357100376,
               "x": 0
             },
             "body": {
@@ -4820,34 +4809,34 @@
               "angle": -1.07
             },
             "rear_left_arm": {
-              "angle": -5.0
+              "angle": 7.568971444378363
             },
             "rear_left_claw": {
-              "angle": 3.75
+              "angle": -5.720246947388487
             },
             "rear_right_arm": {
-              "angle": -1.81
+              "angle": -7.568971444378363
             },
             "rear_right_claw": {
-              "angle": 8.91
+              "angle": -7.261516375789194
             },
             "left_arm": {
-              "angle": 3.69
+              "angle": 7.568971444378363
             },
             "left_claw": {
-              "angle": 5.88
+              "angle": -2.1265811364878284
             },
             "right_arm": {
-              "angle": 4.48
+              "angle": -7.568971444378363
             },
             "right_claw": {
-              "angle": -2.55
+              "angle": 4.963522992469067
             },
             "center_arm": {
-              "angle": -0.44
+              "angle": 7.568971444378363
             },
             "center_claw": {
-              "angle": -8.64
+              "angle": 7.490186972608961
             }
           }
         },
@@ -4855,7 +4844,7 @@
           "duration_ms": 120,
           "pose": {
             "head": {
-              "angle": -5.8455,
+              "angle": -2.5355930115728706,
               "x": 0
             },
             "body": {
@@ -4863,34 +4852,34 @@
               "angle": -0.48
             },
             "rear_left_arm": {
-              "angle": -4.33
+              "angle": 3.9442557957800206
             },
             "rear_left_claw": {
-              "angle": 7.34
+              "angle": -3.5878212697040066
             },
             "rear_right_arm": {
-              "angle": 0.76
+              "angle": -3.9442557957800206
             },
             "rear_right_claw": {
-              "angle": 8.35
+              "angle": -0.5597553108793749
             },
             "left_arm": {
-              "angle": 4.88
+              "angle": 3.9442557957800206
             },
             "left_claw": {
-              "angle": 1.69
+              "angle": 2.9829470993238796
             },
             "right_arm": {
-              "angle": 2.78
+              "angle": -3.9442557957800206
             },
             "right_claw": {
-              "angle": -6.53
+              "angle": 3.7831417029741163
             },
             "center_arm": {
-              "angle": -2.87
+              "angle": 3.9442557957800206
             },
             "center_claw": {
-              "angle": -8.74
+              "angle": 1.1051332717617928
             }
           }
         },
@@ -4898,7 +4887,7 @@
           "duration_ms": 120,
           "pose": {
             "head": {
-              "angle": -3.375,
+              "angle": -1.102182119232618e-15,
               "x": 0
             },
             "body": {
@@ -4906,34 +4895,34 @@
               "angle": 0.25
             },
             "rear_left_arm": {
-              "angle": -2.5
+              "angle": 1.7145055188062944e-15
             },
             "rear_left_claw": {
-              "angle": 8.96
+              "angle": -8.398654782906403e-31
             },
             "rear_right_arm": {
-              "angle": 3.13
+              "angle": -1.7145055188062944e-15
             },
             "rear_right_claw": {
-              "angle": 5.55
+              "angle": 1.4427066473685057e-15
             },
             "left_arm": {
-              "angle": 4.77
+              "angle": 1.7145055188062944e-15
             },
             "left_claw": {
-              "angle": -2.96
+              "angle": 1.5589954565289944e-15
             },
             "right_arm": {
-              "angle": 0.33
+              "angle": -1.7145055188062944e-15
             },
             "right_claw": {
-              "angle": -8.75
+              "angle": 2.4195103263263195e-16
             },
             "center_arm": {
-              "angle": -4.53
+              "angle": 1.7145055188062944e-15
             },
             "center_claw": {
-              "angle": -6.5
+              "angle": -1.2975420548518172e-15
             }
           }
         }
@@ -4946,11 +4935,11 @@
           "duration_ms": 120,
           "pose": {
             "head": {
-              "angle": 0.0,
+              "angle": -0.0,
               "x": 0
             },
             "body": {
-              "y": 0.0,
+              "y": -0.0,
               "angle": 0.9
             },
             "rear_left_arm": {
@@ -4960,25 +4949,25 @@
               "angle": 8.18
             },
             "rear_right_arm": {
-              "angle": 4.66
+              "angle": -0.0
             },
             "rear_right_claw": {
               "angle": 1.27
             },
             "left_arm": {
-              "angle": 3.38
+              "angle": 0.0
             },
             "left_claw": {
               "angle": -6.81
             },
             "right_arm": {
-              "angle": -2.21
+              "angle": -0.0
             },
             "right_claw": {
               "angle": -8.63
             },
             "center_arm": {
-              "angle": -4.98
+              "angle": 0.0
             },
             "center_claw": {
               "angle": -2.51
@@ -4989,39 +4978,39 @@
           "duration_ms": 120,
           "pose": {
             "head": {
-              "angle": 1.125,
+              "angle": -1.690395341048578,
               "x": 0
             },
             "body": {
-              "y": 1.2,
+              "y": -0.845197670524289,
               "angle": 1.32
             },
             "rear_left_arm": {
-              "angle": 2.5
+              "angle": 4.225988352621445
             },
             "rear_left_claw": {
               "angle": 5.21
             },
             "rear_right_arm": {
-              "angle": 4.94
+              "angle": -4.225988352621445
             },
             "rear_right_claw": {
               "angle": -3.36
             },
             "left_arm": {
-              "angle": 1.08
+              "angle": 4.225988352621445
             },
             "left_claw": {
               "angle": -8.84
             },
             "right_arm": {
-              "angle": -4.16
+              "angle": -4.225988352621445
             },
             "right_claw": {
               "angle": -6.2
             },
             "center_arm": {
-              "angle": -4.09
+              "angle": 4.225988352621445
             },
             "center_claw": {
               "angle": 2.14
@@ -5032,39 +5021,39 @@
           "duration_ms": 120,
           "pose": {
             "head": {
-              "angle": 1.9485000000000001,
+              "angle": -3.243844904733585,
               "x": 0
             },
             "body": {
-              "y": 2.08,
+              "y": -1.6219224523667926,
               "angle": 1.38
             },
             "rear_left_arm": {
-              "angle": 4.33
+              "angle": 8.109612261833963
             },
             "rear_left_claw": {
               "angle": 0.85
             },
             "rear_right_arm": {
-              "angle": 3.9
+              "angle": -8.109612261833963
             },
             "rear_right_claw": {
               "angle": -7.08
             },
             "left_arm": {
-              "angle": -1.5
+              "angle": 8.109612261833963
             },
             "left_claw": {
               "angle": -8.5
             },
             "right_arm": {
-              "angle": -4.99
+              "angle": -8.109612261833963
             },
             "right_claw": {
               "angle": -2.1
             },
             "center_arm": {
-              "angle": -2.11
+              "angle": 8.109612261833963
             },
             "center_claw": {
               "angle": 6.23
@@ -5075,39 +5064,39 @@
           "duration_ms": 120,
           "pose": {
             "head": {
-              "angle": 2.25,
+              "angle": -4.53449744612555,
               "x": 0
             },
             "body": {
-              "y": 2.4,
+              "y": -2.267248723062775,
               "angle": 1.07
             },
             "rear_left_arm": {
-              "angle": 5.0
+              "angle": 11.336243615313874
             },
             "rear_left_claw": {
               "angle": -3.75
             },
             "rear_right_arm": {
-              "angle": 1.81
+              "angle": -11.336243615313874
             },
             "rear_right_claw": {
               "angle": -8.91
             },
             "left_arm": {
-              "angle": -3.69
+              "angle": 11.336243615313874
             },
             "left_claw": {
               "angle": -5.88
             },
             "right_arm": {
-              "angle": -4.48
+              "angle": -11.336243615313874
             },
             "right_claw": {
               "angle": 2.55
             },
             "center_arm": {
-              "angle": 0.44
+              "angle": 11.336243615313874
             },
             "center_claw": {
               "angle": 8.64
@@ -5118,39 +5107,39 @@
           "duration_ms": 120,
           "pose": {
             "head": {
-              "angle": 1.9485000000000001,
+              "angle": -5.45779197212711,
               "x": 0
             },
             "body": {
-              "y": 2.08,
+              "y": -2.728895986063555,
               "angle": 0.48
             },
             "rear_left_arm": {
-              "angle": 4.33
+              "angle": 13.644479930317775
             },
             "rear_left_claw": {
               "angle": -7.34
             },
             "rear_right_arm": {
-              "angle": -0.76
+              "angle": -13.644479930317775
             },
             "rear_right_claw": {
               "angle": -8.35
             },
             "left_arm": {
-              "angle": -4.88
+              "angle": 13.644479930317775
             },
             "left_claw": {
               "angle": -1.69
             },
             "right_arm": {
-              "angle": -2.78
+              "angle": -13.644479930317775
             },
             "right_claw": {
               "angle": 6.53
             },
             "center_arm": {
-              "angle": 2.87
+              "angle": 13.644479930317775
             },
             "center_claw": {
               "angle": 8.74
@@ -5161,39 +5150,39 @@
           "duration_ms": 120,
           "pose": {
             "head": {
-              "angle": 1.125,
+              "angle": -5.938928651285596,
               "x": 0
             },
             "body": {
-              "y": 1.2,
+              "y": -2.969464325642798,
               "angle": -0.25
             },
             "rear_left_arm": {
-              "angle": 2.5
+              "angle": 14.84732162821399
             },
             "rear_left_claw": {
               "angle": -8.96
             },
             "rear_right_arm": {
-              "angle": -3.13
+              "angle": -14.84732162821399
             },
             "rear_right_claw": {
               "angle": -5.55
             },
             "left_arm": {
-              "angle": -4.77
+              "angle": 14.84732162821399
             },
             "left_claw": {
               "angle": 2.96
             },
             "right_arm": {
-              "angle": -0.33
+              "angle": -14.84732162821399
             },
             "right_claw": {
               "angle": 8.75
             },
             "center_arm": {
-              "angle": 4.53
+              "angle": 14.84732162821399
             },
             "center_claw": {
               "angle": 6.5
@@ -5204,39 +5193,39 @@
           "duration_ms": 120,
           "pose": {
             "head": {
-              "angle": 0.0,
+              "angle": -5.938928651285597,
               "x": 0
             },
             "body": {
-              "y": 0.0,
+              "y": -2.9694643256427984,
               "angle": -0.9
             },
             "rear_left_arm": {
-              "angle": 0.0
+              "angle": 14.847321628213992
             },
             "rear_left_claw": {
               "angle": -8.18
             },
             "rear_right_arm": {
-              "angle": -4.66
+              "angle": -14.847321628213992
             },
             "rear_right_claw": {
               "angle": -1.27
             },
             "left_arm": {
-              "angle": -3.38
+              "angle": 14.847321628213992
             },
             "left_claw": {
               "angle": 6.81
             },
             "right_arm": {
-              "angle": 2.21
+              "angle": -14.847321628213992
             },
             "right_claw": {
               "angle": 8.63
             },
             "center_arm": {
-              "angle": 4.98
+              "angle": 14.847321628213992
             },
             "center_claw": {
               "angle": 2.51
@@ -5247,39 +5236,39 @@
           "duration_ms": 120,
           "pose": {
             "head": {
-              "angle": -1.125,
+              "angle": -5.457791972127111,
               "x": 0
             },
             "body": {
-              "y": -1.2,
+              "y": -2.7288959860635553,
               "angle": -1.32
             },
             "rear_left_arm": {
-              "angle": -2.5
+              "angle": 13.644479930317777
             },
             "rear_left_claw": {
               "angle": -5.21
             },
             "rear_right_arm": {
-              "angle": -4.94
+              "angle": -13.644479930317777
             },
             "rear_right_claw": {
               "angle": 3.36
             },
             "left_arm": {
-              "angle": -1.08
+              "angle": 13.644479930317777
             },
             "left_claw": {
               "angle": 8.84
             },
             "right_arm": {
-              "angle": 4.16
+              "angle": -13.644479930317777
             },
             "right_claw": {
               "angle": 6.2
             },
             "center_arm": {
-              "angle": 4.09
+              "angle": 13.644479930317777
             },
             "center_claw": {
               "angle": -2.14
@@ -5290,39 +5279,39 @@
           "duration_ms": 120,
           "pose": {
             "head": {
-              "angle": -1.9485000000000001,
+              "angle": -4.53449744612555,
               "x": 0
             },
             "body": {
-              "y": -2.08,
+              "y": -2.267248723062775,
               "angle": -1.38
             },
             "rear_left_arm": {
-              "angle": -4.33
+              "angle": 11.336243615313874
             },
             "rear_left_claw": {
               "angle": -0.85
             },
             "rear_right_arm": {
-              "angle": -3.9
+              "angle": -11.336243615313874
             },
             "rear_right_claw": {
               "angle": 7.08
             },
             "left_arm": {
-              "angle": 1.5
+              "angle": 11.336243615313874
             },
             "left_claw": {
               "angle": 8.5
             },
             "right_arm": {
-              "angle": 4.99
+              "angle": -11.336243615313874
             },
             "right_claw": {
               "angle": 2.1
             },
             "center_arm": {
-              "angle": 2.11
+              "angle": 11.336243615313874
             },
             "center_claw": {
               "angle": -6.23
@@ -5333,39 +5322,39 @@
           "duration_ms": 120,
           "pose": {
             "head": {
-              "angle": -2.25,
+              "angle": -3.2438449047335842,
               "x": 0
             },
             "body": {
-              "y": -2.4,
+              "y": -1.6219224523667921,
               "angle": -1.07
             },
             "rear_left_arm": {
-              "angle": -5.0
+              "angle": 8.10961226183396
             },
             "rear_left_claw": {
               "angle": 3.75
             },
             "rear_right_arm": {
-              "angle": -1.81
+              "angle": -8.10961226183396
             },
             "rear_right_claw": {
               "angle": 8.91
             },
             "left_arm": {
-              "angle": 3.69
+              "angle": 8.10961226183396
             },
             "left_claw": {
               "angle": 5.88
             },
             "right_arm": {
-              "angle": 4.48
+              "angle": -8.10961226183396
             },
             "right_claw": {
               "angle": -2.55
             },
             "center_arm": {
-              "angle": -0.44
+              "angle": 8.10961226183396
             },
             "center_claw": {
               "angle": -8.64
@@ -5376,39 +5365,39 @@
           "duration_ms": 120,
           "pose": {
             "head": {
-              "angle": -1.9485000000000001,
+              "angle": -1.6903953410485804,
               "x": 0
             },
             "body": {
-              "y": -2.08,
+              "y": -0.8451976705242902,
               "angle": -0.48
             },
             "rear_left_arm": {
-              "angle": -4.33
+              "angle": 4.225988352621451
             },
             "rear_left_claw": {
               "angle": 7.34
             },
             "rear_right_arm": {
-              "angle": 0.76
+              "angle": -4.225988352621451
             },
             "rear_right_claw": {
               "angle": 8.35
             },
             "left_arm": {
-              "angle": 4.88
+              "angle": 4.225988352621451
             },
             "left_claw": {
               "angle": 1.69
             },
             "right_arm": {
-              "angle": 2.78
+              "angle": -4.225988352621451
             },
             "right_claw": {
               "angle": -6.53
             },
             "center_arm": {
-              "angle": -2.87
+              "angle": 4.225988352621451
             },
             "center_claw": {
               "angle": -8.74
@@ -5419,39 +5408,39 @@
           "duration_ms": 120,
           "pose": {
             "head": {
-              "angle": -1.125,
+              "angle": -7.347880794884119e-16,
               "x": 0
             },
             "body": {
-              "y": -1.2,
+              "y": -3.6739403974420594e-16,
               "angle": 0.25
             },
             "rear_left_arm": {
-              "angle": -2.5
+              "angle": 1.83697019872103e-15
             },
             "rear_left_claw": {
               "angle": 8.96
             },
             "rear_right_arm": {
-              "angle": 3.13
+              "angle": -1.83697019872103e-15
             },
             "rear_right_claw": {
               "angle": 5.55
             },
             "left_arm": {
-              "angle": 4.77
+              "angle": 1.83697019872103e-15
             },
             "left_claw": {
               "angle": -2.96
             },
             "right_arm": {
-              "angle": 0.33
+              "angle": -1.83697019872103e-15
             },
             "right_claw": {
               "angle": -8.75
             },
             "center_arm": {
-              "angle": -4.53
+              "angle": 1.83697019872103e-15
             },
             "center_claw": {
               "angle": -6.5
@@ -5478,31 +5467,31 @@
               "angle": 0.0
             },
             "rear_left_claw": {
-              "angle": 8.18
+              "angle": 0.0
             },
             "rear_right_arm": {
               "angle": 9.32
             },
             "rear_right_claw": {
-              "angle": 1.27
+              "angle": 13.463535756926344
             },
             "left_arm": {
               "angle": 6.75
             },
             "left_claw": {
-              "angle": -6.81
+              "angle": 14.548758829210907
             },
             "right_arm": {
               "angle": -4.43
             },
             "right_claw": {
-              "angle": -8.63
+              "angle": 2.2579201289578754
             },
             "center_arm": {
               "angle": -9.96
             },
             "center_claw": {
-              "angle": -2.51
+              "angle": -12.108839924926851
             }
           }
         },
@@ -5510,8 +5499,8 @@
           "duration_ms": 120,
           "pose": {
             "head": {
-              "angle": 3.375,
-              "x": 1.0
+              "angle": 2.4999999999999996,
+              "x": 1.4999999999999998
             },
             "body": {
               "y": 1.2,
@@ -5521,31 +5510,31 @@
               "angle": 5.0
             },
             "rear_left_claw": {
-              "angle": 5.21
+              "angle": 8.65025307928956
             },
             "rear_right_arm": {
               "angle": 9.88
             },
             "rear_right_claw": {
-              "angle": -3.36
+              "angle": 15.999998704996344
             },
             "left_arm": {
               "angle": 2.16
             },
             "left_claw": {
-              "angle": -8.84
+              "angle": 8.639419309103985
             },
             "right_arm": {
               "angle": -8.32
             },
             "right_claw": {
-              "angle": -6.2
+              "angle": -6.6642023568551165
             },
             "center_arm": {
               "angle": -8.19
             },
             "center_claw": {
-              "angle": 2.14
+              "angle": -15.840787109465406
             }
           }
         },
@@ -5553,8 +5542,8 @@
           "duration_ms": 120,
           "pose": {
             "head": {
-              "angle": 5.8455,
-              "x": 1.73
+              "angle": 4.330127018922193,
+              "x": 2.598076211353316
             },
             "body": {
               "y": 2.08,
@@ -5564,31 +5553,31 @@
               "angle": 8.66
             },
             "rear_left_claw": {
-              "angle": 0.85
+              "angle": 14.554111925672293
             },
             "rear_right_arm": {
               "angle": 7.8
             },
             "rear_right_claw": {
-              "angle": -7.08
+              "angle": 13.45657511481865
             },
             "left_arm": {
               "angle": -3.01
             },
             "left_claw": {
-              "angle": -8.5
+              "angle": -0.012874798423608086
             },
             "right_arm": {
               "angle": -9.98
             },
             "right_claw": {
-              "angle": -2.1
+              "angle": -13.470487681370376
             },
             "center_arm": {
               "angle": -4.22
             },
             "center_claw": {
-              "angle": 6.23
+              "angle": -14.543396312401962
             }
           }
         },
@@ -5596,8 +5585,8 @@
           "duration_ms": 120,
           "pose": {
             "head": {
-              "angle": 6.75,
-              "x": 2.0
+              "angle": 5.0,
+              "x": 3.0
             },
             "body": {
               "y": 2.4,
@@ -5607,31 +5596,31 @@
               "angle": 10.0
             },
             "rear_left_claw": {
-              "angle": -3.75
+              "angle": 15.837143070094925
             },
             "rear_right_arm": {
               "angle": 3.62
             },
             "rear_right_claw": {
-              "angle": -8.91
+              "angle": 6.640784005302355
             },
             "left_arm": {
               "angle": -7.37
             },
             "left_claw": {
-              "angle": -5.88
+              "angle": -8.661081248420679
             },
             "right_arm": {
               "angle": -8.97
             },
             "right_claw": {
-              "angle": 2.55
+              "angle": -15.999988344968353
             },
             "center_arm": {
               "angle": 0.87
             },
             "center_claw": {
-              "angle": 8.64
+              "angle": -8.628579944878844
             }
           }
         },
@@ -5639,8 +5628,8 @@
           "duration_ms": 120,
           "pose": {
             "head": {
-              "angle": 5.8455,
-              "x": 1.73
+              "angle": 4.330127018922194,
+              "x": 2.598076211353316
             },
             "body": {
               "y": 2.08,
@@ -5650,31 +5639,31 @@
               "angle": 8.66
             },
             "rear_left_claw": {
-              "angle": -7.34
+              "angle": 12.091993189668132
             },
             "rear_right_arm": {
               "angle": -1.52
             },
             "rear_right_claw": {
-              "angle": -8.35
+              "angle": -2.28340910435984
             },
             "left_arm": {
               "angle": -9.76
             },
             "left_claw": {
-              "angle": -1.69
+              "angle": -14.559455598319987
             },
             "right_arm": {
               "angle": -5.55
             },
             "right_claw": {
-              "angle": 6.53
+              "angle": -13.449605759554322
             },
             "center_arm": {
               "angle": 5.74
             },
             "center_claw": {
-              "angle": 8.74
+              "angle": 0.025749588510760993
             }
           }
         },
@@ -5682,8 +5671,8 @@
           "duration_ms": 120,
           "pose": {
             "head": {
-              "angle": 3.375,
-              "x": 1.0
+              "angle": 2.4999999999999996,
+              "x": 1.4999999999999998
             },
             "body": {
               "y": 1.2,
@@ -5693,31 +5682,31 @@
               "angle": 5.0
             },
             "rear_left_claw": {
-              "angle": -8.96
+              "angle": 4.507720909462881
             },
             "rear_right_arm": {
               "angle": -6.26
             },
             "rear_right_claw": {
-              "angle": -5.55
+              "angle": -10.482635957185547
             },
             "left_arm": {
               "angle": -9.54
             },
             "left_claw": {
-              "angle": 2.96
+              "angle": -15.83530566795013
             },
             "right_arm": {
               "angle": -0.65
             },
             "right_claw": {
-              "angle": 8.75
+              "angle": -6.629068375855003
             },
             "center_arm": {
               "angle": 9.06
             },
             "center_claw": {
-              "angle": 6.5
+              "angle": 8.671903809486086
             }
           }
         },
@@ -5725,8 +5714,8 @@
           "duration_ms": 120,
           "pose": {
             "head": {
-              "angle": 0.0,
-              "x": 0.0
+              "angle": 6.123233995736766e-16,
+              "x": 3.6739403974420594e-16
             },
             "body": {
               "y": 0.0,
@@ -5736,31 +5725,31 @@
               "angle": 0.0
             },
             "rear_left_claw": {
-              "angle": -8.18
+              "angle": -4.50772090946287
             },
             "rear_right_arm": {
               "angle": -9.32
             },
             "rear_right_claw": {
-              "angle": -1.27
+              "angle": -15.35369996037119
             },
             "left_arm": {
               "angle": -6.75
             },
             "left_claw": {
-              "angle": 6.81
+              "angle": -12.083558074929368
             },
             "right_arm": {
               "angle": 4.43
             },
             "right_claw": {
-              "angle": 8.63
+              "angle": 2.2961513784193563
             },
             "center_arm": {
               "angle": 9.96
             },
             "center_claw": {
-              "angle": 2.51
+              "angle": 14.564789843693939
             }
           }
         },
@@ -5768,8 +5757,8 @@
           "duration_ms": 120,
           "pose": {
             "head": {
-              "angle": -3.375,
-              "x": -1.0
+              "angle": -2.4999999999999987,
+              "x": -1.4999999999999991
             },
             "body": {
               "y": -1.2,
@@ -5779,31 +5768,31 @@
               "angle": -5.0
             },
             "rear_left_claw": {
-              "angle": -5.21
+              "angle": -12.09199318966813
             },
             "rear_right_arm": {
               "angle": -9.88
             },
             "rear_right_claw": {
-              "angle": 3.36
+              "angle": -15.350072710198912
             },
             "left_arm": {
               "angle": -2.16
             },
             "left_claw": {
-              "angle": 8.84
+              "angle": -4.495366171460027
             },
             "right_arm": {
               "angle": 8.32
             },
             "right_claw": {
-              "angle": 6.2
+              "angle": 10.492359293875943
             },
             "center_arm": {
               "angle": 8.19
             },
             "center_claw": {
-              "angle": -2.14
+              "angle": 15.833458012416385
             }
           }
         },
@@ -5811,8 +5800,8 @@
           "duration_ms": 120,
           "pose": {
             "head": {
-              "angle": -5.8455,
-              "x": -1.73
+              "angle": -4.330127018922192,
+              "x": -2.598076211353315
             },
             "body": {
               "y": -2.08,
@@ -5822,31 +5811,31 @@
               "angle": -8.66
             },
             "rear_left_claw": {
-              "angle": -0.85
+              "angle": -15.837143070094923
             },
             "rear_right_arm": {
               "angle": -7.8
             },
             "rear_right_claw": {
-              "angle": 7.08
+              "angle": -10.472905832969483
             },
             "left_arm": {
               "angle": 3.01
             },
             "left_claw": {
-              "angle": 8.5
+              "angle": 4.52007272870832
             },
             "right_arm": {
               "angle": 9.98
             },
             "right_claw": {
-              "angle": 2.1
+              "angle": 15.357317268995082
             },
             "center_arm": {
               "angle": 4.22
             },
             "center_claw": {
-              "angle": -6.23
+              "angle": 12.07511513606496
             }
           }
         },
@@ -5854,8 +5843,8 @@
           "duration_ms": 120,
           "pose": {
             "head": {
-              "angle": -6.75,
-              "x": -2.0
+              "angle": -5.0,
+              "x": -3.0
             },
             "body": {
               "y": -2.4,
@@ -5865,31 +5854,31 @@
               "angle": -10.0
             },
             "rear_left_claw": {
-              "angle": 3.75
+              "angle": -14.554111925672292
             },
             "rear_right_arm": {
               "angle": -3.62
             },
             "rear_right_claw": {
-              "angle": 8.91
+              "angle": -2.2706653517888045
             },
             "left_arm": {
               "angle": 7.37
             },
             "left_claw": {
-              "angle": 5.88
+              "angle": 12.100420474819527
             },
             "right_arm": {
               "angle": 8.97
             },
             "right_claw": {
-              "angle": -2.55
+              "angle": 15.346435520826885
             },
             "center_arm": {
               "angle": -0.87
             },
             "center_claw": {
-              "angle": -8.64
+              "angle": 4.483008522699457
             }
           }
         },
@@ -5897,8 +5886,8 @@
           "duration_ms": 120,
           "pose": {
             "head": {
-              "angle": -5.8455,
-              "x": -1.73
+              "angle": -4.330127018922193,
+              "x": -2.598076211353316
             },
             "body": {
               "y": -2.08,
@@ -5908,31 +5897,31 @@
               "angle": -8.66
             },
             "rear_left_claw": {
-              "angle": 7.34
+              "angle": -8.650253079289572
             },
             "rear_right_arm": {
               "angle": 1.52
             },
             "rear_right_claw": {
-              "angle": 8.35
+              "angle": 6.65249533483008
             },
             "left_arm": {
               "angle": 9.76
             },
             "left_claw": {
-              "angle": 1.69
+              "angle": 15.838970217661041
             },
             "right_arm": {
               "angle": 5.55
             },
             "right_claw": {
-              "angle": -6.53
+              "angle": 10.463168927528011
             },
             "center_arm": {
               "angle": -5.74
             },
             "center_claw": {
-              "angle": -8.74
+              "angle": -4.532421621198533
             }
           }
         },
@@ -5940,8 +5929,8 @@
           "duration_ms": 120,
           "pose": {
             "head": {
-              "angle": -3.375,
-              "x": -1.0
+              "angle": -2.500000000000002,
+              "x": -1.5000000000000013
             },
             "body": {
               "y": -1.2,
@@ -5951,31 +5940,31 @@
               "angle": -5.0
             },
             "rear_left_claw": {
-              "angle": 8.96
+              "angle": -3.91886975727153e-15
             },
             "rear_right_arm": {
               "angle": 6.26
             },
             "rear_right_claw": {
-              "angle": 5.55
+              "angle": 13.463535756926342
             },
             "left_arm": {
               "angle": 9.54
             },
             "left_claw": {
-              "angle": -2.96
+              "angle": 14.54875882921091
             },
             "right_arm": {
               "angle": 0.65
             },
             "right_claw": {
-              "angle": -8.75
+              "angle": 2.2579201289578794
             },
             "center_arm": {
               "angle": -9.06
             },
             "center_claw": {
-              "angle": -6.5
+              "angle": -12.10883992492685
             }
           }
         }
@@ -7081,34 +7070,34 @@
               "angle": 1.32
             },
             "rear_left_arm": {
-              "angle": 2.5
+              "angle": 2.0661157024793386
             },
             "rear_left_claw": {
-              "angle": 5.21
+              "angle": 4.305785123966942
             },
             "rear_right_arm": {
-              "angle": 4.94
+              "angle": 4.082644628099174
             },
             "rear_right_claw": {
-              "angle": -3.36
+              "angle": -2.776859504132231
             },
             "left_arm": {
-              "angle": 1.08
+              "angle": 0.8925619834710743
             },
             "left_claw": {
-              "angle": -8.84
+              "angle": -7.305785123966941
             },
             "right_arm": {
-              "angle": -4.16
+              "angle": -3.4380165289256195
             },
             "right_claw": {
-              "angle": -6.2
+              "angle": -5.12396694214876
             },
             "center_arm": {
-              "angle": -4.09
+              "angle": -3.380165289256198
             },
             "center_claw": {
-              "angle": 2.14
+              "angle": 1.768595041322314
             }
           }
         },
@@ -7124,34 +7113,34 @@
               "angle": 1.38
             },
             "rear_left_arm": {
-              "angle": 4.33
+              "angle": 2.8985950413223134
             },
             "rear_left_claw": {
-              "angle": 0.85
+              "angle": 0.5690082644628098
             },
             "rear_right_arm": {
-              "angle": 3.9
+              "angle": 2.610743801652892
             },
             "rear_right_claw": {
-              "angle": -7.08
+              "angle": -4.739504132231404
             },
             "left_arm": {
-              "angle": -1.5
+              "angle": -1.0041322314049586
             },
             "left_claw": {
-              "angle": -8.5
+              "angle": -5.690082644628098
             },
             "right_arm": {
-              "angle": -4.99
+              "angle": -3.3404132231404953
             },
             "right_claw": {
-              "angle": -2.1
+              "angle": -1.4057851239669419
             },
             "center_arm": {
-              "angle": -2.11
+              "angle": -1.4124793388429748
             },
             "center_claw": {
-              "angle": 6.23
+              "angle": 4.170495867768595
             }
           }
         },
@@ -7167,34 +7156,34 @@
               "angle": 1.07
             },
             "rear_left_arm": {
-              "angle": 5.0
+              "angle": 2.644628099173554
             },
             "rear_left_claw": {
-              "angle": -3.75
+              "angle": -1.9834710743801653
             },
             "rear_right_arm": {
-              "angle": 1.81
+              "angle": 0.9573553719008265
             },
             "rear_right_claw": {
-              "angle": -8.91
+              "angle": -4.712727272727273
             },
             "left_arm": {
-              "angle": -3.69
+              "angle": -1.9517355371900826
             },
             "left_claw": {
-              "angle": -5.88
+              "angle": -3.110082644628099
             },
             "right_arm": {
-              "angle": -4.48
+              "angle": -2.3695867768595043
             },
             "right_claw": {
-              "angle": 2.55
+              "angle": 1.3487603305785123
             },
             "center_arm": {
-              "angle": 0.44
+              "angle": 0.23272727272727273
             },
             "center_claw": {
-              "angle": 8.64
+              "angle": 4.569917355371901
             }
           }
         },
@@ -7210,34 +7199,34 @@
               "angle": 0.48
             },
             "rear_left_arm": {
-              "angle": 4.33
+              "angle": 1.7534710743801651
             },
             "rear_left_claw": {
-              "angle": -7.34
+              "angle": -2.972396694214876
             },
             "rear_right_arm": {
-              "angle": -0.76
+              "angle": -0.3077685950413223
             },
             "rear_right_claw": {
-              "angle": -8.35
+              "angle": -3.3814049586776855
             },
             "left_arm": {
-              "angle": -4.88
+              "angle": -1.9761983471074378
             },
             "left_claw": {
-              "angle": -1.69
+              "angle": -0.6843801652892562
             },
             "right_arm": {
-              "angle": -2.78
+              "angle": -1.125785123966942
             },
             "right_claw": {
-              "angle": 6.53
+              "angle": 2.644380165289256
             },
             "center_arm": {
-              "angle": 2.87
+              "angle": 1.1622314049586777
             },
             "center_claw": {
-              "angle": 8.74
+              "angle": 3.5393388429752064
             }
           }
         },
@@ -7253,34 +7242,34 @@
               "angle": -0.25
             },
             "rear_left_arm": {
-              "angle": 2.5
+              "angle": 0.7438016528925618
             },
             "rear_left_claw": {
-              "angle": -8.96
+              "angle": -2.665785123966942
             },
             "rear_right_arm": {
-              "angle": -3.13
+              "angle": -0.9312396694214874
             },
             "rear_right_claw": {
-              "angle": -5.55
+              "angle": -1.6512396694214873
             },
             "left_arm": {
-              "angle": -4.77
+              "angle": -1.419173553719008
             },
             "left_claw": {
-              "angle": 2.96
+              "angle": 0.8806611570247932
             },
             "right_arm": {
-              "angle": -0.33
+              "angle": -0.09818181818181818
             },
             "right_claw": {
-              "angle": 8.75
+              "angle": 2.6033057851239665
             },
             "center_arm": {
-              "angle": 4.53
+              "angle": 1.347768595041322
             },
             "center_claw": {
-              "angle": 6.5
+              "angle": 1.933884297520661
             }
           }
         },
@@ -7299,31 +7288,31 @@
               "angle": 0.0
             },
             "rear_left_claw": {
-              "angle": -8.18
+              "angle": -1.6900826446280994
             },
             "rear_right_arm": {
-              "angle": -4.66
+              "angle": -0.9628099173553721
             },
             "rear_right_claw": {
-              "angle": -1.27
+              "angle": -0.2623966942148761
             },
             "left_arm": {
-              "angle": -3.38
+              "angle": -0.6983471074380166
             },
             "left_claw": {
-              "angle": 6.81
+              "angle": 1.40702479338843
             },
             "right_arm": {
-              "angle": 2.21
+              "angle": 0.456611570247934
             },
             "right_claw": {
-              "angle": 8.63
+              "angle": 1.78305785123967
             },
             "center_arm": {
-              "angle": 4.98
+              "angle": 1.028925619834711
             },
             "center_claw": {
-              "angle": 2.51
+              "angle": 0.518595041322314
             }
           }
         },
@@ -7339,34 +7328,34 @@
               "angle": -1.32
             },
             "rear_left_arm": {
-              "angle": -2.5
+              "angle": -0.3305785123966942
             },
             "rear_left_claw": {
-              "angle": -5.21
+              "angle": -0.6889256198347108
             },
             "rear_right_arm": {
-              "angle": -4.94
+              "angle": -0.6532231404958678
             },
             "rear_right_claw": {
-              "angle": 3.36
+              "angle": 0.444297520661157
             },
             "left_arm": {
-              "angle": -1.08
+              "angle": -0.1428099173553719
             },
             "left_claw": {
-              "angle": 8.84
+              "angle": 1.1689256198347107
             },
             "right_arm": {
-              "angle": 4.16
+              "angle": 0.5500826446280992
             },
             "right_claw": {
-              "angle": 6.2
+              "angle": 0.8198347107438017
             },
             "center_arm": {
-              "angle": 4.09
+              "angle": 0.5408264462809917
             },
             "center_claw": {
-              "angle": -2.14
+              "angle": -0.2829752066115703
             }
           }
         },
@@ -7382,34 +7371,34 @@
               "angle": -1.38
             },
             "rear_left_arm": {
-              "angle": -4.33
+              "angle": -0.3220661157024793
             },
             "rear_left_claw": {
-              "angle": -0.85
+              "angle": -0.06322314049586776
             },
             "rear_right_arm": {
-              "angle": -3.9
+              "angle": -0.29008264462809913
             },
             "rear_right_claw": {
-              "angle": 7.08
+              "angle": 0.5266115702479338
             },
             "left_arm": {
-              "angle": 1.5
+              "angle": 0.11157024793388429
             },
             "left_claw": {
-              "angle": 8.5
+              "angle": 0.6322314049586776
             },
             "right_arm": {
-              "angle": 4.99
+              "angle": 0.3711570247933884
             },
             "right_claw": {
-              "angle": 2.1
+              "angle": 0.156198347107438
             },
             "center_arm": {
-              "angle": 2.11
+              "angle": 0.15694214876033055
             },
             "center_claw": {
-              "angle": -6.23
+              "angle": -0.46338842975206607
             }
           }
         },
@@ -7425,34 +7414,34 @@
               "angle": -1.07
             },
             "rear_left_arm": {
-              "angle": -5.0
+              "angle": -0.165289256198347
             },
             "rear_left_claw": {
-              "angle": 3.75
+              "angle": 0.12396694214876025
             },
             "rear_right_arm": {
-              "angle": -1.81
+              "angle": -0.05983471074380162
             },
             "rear_right_claw": {
-              "angle": 8.91
+              "angle": 0.2945454545454544
             },
             "left_arm": {
-              "angle": 3.69
+              "angle": 0.1219834710743801
             },
             "left_claw": {
-              "angle": 5.88
+              "angle": 0.19438016528925608
             },
             "right_arm": {
-              "angle": 4.48
+              "angle": 0.14809917355371893
             },
             "right_claw": {
-              "angle": -2.55
+              "angle": -0.08429752066115696
             },
             "center_arm": {
-              "angle": -0.44
+              "angle": -0.014545454545454537
             },
             "center_claw": {
-              "angle": -8.64
+              "angle": -0.28561983471074365
             }
           }
         },
@@ -7468,34 +7457,34 @@
               "angle": -0.48
             },
             "rear_left_arm": {
-              "angle": -4.33
+              "angle": -0.035785123966942174
             },
             "rear_left_claw": {
-              "angle": 7.34
+              "angle": 0.060661157024793425
             },
             "rear_right_arm": {
-              "angle": 0.76
+              "angle": 0.006280991735537194
             },
             "rear_right_claw": {
-              "angle": 8.35
+              "angle": 0.06900826446280996
             },
             "left_arm": {
-              "angle": 4.88
+              "angle": 0.04033057851239672
             },
             "left_claw": {
-              "angle": 1.69
+              "angle": 0.013966942148760339
             },
             "right_arm": {
-              "angle": 2.78
+              "angle": 0.02297520661157026
             },
             "right_claw": {
-              "angle": -6.53
+              "angle": -0.05396694214876037
             },
             "center_arm": {
-              "angle": -2.87
+              "angle": -0.023719008264462826
             },
             "center_claw": {
-              "angle": -8.74
+              "angle": -0.07223140495867773
             }
           }
         },
@@ -7511,34 +7500,34 @@
               "angle": 0.25
             },
             "rear_left_arm": {
-              "angle": -2.5
+              "angle": -0.0
             },
             "rear_left_claw": {
-              "angle": 8.96
+              "angle": 0.0
             },
             "rear_right_arm": {
-              "angle": 3.13
+              "angle": 0.0
             },
             "rear_right_claw": {
-              "angle": 5.55
+              "angle": 0.0
             },
             "left_arm": {
-              "angle": 4.77
+              "angle": 0.0
             },
             "left_claw": {
-              "angle": -2.96
+              "angle": -0.0
             },
             "right_arm": {
-              "angle": 0.33
+              "angle": 0.0
             },
             "right_claw": {
-              "angle": -8.75
+              "angle": -0.0
             },
             "center_arm": {
-              "angle": -4.53
+              "angle": -0.0
             },
             "center_claw": {
-              "angle": -6.5
+              "angle": -0.0
             }
           }
         }
@@ -7552,7 +7541,8 @@
           "pose": {
             "head": {
               "angle": 0.0,
-              "x": 0
+              "x": 0,
+              "light": 0.32
             },
             "body": {
               "y": 0.0,
@@ -7594,8 +7584,9 @@
           "duration_ms": 120,
           "pose": {
             "head": {
-              "angle": 1.125,
-              "x": 0
+              "angle": 0.5634651136828592,
+              "x": 0,
+              "light": 0.38181818181818183
             },
             "body": {
               "y": 1.2,
@@ -7637,8 +7628,9 @@
           "duration_ms": 120,
           "pose": {
             "head": {
-              "angle": 1.9485000000000001,
-              "x": 0
+              "angle": 1.8728347289573313,
+              "x": 0,
+              "light": 0.44363636363636366
             },
             "body": {
               "y": 2.08,
@@ -7680,8 +7672,9 @@
           "duration_ms": 120,
           "pose": {
             "head": {
-              "angle": 2.25,
-              "x": 0
+              "angle": 3.022998297417033,
+              "x": 0,
+              "light": 0.5054545454545455
             },
             "body": {
               "y": 2.4,
@@ -7723,8 +7716,9 @@
           "duration_ms": 120,
           "pose": {
             "head": {
-              "angle": 1.9485000000000001,
-              "x": 0
+              "angle": 3.1510576642885657,
+              "x": 0,
+              "light": 0.5672727272727274
             },
             "body": {
               "y": 2.08,
@@ -7766,8 +7760,9 @@
           "duration_ms": 120,
           "pose": {
             "head": {
-              "angle": 1.125,
-              "x": 0
+              "angle": 1.9796428837618651,
+              "x": 0,
+              "light": 0.6290909090909091
             },
             "body": {
               "y": 1.2,
@@ -7809,8 +7804,9 @@
           "duration_ms": 120,
           "pose": {
             "head": {
-              "angle": 0.0,
-              "x": 0
+              "angle": 4.848726642107609e-16,
+              "x": 0,
+              "light": 0.6909090909090909
             },
             "body": {
               "y": 0.0,
@@ -7852,8 +7848,9 @@
           "duration_ms": 120,
           "pose": {
             "head": {
-              "angle": -1.125,
-              "x": 0
+              "angle": -1.8192639907090358,
+              "x": 0,
+              "light": 0.7527272727272727
             },
             "body": {
               "y": -1.2,
@@ -7895,8 +7892,9 @@
           "duration_ms": 120,
           "pose": {
             "head": {
-              "angle": -1.9485000000000001,
-              "x": 0
+              "angle": -2.617993321160256,
+              "x": 0,
+              "light": 0.8145454545454547
             },
             "body": {
               "y": -2.08,
@@ -7938,8 +7936,9 @@
           "duration_ms": 120,
           "pose": {
             "head": {
-              "angle": -2.25,
-              "x": 0
+              "angle": -2.1625632698223893,
+              "x": 0,
+              "light": 0.8763636363636365
             },
             "body": {
               "y": -2.4,
@@ -7981,8 +7980,9 @@
           "duration_ms": 120,
           "pose": {
             "head": {
-              "angle": -1.9485000000000001,
-              "x": 0
+              "angle": -0.9759502051912871,
+              "x": 0,
+              "light": 0.9381818181818182
             },
             "body": {
               "y": -2.08,
@@ -8024,8 +8024,9 @@
           "duration_ms": 120,
           "pose": {
             "head": {
-              "angle": -1.125,
-              "x": 0
+              "angle": -2.4492935982947084e-16,
+              "x": 0,
+              "light": 1.0
             },
             "body": {
               "y": -1.2,
@@ -8083,31 +8084,31 @@
               "angle": 0.0
             },
             "rear_left_claw": {
-              "angle": 8.18
+              "angle": 0.0
             },
             "rear_right_arm": {
-              "angle": 4.66
+              "angle": -0.0
             },
             "rear_right_claw": {
-              "angle": 1.27
+              "angle": 0.0
             },
             "left_arm": {
-              "angle": 3.38
+              "angle": 0.0
             },
             "left_claw": {
-              "angle": -6.81
+              "angle": 0.0
             },
             "right_arm": {
-              "angle": -2.21
+              "angle": -0.0
             },
             "right_claw": {
-              "angle": -8.63
+              "angle": 0.0
             },
             "center_arm": {
-              "angle": -4.98
+              "angle": 0.0
             },
             "center_claw": {
-              "angle": -2.51
+              "angle": -0.0
             }
           }
         },
@@ -8115,7 +8116,7 @@
           "duration_ms": 120,
           "pose": {
             "head": {
-              "angle": 3.375,
+              "angle": 2.4999999999999996,
               "x": 0
             },
             "body": {
@@ -8123,34 +8124,34 @@
               "angle": 1.32
             },
             "rear_left_arm": {
-              "angle": 2.5
+              "angle": 1.690395341048578
             },
             "rear_left_claw": {
-              "angle": 5.21
+              "angle": 1.5376376870159996
             },
             "rear_right_arm": {
-              "angle": 4.94
+              "angle": -1.690395341048578
             },
             "rear_right_claw": {
-              "angle": -3.36
+              "angle": 1.42168324253498
             },
             "left_arm": {
-              "angle": 1.08
+              "angle": 1.690395341048578
             },
             "left_claw": {
-              "angle": -8.84
+              "angle": -0.001360218704512918
             },
             "right_arm": {
-              "angle": -4.16
+              "angle": -1.690395341048578
             },
             "right_claw": {
-              "angle": -6.2
+              "angle": -1.4231531011400467
             },
             "center_arm": {
-              "angle": -4.09
+              "angle": 1.690395341048578
             },
             "center_claw": {
-              "angle": 2.14
+              "angle": -1.5365055855942091
             }
           }
         },
@@ -8158,7 +8159,7 @@
           "duration_ms": 120,
           "pose": {
             "head": {
-              "angle": 5.8455,
+              "angle": 4.330127018922193,
               "x": 0
             },
             "body": {
@@ -8166,34 +8167,34 @@
               "angle": 1.38
             },
             "rear_left_arm": {
-              "angle": 4.33
+              "angle": 3.243844904733585
             },
             "rear_left_claw": {
-              "angle": 0.85
+              "angle": 2.4515344060236366
             },
             "rear_right_arm": {
-              "angle": 3.9
+              "angle": -3.243844904733585
             },
             "rear_right_claw": {
-              "angle": -7.08
+              "angle": -0.46293906178749666
             },
             "left_arm": {
-              "angle": -1.5
+              "angle": 3.243844904733585
             },
             "left_claw": {
-              "angle": -8.5
+              "angle": -2.951788491144073
             },
             "right_arm": {
-              "angle": -4.99
+              "angle": -3.243844904733585
             },
             "right_claw": {
-              "angle": -2.1
+              "angle": -2.7267771946128603
             },
             "center_arm": {
-              "angle": -2.11
+              "angle": 3.243844904733585
             },
             "center_claw": {
-              "angle": 6.23
+              "angle": 0.005220479468101157
             }
           }
         },
@@ -8201,7 +8202,7 @@
           "duration_ms": 120,
           "pose": {
             "head": {
-              "angle": 6.75,
+              "angle": 5.0,
               "x": 0
             },
             "body": {
@@ -8209,34 +8210,34 @@
               "angle": 1.07
             },
             "rear_left_arm": {
-              "angle": 5.0
+              "angle": 4.53449744612555
             },
             "rear_left_claw": {
-              "angle": -3.75
+              "angle": -1.2775155594878829
             },
             "rear_right_arm": {
-              "angle": 1.81
+              "angle": -4.53449744612555
             },
             "rear_right_claw": {
-              "angle": -8.91
+              "angle": -4.35133207868007
             },
             "left_arm": {
-              "angle": -3.69
+              "angle": 4.53449744612555
             },
             "left_claw": {
-              "angle": -5.88
+              "angle": -3.424553951929811
             },
             "right_arm": {
-              "angle": -4.48
+              "angle": -4.53449744612555
             },
             "right_claw": {
-              "angle": 2.55
+              "angle": 0.6507432850850144
             },
             "center_arm": {
-              "angle": 0.44
+              "angle": 4.53449744612555
             },
             "center_claw": {
-              "angle": 8.64
+              "angle": 4.1277501468490945
             }
           }
         },
@@ -8244,7 +8245,7 @@
           "duration_ms": 120,
           "pose": {
             "head": {
-              "angle": 5.8455,
+              "angle": 4.330127018922194,
               "x": 0
             },
             "body": {
@@ -8252,34 +8253,34 @@
               "angle": 0.48
             },
             "rear_left_arm": {
-              "angle": 4.33
+              "angle": 5.45779197212711
             },
             "rear_left_claw": {
-              "angle": -7.34
+              "angle": -5.402239519337035
             },
             "rear_right_arm": {
-              "angle": -0.76
+              "angle": -5.45779197212711
             },
             "rear_right_claw": {
-              "angle": -8.35
+              "angle": -3.572433836251502
             },
             "left_arm": {
-              "angle": -4.88
+              "angle": 5.45779197212711
             },
             "left_claw": {
-              "angle": -1.69
+              "angle": 1.5418510407609343
             },
             "right_arm": {
-              "angle": -2.78
+              "angle": -5.45779197212711
             },
             "right_claw": {
-              "angle": 6.53
+              "angle": 5.238565181508149
             },
             "center_arm": {
-              "angle": 2.87
+              "angle": 5.45779197212711
             },
             "center_claw": {
-              "angle": 8.74
+              "angle": 4.118966653257869
             }
           }
         },
@@ -8287,7 +8288,7 @@
           "duration_ms": 120,
           "pose": {
             "head": {
-              "angle": 3.375,
+              "angle": 2.4999999999999996,
               "x": 0
             },
             "body": {
@@ -8295,34 +8296,34 @@
               "angle": -0.25
             },
             "rear_left_arm": {
-              "angle": 2.5
+              "angle": 5.938928651285596
             },
             "rear_left_claw": {
-              "angle": -8.96
+              "angle": -3.2108272408415184
             },
             "rear_right_arm": {
-              "angle": -3.13
+              "angle": -5.938928651285596
             },
             "rear_right_claw": {
-              "angle": -5.55
+              "angle": 2.4692934466603833
             },
             "left_arm": {
-              "angle": -4.77
+              "angle": 5.938928651285596
             },
             "left_claw": {
-              "angle": 2.96
+              "angle": 5.879157127032901
             },
             "right_arm": {
-              "angle": -0.33
+              "angle": -5.938928651285596
             },
             "right_claw": {
-              "angle": 8.75
+              "angle": 3.8837508579335807
             },
             "center_arm": {
-              "angle": 4.53
+              "angle": 5.938928651285596
             },
             "center_claw": {
-              "angle": 6.5
+              "angle": -1.6823580391151423
             }
           }
         },
@@ -8330,7 +8331,7 @@
           "duration_ms": 120,
           "pose": {
             "head": {
-              "angle": 0.0,
+              "angle": 6.123233995736766e-16,
               "x": 0
             },
             "body": {
@@ -8338,34 +8339,34 @@
               "angle": -0.9
             },
             "rear_left_arm": {
-              "angle": 0.0
+              "angle": 5.938928651285597
             },
             "rear_left_claw": {
-              "angle": -8.18
+              "angle": 3.2108272408415117
             },
             "rear_right_arm": {
-              "angle": -4.66
+              "angle": -5.938928651285597
             },
             "rear_right_claw": {
-              "angle": -1.27
+              "angle": 5.9389281706022015
             },
             "left_arm": {
-              "angle": -3.38
+              "angle": 5.938928651285597
             },
             "left_claw": {
-              "angle": 6.81
+              "angle": 3.206805929081733
             },
             "right_arm": {
-              "angle": 2.21
+              "angle": -5.938928651285597
             },
             "right_claw": {
-              "angle": 8.63
+              "angle": -2.473638894693237
             },
             "center_arm": {
-              "angle": 4.98
+              "angle": 5.938928651285597
             },
             "center_claw": {
-              "angle": 2.51
+              "angle": -5.879831526457478
             }
           }
         },
@@ -8373,7 +8374,7 @@
           "duration_ms": 120,
           "pose": {
             "head": {
-              "angle": -3.375,
+              "angle": -2.4999999999999987,
               "x": 0
             },
             "body": {
@@ -8381,34 +8382,34 @@
               "angle": -1.32
             },
             "rear_left_arm": {
-              "angle": -2.5
+              "angle": 5.457791972127111
             },
             "rear_left_claw": {
-              "angle": -5.21
+              "angle": 5.402239519337036
             },
             "rear_right_arm": {
-              "angle": -4.94
+              "angle": -5.457791972127111
             },
             "rear_right_claw": {
-              "angle": 3.36
+              "angle": 2.2652511020480874
             },
             "left_arm": {
-              "angle": -1.08
+              "angle": 5.457791972127111
             },
             "left_claw": {
-              "angle": 8.84
+              "angle": -2.954398731723184
             },
             "right_arm": {
-              "angle": 4.16
+              "angle": -5.457791972127111
             },
             "right_claw": {
-              "angle": 6.2
+              "angle": -5.457787996455976
             },
             "center_arm": {
-              "angle": 4.09
+              "angle": 5.457791972127111
             },
             "center_claw": {
-              "angle": -2.14
+              "angle": -2.943312147126052
             }
           }
         },
@@ -8416,7 +8417,7 @@
           "duration_ms": 120,
           "pose": {
             "head": {
-              "angle": -5.8455,
+              "angle": -4.330127018922192,
               "x": 0
             },
             "body": {
@@ -8424,34 +8425,34 @@
               "angle": -1.38
             },
             "rear_left_arm": {
-              "angle": -4.33
+              "angle": 4.53449744612555
             },
             "rear_left_claw": {
-              "angle": -0.85
+              "angle": 1.277515559487885
             },
             "rear_right_arm": {
-              "angle": -3.9
+              "angle": -4.53449744612555
             },
             "rear_right_claw": {
-              "angle": 7.08
+              "angle": -2.970842873532608
             },
             "left_arm": {
-              "angle": 1.5
+              "angle": 4.53449744612555
             },
             "left_claw": {
-              "angle": 8.5
+              "angle": -4.487822069371082
             },
             "right_arm": {
-              "angle": 4.99
+              "angle": -4.53449744612555
             },
             "right_claw": {
-              "angle": 2.1
+              "angle": -1.878718351281636
             },
             "center_arm": {
-              "angle": 2.11
+              "angle": 4.53449744612555
             },
             "center_claw": {
-              "angle": -6.23
+              "angle": 2.4576703548225667
             }
           }
         },
@@ -8459,7 +8460,7 @@
           "duration_ms": 120,
           "pose": {
             "head": {
-              "angle": -6.75,
+              "angle": -5.0,
               "x": 0
             },
             "body": {
@@ -8467,34 +8468,34 @@
               "angle": -1.07
             },
             "rear_left_arm": {
-              "angle": -5.0
+              "angle": 3.2438449047335842
             },
             "rear_left_claw": {
-              "angle": 3.75
+              "angle": -2.451534406023637
             },
             "rear_right_arm": {
-              "angle": -1.81
+              "angle": -3.2438449047335842
             },
             "rear_right_claw": {
-              "angle": 8.91
+              "angle": -3.1120784467667972
             },
             "left_arm": {
-              "angle": 3.69
+              "angle": 3.2438449047335842
             },
             "left_claw": {
-              "angle": 5.88
+              "angle": -0.9113919156376409
             },
             "right_arm": {
-              "angle": 4.48
+              "angle": -3.2438449047335842
             },
             "right_claw": {
-              "angle": -2.55
+              "angle": 2.1272241396296003
             },
             "center_arm": {
-              "angle": -0.44
+              "angle": 3.2438449047335842
             },
             "center_claw": {
-              "angle": -8.64
+              "angle": 3.210080131118126
             }
           }
         },
@@ -8502,7 +8503,7 @@
           "duration_ms": 120,
           "pose": {
             "head": {
-              "angle": -5.8455,
+              "angle": -4.330127018922193,
               "x": 0
             },
             "body": {
@@ -8510,34 +8511,34 @@
               "angle": -0.48
             },
             "rear_left_arm": {
-              "angle": -4.33
+              "angle": 1.6903953410485804
             },
             "rear_left_claw": {
-              "angle": 7.34
+              "angle": -1.537637687016003
             },
             "rear_right_arm": {
-              "angle": 0.76
+              "angle": -1.6903953410485804
             },
             "rear_right_claw": {
-              "angle": 8.35
+              "angle": -0.23989513323401782
             },
             "left_arm": {
-              "angle": 4.88
+              "angle": 1.6903953410485804
             },
             "left_claw": {
-              "angle": 1.69
+              "angle": 1.2784058997102339
             },
             "right_arm": {
-              "angle": 2.78
+              "angle": -1.6903953410485804
             },
             "right_claw": {
-              "angle": -6.53
+              "angle": 1.6213464441317644
             },
             "center_arm": {
-              "angle": -2.87
+              "angle": 1.6903953410485804
             },
             "center_claw": {
-              "angle": -8.74
+              "angle": 0.4736285450407683
             }
           }
         },
@@ -8545,7 +8546,7 @@
           "duration_ms": 120,
           "pose": {
             "head": {
-              "angle": -3.375,
+              "angle": -2.500000000000002,
               "x": 0
             },
             "body": {
@@ -8553,34 +8554,34 @@
               "angle": 0.25
             },
             "rear_left_arm": {
-              "angle": -2.5
+              "angle": 7.347880794884119e-16
             },
             "rear_left_claw": {
-              "angle": 8.96
+              "angle": -3.5994234783884583e-31
             },
             "rear_right_arm": {
-              "angle": 3.13
+              "angle": -7.347880794884119e-16
             },
             "rear_right_claw": {
-              "angle": 5.55
+              "angle": 6.183028488722167e-16
             },
             "left_arm": {
-              "angle": 4.77
+              "angle": 7.347880794884119e-16
             },
             "left_claw": {
-              "angle": -2.96
+              "angle": 6.681409099409976e-16
             },
             "right_arm": {
-              "angle": 0.33
+              "angle": -7.347880794884119e-16
             },
             "right_claw": {
-              "angle": -8.75
+              "angle": 1.0369329969969941e-16
             },
             "center_arm": {
-              "angle": -4.53
+              "angle": 7.347880794884119e-16
             },
             "center_claw": {
-              "angle": -6.5
+              "angle": -5.560894520793502e-16
             }
           }
         }
@@ -8594,7 +8595,8 @@
           "pose": {
             "head": {
               "angle": 0.0,
-              "x": 0
+              "x": 0.0,
+              "light": 0.65
             },
             "body": {
               "y": 0.0,
@@ -8636,8 +8638,9 @@
           "duration_ms": 120,
           "pose": {
             "head": {
-              "angle": 2.475,
-              "x": 0
+              "angle": 1.4999999999999998,
+              "x": 0.7499999999999999,
+              "light": 0.8
             },
             "body": {
               "y": 1.2,
@@ -8679,8 +8682,9 @@
           "duration_ms": 120,
           "pose": {
             "head": {
-              "angle": 4.2885,
-              "x": 0
+              "angle": 2.598076211353316,
+              "x": 1.299038105676658,
+              "light": 0.9098076211353316
             },
             "body": {
               "y": 2.08,
@@ -8722,8 +8726,9 @@
           "duration_ms": 120,
           "pose": {
             "head": {
-              "angle": 4.95,
-              "x": 0
+              "angle": 3.0,
+              "x": 1.5,
+              "light": 0.95
             },
             "body": {
               "y": 2.4,
@@ -8765,8 +8770,9 @@
           "duration_ms": 120,
           "pose": {
             "head": {
-              "angle": 4.2885,
-              "x": 0
+              "angle": 2.598076211353316,
+              "x": 1.299038105676658,
+              "light": 0.9098076211353316
             },
             "body": {
               "y": 2.08,
@@ -8808,8 +8814,9 @@
           "duration_ms": 120,
           "pose": {
             "head": {
-              "angle": 2.475,
-              "x": 0
+              "angle": 1.4999999999999998,
+              "x": 0.7499999999999999,
+              "light": 0.8
             },
             "body": {
               "y": 1.2,
@@ -8851,8 +8858,9 @@
           "duration_ms": 120,
           "pose": {
             "head": {
-              "angle": 0.0,
-              "x": 0
+              "angle": 3.6739403974420594e-16,
+              "x": 1.8369701987210297e-16,
+              "light": 0.65
             },
             "body": {
               "y": 0.0,
@@ -8894,8 +8902,9 @@
           "duration_ms": 120,
           "pose": {
             "head": {
-              "angle": -2.475,
-              "x": 0
+              "angle": -1.4999999999999991,
+              "x": -0.7499999999999996,
+              "light": 0.7999999999999999
             },
             "body": {
               "y": -1.2,
@@ -8937,8 +8946,9 @@
           "duration_ms": 120,
           "pose": {
             "head": {
-              "angle": -4.2885,
-              "x": 0
+              "angle": -2.598076211353315,
+              "x": -1.2990381056766576,
+              "light": 0.9098076211353315
             },
             "body": {
               "y": -2.08,
@@ -8980,8 +8990,9 @@
           "duration_ms": 120,
           "pose": {
             "head": {
-              "angle": -4.95,
-              "x": 0
+              "angle": -3.0,
+              "x": -1.5,
+              "light": 0.95
             },
             "body": {
               "y": -2.4,
@@ -9023,8 +9034,9 @@
           "duration_ms": 120,
           "pose": {
             "head": {
-              "angle": -4.2885,
-              "x": 0
+              "angle": -2.598076211353316,
+              "x": -1.299038105676658,
+              "light": 0.9098076211353316
             },
             "body": {
               "y": -2.08,
@@ -9066,8 +9078,9 @@
           "duration_ms": 120,
           "pose": {
             "head": {
-              "angle": -2.475,
-              "x": 0
+              "angle": -1.5000000000000013,
+              "x": -0.7500000000000007,
+              "light": 0.8000000000000002
             },
             "body": {
               "y": -1.2,
@@ -9122,31 +9135,31 @@
               "angle": 0.9
             },
             "rear_left_arm": {
-              "angle": 0.0
+              "angle": 5.0
             },
             "rear_left_claw": {
               "angle": 8.18
             },
             "rear_right_arm": {
-              "angle": 4.66
+              "angle": -5.0
             },
             "rear_right_claw": {
               "angle": 1.27
             },
             "left_arm": {
-              "angle": 3.38
+              "angle": 5.0
             },
             "left_claw": {
               "angle": -6.81
             },
             "right_arm": {
-              "angle": -2.21
+              "angle": -5.0
             },
             "right_claw": {
               "angle": -8.63
             },
             "center_arm": {
-              "angle": -4.98
+              "angle": 5.0
             },
             "center_claw": {
               "angle": -2.51
@@ -9165,31 +9178,31 @@
               "angle": 1.32
             },
             "rear_left_arm": {
-              "angle": 2.5
+              "angle": 7.5
             },
             "rear_left_claw": {
               "angle": 5.21
             },
             "rear_right_arm": {
-              "angle": 4.94
+              "angle": -7.5
             },
             "rear_right_claw": {
               "angle": -3.36
             },
             "left_arm": {
-              "angle": 1.08
+              "angle": 7.5
             },
             "left_claw": {
               "angle": -8.84
             },
             "right_arm": {
-              "angle": -4.16
+              "angle": -7.5
             },
             "right_claw": {
               "angle": -6.2
             },
             "center_arm": {
-              "angle": -4.09
+              "angle": 7.5
             },
             "center_claw": {
               "angle": 2.14
@@ -9208,31 +9221,31 @@
               "angle": 1.38
             },
             "rear_left_arm": {
-              "angle": 4.33
+              "angle": 9.330127018922193
             },
             "rear_left_claw": {
               "angle": 0.85
             },
             "rear_right_arm": {
-              "angle": 3.9
+              "angle": -9.330127018922193
             },
             "rear_right_claw": {
               "angle": -7.08
             },
             "left_arm": {
-              "angle": -1.5
+              "angle": 9.330127018922193
             },
             "left_claw": {
               "angle": -8.5
             },
             "right_arm": {
-              "angle": -4.99
+              "angle": -9.330127018922193
             },
             "right_claw": {
               "angle": -2.1
             },
             "center_arm": {
-              "angle": -2.11
+              "angle": 9.330127018922193
             },
             "center_claw": {
               "angle": 6.23
@@ -9251,31 +9264,31 @@
               "angle": 1.07
             },
             "rear_left_arm": {
-              "angle": 5.0
+              "angle": 10.0
             },
             "rear_left_claw": {
               "angle": -3.75
             },
             "rear_right_arm": {
-              "angle": 1.81
+              "angle": -10.0
             },
             "rear_right_claw": {
               "angle": -8.91
             },
             "left_arm": {
-              "angle": -3.69
+              "angle": 10.0
             },
             "left_claw": {
               "angle": -5.88
             },
             "right_arm": {
-              "angle": -4.48
+              "angle": -10.0
             },
             "right_claw": {
               "angle": 2.55
             },
             "center_arm": {
-              "angle": 0.44
+              "angle": 10.0
             },
             "center_claw": {
               "angle": 8.64
@@ -9294,31 +9307,31 @@
               "angle": 0.48
             },
             "rear_left_arm": {
-              "angle": 4.33
+              "angle": 9.330127018922195
             },
             "rear_left_claw": {
               "angle": -7.34
             },
             "rear_right_arm": {
-              "angle": -0.76
+              "angle": -9.330127018922195
             },
             "rear_right_claw": {
               "angle": -8.35
             },
             "left_arm": {
-              "angle": -4.88
+              "angle": 9.330127018922195
             },
             "left_claw": {
               "angle": -1.69
             },
             "right_arm": {
-              "angle": -2.78
+              "angle": -9.330127018922195
             },
             "right_claw": {
               "angle": 6.53
             },
             "center_arm": {
-              "angle": 2.87
+              "angle": 9.330127018922195
             },
             "center_claw": {
               "angle": 8.74
@@ -9337,31 +9350,31 @@
               "angle": -0.25
             },
             "rear_left_arm": {
-              "angle": 2.5
+              "angle": 7.5
             },
             "rear_left_claw": {
               "angle": -8.96
             },
             "rear_right_arm": {
-              "angle": -3.13
+              "angle": -7.5
             },
             "rear_right_claw": {
               "angle": -5.55
             },
             "left_arm": {
-              "angle": -4.77
+              "angle": 7.5
             },
             "left_claw": {
               "angle": 2.96
             },
             "right_arm": {
-              "angle": -0.33
+              "angle": -7.5
             },
             "right_claw": {
               "angle": 8.75
             },
             "center_arm": {
-              "angle": 4.53
+              "angle": 7.5
             },
             "center_claw": {
               "angle": 6.5
@@ -9380,31 +9393,31 @@
               "angle": -0.9
             },
             "rear_left_arm": {
-              "angle": 0.0
+              "angle": 5.000000000000001
             },
             "rear_left_claw": {
               "angle": -8.18
             },
             "rear_right_arm": {
-              "angle": -4.66
+              "angle": -5.000000000000001
             },
             "rear_right_claw": {
               "angle": -1.27
             },
             "left_arm": {
-              "angle": -3.38
+              "angle": 5.000000000000001
             },
             "left_claw": {
               "angle": 6.81
             },
             "right_arm": {
-              "angle": 2.21
+              "angle": -5.000000000000001
             },
             "right_claw": {
               "angle": 8.63
             },
             "center_arm": {
-              "angle": 4.98
+              "angle": 5.000000000000001
             },
             "center_claw": {
               "angle": 2.51
@@ -9423,31 +9436,31 @@
               "angle": -1.32
             },
             "rear_left_arm": {
-              "angle": -2.5
+              "angle": 7.499999999999998
             },
             "rear_left_claw": {
               "angle": -5.21
             },
             "rear_right_arm": {
-              "angle": -4.94
+              "angle": -7.499999999999998
             },
             "rear_right_claw": {
               "angle": 3.36
             },
             "left_arm": {
-              "angle": -1.08
+              "angle": 7.499999999999998
             },
             "left_claw": {
               "angle": 8.84
             },
             "right_arm": {
-              "angle": 4.16
+              "angle": -7.499999999999998
             },
             "right_claw": {
               "angle": 6.2
             },
             "center_arm": {
-              "angle": 4.09
+              "angle": 7.499999999999998
             },
             "center_claw": {
               "angle": -2.14
@@ -9466,31 +9479,31 @@
               "angle": -1.38
             },
             "rear_left_arm": {
-              "angle": -4.33
+              "angle": 9.330127018922191
             },
             "rear_left_claw": {
               "angle": -0.85
             },
             "rear_right_arm": {
-              "angle": -3.9
+              "angle": -9.330127018922191
             },
             "rear_right_claw": {
               "angle": 7.08
             },
             "left_arm": {
-              "angle": 1.5
+              "angle": 9.330127018922191
             },
             "left_claw": {
               "angle": 8.5
             },
             "right_arm": {
-              "angle": 4.99
+              "angle": -9.330127018922191
             },
             "right_claw": {
               "angle": 2.1
             },
             "center_arm": {
-              "angle": 2.11
+              "angle": 9.330127018922191
             },
             "center_claw": {
               "angle": -6.23
@@ -9509,31 +9522,31 @@
               "angle": -1.07
             },
             "rear_left_arm": {
-              "angle": -5.0
+              "angle": 10.0
             },
             "rear_left_claw": {
               "angle": 3.75
             },
             "rear_right_arm": {
-              "angle": -1.81
+              "angle": -10.0
             },
             "rear_right_claw": {
               "angle": 8.91
             },
             "left_arm": {
-              "angle": 3.69
+              "angle": 10.0
             },
             "left_claw": {
               "angle": 5.88
             },
             "right_arm": {
-              "angle": 4.48
+              "angle": -10.0
             },
             "right_claw": {
               "angle": -2.55
             },
             "center_arm": {
-              "angle": -0.44
+              "angle": 10.0
             },
             "center_claw": {
               "angle": -8.64
@@ -9552,31 +9565,31 @@
               "angle": -0.48
             },
             "rear_left_arm": {
-              "angle": -4.33
+              "angle": 9.330127018922193
             },
             "rear_left_claw": {
               "angle": 7.34
             },
             "rear_right_arm": {
-              "angle": 0.76
+              "angle": -9.330127018922193
             },
             "rear_right_claw": {
               "angle": 8.35
             },
             "left_arm": {
-              "angle": 4.88
+              "angle": 9.330127018922193
             },
             "left_claw": {
               "angle": 1.69
             },
             "right_arm": {
-              "angle": 2.78
+              "angle": -9.330127018922193
             },
             "right_claw": {
               "angle": -6.53
             },
             "center_arm": {
-              "angle": -2.87
+              "angle": 9.330127018922193
             },
             "center_claw": {
               "angle": -8.74
@@ -9595,31 +9608,31 @@
               "angle": 0.25
             },
             "rear_left_arm": {
-              "angle": -2.5
+              "angle": 7.500000000000002
             },
             "rear_left_claw": {
               "angle": 8.96
             },
             "rear_right_arm": {
-              "angle": 3.13
+              "angle": -7.500000000000002
             },
             "rear_right_claw": {
               "angle": 5.55
             },
             "left_arm": {
-              "angle": 4.77
+              "angle": 7.500000000000002
             },
             "left_claw": {
               "angle": -2.96
             },
             "right_arm": {
-              "angle": 0.33
+              "angle": -7.500000000000002
             },
             "right_claw": {
               "angle": -8.75
             },
             "center_arm": {
-              "angle": -4.53
+              "angle": 7.500000000000002
             },
             "center_claw": {
               "angle": -6.5

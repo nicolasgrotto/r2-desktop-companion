@@ -12,6 +12,8 @@ from ..droids.preferences import defaults_for, preferences_for
 from ..droids.themes import color, theme_manager
 from ..droids.visuals import VISUAL_TYPES, load_profile_clips, paint_visual
 from ..droids.movement import create_movement
+from ..droids.expressions import paint_expression
+from ..droids.rig import ArticulatedVisual
 from ..pet.animation import AnimationManager
 from ..pet.personality import apply_profile
 from ..pet.state import State
@@ -37,6 +39,11 @@ class PreviewCanvas(QWidget):
         self.articulation = {}
         self.movement = None
         self.previous_roll = 0
+        self.state = None
+        self.effect_started = time.monotonic()
+        self.effect_timer = QTimer(self)
+        self.effect_timer.setInterval(50)
+        self.effect_timer.timeout.connect(self.update)
         self.started = time.monotonic()
         self.roll_timer = QTimer(self)
         self.roll_timer.setInterval(33)
@@ -106,6 +113,10 @@ class PreviewCanvas(QWidget):
                             picture.setPixel(x, y, mapping[value])
                 frame = QPixmap.fromImage(picture)
             p.drawPixmap(rect.toRect(), frame)
+        if self.state in {State.SLEEP, State.OVERHEAT} and not (
+                isinstance(self.frame, ArticulatedVisual) and self.frame.expression_style):
+            phase = ((time.monotonic()-self.effect_started)/2.8) % 1 if self.effect_timer.isActive() else 0.35
+            paint_expression(p, self.state, phase, rect=rect)
 
 
 class DroidStudio(QDialog):
@@ -170,6 +181,7 @@ class DroidStudio(QDialog):
         self.layout_main.addWidget(self.status)
         self.animation.frame_changed.connect(self.preview.set_frame)
         self.animation.clip_finished.connect(lambda token: self.preview.roll_timer.stop())
+        self.animation.clip_finished.connect(lambda token: self.preview.effect_timer.stop())
         self.animations.currentRowChanged.connect(self.animation_selected)
         self.frame_variant.currentIndexChanged.connect(self.show_variant)
         self.repeat.toggled.connect(self.play)
@@ -256,6 +268,10 @@ class DroidStudio(QDialog):
         self.frame_variant.setCurrentIndex(0)
         self.frame_variant.blockSignals(False)
         self.animation.clips = {state: replace(self.clips[state], loop=self.repeat.isChecked())}
+        self.preview.state = state
+        self.preview.effect_started = time.monotonic()
+        if state in {State.SLEEP, State.OVERHEAT} and self.profile.renderer != "rigged":
+            self.preview.effect_timer.start()
         self.animation.play(state, 1)
         if state == State.WALK and self.profile.renderer in {"layered", "rigged"}:
             self.preview.started = time.monotonic()
@@ -264,6 +280,7 @@ class DroidStudio(QDialog):
 
     def stop(self):
         self.animation.stop()
+        self.preview.effect_timer.stop()
         self.preview.roll_timer.stop()
         if self.preview.movement:
             self.preview.movement.stop()
@@ -287,6 +304,7 @@ class DroidStudio(QDialog):
 
     def release_preview(self):
         self.stop()
+        self.preview.state = None
         self.animation.clips = {}
         self.clips = {}
         self.preview.set_frame(QPixmap())

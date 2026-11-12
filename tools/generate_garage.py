@@ -394,6 +394,138 @@ def poses(identifier, state, i):
     if state == State.BLINK:
         pose["head"]["scale_y"] = 0.92 if i in {4, 5} else 1
         pose["head"]["opacity"] = 0.55 if i in {4, 5} else 1
+    return refine_pose(identifier, state, i, pose)
+
+
+def refine_pose(identifier, state, i, pose):
+    """Anticipation, readable hold and recovery, authored for each anatomy."""
+    t = i / 11
+    beat = math.sin(math.pi*t)
+    wave = math.sin(math.tau*i/12)
+    hold = min(1, t*4) * min(1, (1-t)*4)
+    head = pose["head"]
+    # A mechanical blink closes the optics through light, without crushing armor.
+    head.pop("scale_y", None)
+    if state == State.BLINK:
+        head.update(angle=0, x=0, opacity=0.3 if i in (4, 5) else 1)
+    if identifier == "lumo":
+        actions = {State.CURIOUS: (-16, 9), State.SURPRISED: (-19, -7),
+                   State.WORK: (8, -8), State.WORRIED: (12, 5), State.GREETING: (-9, -4),
+                   State.INTERACT: (-13, -6), State.NOTIFICATION: (-5, 7)}
+        if state in actions:
+            nod, neck = actions[state]
+            head["angle"] = nod*hold + wave*2
+            pose["neck"]["angle"] = neck*hold
+        if state == State.SLEEP:
+            head.update(angle=13+wave, x=0, opacity=0.48)
+            pose["neck"]["angle"] = 17
+            pose["body"]["angle"] = wave*0.6
+        if state == State.WAKE:
+            head.update(angle=13*(1-t)-beat*9, opacity=0.48+0.52*t)
+            pose["neck"]["angle"] = 17*(1-t)
+        if state in {State.DRAG, State.RECOVER}:
+            decay = (1-t)**2 if state == State.RECOVER else beat
+            pose["body"]["angle"] = wave*5*decay
+            head["angle"] = -wave*12*decay
+        if state == State.OVERHEAT:
+            head.update(angle=8+wave*3, opacity=0.65+abs(wave)*0.3)
+            pose["neck"]["angle"] = 9+abs(wave)*3
+    elif identifier == "vigia":
+        if state == State.SLEEP:
+            head.update(angle=0, x=0, opacity=0.32)
+        elif state == State.WAKE:
+            head.update(angle=wave*4*beat, opacity=0.32+0.68*t)
+        elif state in {State.LOOK_AROUND, State.WORK}:
+            head.update(x=wave*(3 if state == State.WORK else 2), angle=wave*5)
+        elif state == State.SURPRISED:
+            pose["body"]["y"] = -beat*3
+            head["angle"] = -beat*6
+        elif state == State.WORRIED:
+            head.update(x=wave*1.5, angle=wave*3, opacity=0.65+abs(wave)*0.3)
+        for j, name in enumerate(("rear_left", "rear_right", "left", "right", "center")):
+            sign = -1 if j%2 else 1
+            arm, claw = pose[name+"_arm"], pose[name+"_claw"]
+            if state == State.SLEEP:
+                arm["angle"], claw["angle"] = sign*7, -sign*10
+            elif state == State.SURPRISED:
+                arm["angle"] = sign*15*beat
+            elif state in {State.GREETING, State.INTERACT, State.HAPPY, State.NOTIFICATION}:
+                amplitude = {State.GREETING: 6, State.INTERACT: 10, State.HAPPY: 8, State.NOTIFICATION: 14}[state]
+                arm["angle"] = sign*amplitude*beat
+                claw["angle"] = math.sin(t*math.tau*2+j)*amplitude*beat
+                head["angle"] = {State.GREETING: wave*5, State.INTERACT: -6*beat,
+                                 State.HAPPY: wave*3, State.NOTIFICATION: -9*beat}[state]
+            elif state == State.WORK:
+                claw["angle"] = math.sin(t*math.tau+j)*16
+            elif state == State.OVERHEAT:
+                arm["angle"] = sign*(5+abs(wave)*5)
+            elif state == State.RECOVER:
+                arm["angle"] *= (1-t)**2
+                claw["angle"] *= (1-t)**2
+    elif identifier == "pico":
+        actions = {State.CURIOUS: 18, State.SURPRISED: -14, State.WORRIED: 12,
+                   State.WORK: 9, State.INTERACT: -11, State.NOTIFICATION: -6}
+        if state in actions:
+            head["angle"] = actions[state]*hold + wave*2
+            pose["neck"]["angle"] = -actions[state]*hold*0.3
+        if state == State.GREETING:
+            head["angle"] = math.sin(t*math.tau*2)*12*beat
+        if state == State.SLEEP:
+            head.update(angle=17+wave, x=0, opacity=0.4)
+            pose["neck"]["angle"] = 9
+            pose["body"]["y"] = 3+wave*0.3
+        if state == State.WAKE:
+            head.update(angle=17*(1-t)-beat*5, opacity=0.4+t*0.6)
+            pose["body"]["y"] = 3*(1-t)
+        if state == State.OVERHEAT:
+            head.update(angle=12+wave*3, opacity=0.65)
+            pose["neck"]["angle"] = -5
+        if state in {State.DRAG, State.RECOVER}:
+            decay = (1-t)**2 if state == State.RECOVER else beat
+            head["angle"] = wave*14*decay
+            pose["neck"]["angle"] = -wave*5*decay
+    else:
+        for name, sign in (("left", 1), ("right", -1)):
+            arm, claw = pose[name+"_arm"], pose[name+"_claw"]
+            if state == State.SLEEP:
+                arm["angle"] = 0
+                claw.update(y=-7, angle=0)
+                head.update(angle=0, opacity=0.35)
+            elif state == State.WAKE:
+                arm["angle"] = sign*12*beat
+                head.update(y=2*(1-t), opacity=0.35+t*0.65)
+            elif state == State.GREETING:
+                arm["angle"] = sign*(50*beat if name == "right" else 5)
+                claw["angle"] = wave*22*beat
+            elif state == State.INTERACT:
+                arm["angle"] = sign*32*hold
+                claw["y"] = -7+6*hold
+            elif state == State.NOTIFICATION:
+                arm["angle"] = sign*60*beat
+                claw["angle"] = -sign*15*beat
+            elif state == State.WORK:
+                arm["angle"] = sign*(12+wave*8)
+                claw.update(y=-3+wave*3, angle=sign*wave*15)
+            elif state == State.CURIOUS:
+                head["angle"] = 9*hold
+                arm["angle"] = sign*(16*hold if name == "right" else 3)
+            elif state == State.CONFUSED:
+                head["angle"] = wave*12
+                claw["angle"] = sign*wave*12
+            elif state == State.SURPRISED:
+                arm["angle"] = sign*42*hold
+                head["y"] = -2*beat
+            elif state == State.WORRIED:
+                arm["angle"] = sign*18*hold
+                head["angle"] = -7*hold
+            elif state == State.OVERHEAT:
+                arm["angle"] = sign*25*hold
+                head.update(angle=wave*5, opacity=0.6+abs(wave)*0.4)
+            elif state == State.RECOVER:
+                arm["angle"] *= (1-t)**2
+                head["angle"] *= (1-t)**2
+    if "opacity" in head:
+        head["light"] = head.pop("opacity")
     return pose
 
 
@@ -414,7 +546,7 @@ def main():
             clips[state.value] = {"loop": state in {State.IDLE, State.SLEEP, State.WALK},
                                   "frames": [{"duration_ms": duration, "pose": poses(identifier, state, i)} for i in range(12)]}
         emitter = {"lumo": [-22, -7], "vigia": [6, 0], "pico": [-16, -4], "tranco": [3, -8]}[identifier]
-        save_json(rig.directory / "animations/manifest.json", dict(manifest_version=3, canvas=[96, 96],
+        save_json(rig.directory / "animations/manifest.json", dict(manifest_version=3, canvas=[96, 96], expression_style=identifier,
                   parts=rig.parts, emitter={"part": "head", "point": emitter}, clips=clips))
         profile = deepcopy(baseline)
         profile.update(id=identifier, name=name, description=description, renderer="rigged", canvas=[96, 96],
