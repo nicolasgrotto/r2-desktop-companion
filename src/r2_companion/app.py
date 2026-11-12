@@ -37,6 +37,7 @@ from .services.navigation_trace import NavigationTrace
 from .services.updates import UpdateService, confirm_startup, runtime_identity
 from .services.windows import (SessionEvents, StartupService, foreground_fullscreen, idle_seconds,
                                packaged_executable, uptime, foreground_window_rect)
+from .services.windows import reveal_requested_window
 from .ui.bubble import Bubble
 from .ui.context_menu import create_menu
 from .ui.settings import SettingsDialog
@@ -275,7 +276,7 @@ class Companion(QObject):
             dialog = factory(self)
             setattr(self, attribute, dialog)
         fit_dialog(dialog, self.window)
-        dialog.showNormal()
+        self.present_dialog(dialog)
         dialog.raise_()
         dialog.activateWindow()
 
@@ -494,7 +495,7 @@ class Companion(QObject):
         self.radial.hide()
         panel.set_settings(self.store.settings)
         fit_dialog(panel, self.window)
-        panel.showNormal()
+        self.present_dialog(panel)
         panel.raise_()
         panel.activateWindow()
 
@@ -690,9 +691,18 @@ class Companion(QObject):
     def show_tools(self):
         self.radial.hide()
         fit_dialog(self.tools, self.window)
-        self.tools.showNormal()
+        self.present_dialog(self.tools)
         self.tools.raise_()
         self.tools.activateWindow()
+
+    def present_dialog(self, dialog):
+        dialog.showNormal()
+        native = reveal_requested_window(dialog)
+        if native is not None:
+            self.radial.record("window_presentation", component=type(dialog).__name__, **native)
+            if not native["native_visible"]:
+                dialog.close()
+                raise RuntimeError("A janela solicitada não foi exibida pelo Windows")
 
     def project_tool(self, kind):
         if kind not in {"clock", "date"}:
@@ -733,7 +743,7 @@ class Companion(QObject):
     def show_settings(self):
         self.radial.hide()
         if self.settings_dialog is not None:
-            self.settings_dialog.showNormal()
+            self.present_dialog(self.settings_dialog)
             self.settings_dialog.raise_()
             self.settings_dialog.activateWindow()
             return
@@ -753,7 +763,9 @@ class Companion(QObject):
         dialog.applied.connect(self.save_settings)
         dialog.finished.connect(self.settings_closed)
         fit_dialog(dialog, self.window)
-        dialog.show()
+        self.present_dialog(dialog)
+        dialog.raise_()
+        dialog.activateWindow()
 
     def settings_closed(self, result):
         dialog = self.settings_dialog

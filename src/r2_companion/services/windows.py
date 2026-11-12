@@ -13,6 +13,15 @@ IS_WINDOWS = os.name == "nt"
 RUN_KEY = r"Software\Microsoft\Windows\CurrentVersion\Run"
 RUN_NAME = "R2Companion"
 
+
+class StartupInfo(ctypes.Structure):
+    _fields_ = [("cb", wintypes.DWORD), ("reserved", ctypes.c_void_p), ("desktop", ctypes.c_void_p),
+               ("title", ctypes.c_void_p), ("x", wintypes.DWORD), ("y", wintypes.DWORD),
+               ("width", wintypes.DWORD), ("height", wintypes.DWORD), ("chars_x", wintypes.DWORD),
+               ("chars_y", wintypes.DWORD), ("fill", wintypes.DWORD), ("flags", wintypes.DWORD),
+               ("show", wintypes.WORD), ("reserved_size", wintypes.WORD), ("reserved_data", ctypes.c_void_p),
+               ("input", wintypes.HANDLE), ("output", wintypes.HANDLE), ("error", wintypes.HANDLE)]
+
 if IS_WINDOWS:
     user32 = ctypes.WinDLL("user32", use_last_error=True)
     kernel32 = ctypes.WinDLL("kernel32", use_last_error=True)
@@ -27,8 +36,27 @@ if IS_WINDOWS:
     user32.GetMonitorInfoW.argtypes = [wintypes.HANDLE, ctypes.c_void_p]
     user32.GetWindowThreadProcessId.argtypes = [wintypes.HWND, ctypes.POINTER(wintypes.DWORD)]
     user32.GetClassNameW.argtypes = [wintypes.HWND, wintypes.LPWSTR, ctypes.c_int]
+    user32.IsWindowVisible.argtypes = [wintypes.HWND]
+    user32.ShowWindow.argtypes = [wintypes.HWND, ctypes.c_int]
+    kernel32.GetStartupInfoW.argtypes = [ctypes.POINTER(StartupInfo)]
     wtsapi32.WTSRegisterSessionNotification.argtypes = [wintypes.HWND, wintypes.DWORD]
     wtsapi32.WTSUnRegisterSessionNotification.argtypes = [wintypes.HWND]
+
+
+def reveal_requested_window(widget):
+    if not IS_WINDOWS:
+        return None
+    startup = StartupInfo()
+    startup.cb = ctypes.sizeof(startup)
+    kernel32.GetStartupInfoW(ctypes.byref(startup))
+    handle = int(widget.winId())
+    hidden_start = bool(startup.flags & 1) and startup.show == 0
+    before = bool(user32.IsWindowVisible(handle))
+    corrected = hidden_start and widget.isVisible() and not widget.isMinimized() and not before
+    if corrected:
+        user32.ShowWindow(handle, 4)
+    return {"startup_hidden": hidden_start, "native_visible_before": before,
+            "native_visible": bool(user32.IsWindowVisible(handle)), "native_visibility_corrected": corrected}
 
 
 def uptime() -> float:
