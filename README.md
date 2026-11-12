@@ -339,3 +339,5 @@ A documentação interna e evidências ficam em `local_docs/`, ignorado pelo Git
 
 Continuam pendentes validações físicas em Windows 11, monitores com DPI misto,
 suspensão real e teste prolongado. A versão 1.1.4 mantém a arte original provisória.
+
+As notas públicas descrevem funcionalidades, correções e instruções de uso. Resultados de testes, investigações e evidências permanecem na documentação interna.
