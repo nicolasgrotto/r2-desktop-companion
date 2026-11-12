@@ -1,5 +1,15 @@
 # Changelog
 
+## 1.1.3
+
+- Correções na abertura da roda após cliques duplos e durante sequências rápidas de cliques.
+- Fechar a roda pelo mascote deixa de reabri-la ao soltar o botão do mouse.
+- Melhorias na seleção de submenus durante animações e na recuperação de transições interrompidas.
+- Correção na exibição de Ferramentas, Droid Garage, Central de Áudio, Preferências e Favoritos após atualizar.
+- A reação de confusão por cliques repetidos passa a aguardar a navegação.
+
+[Notas da versão](release-notes/v1.1.3.md).
+
 ## 1.1.2
 
 - Atualizações verificam a inicialização da nova versão antes de confirmar a conclusão, com recuperação do backup em caso de falha.

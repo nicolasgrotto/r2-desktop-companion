@@ -8,11 +8,11 @@ offline; somente o atualizador manual consulta o GitHub por solicitação do usu
 Esta versão funcional usa **arte provisória original**, não os sprites HD finais.
 O Companion é independente do casemod e não executa nem altera seus scripts de som.
 
-**Versão 1.1.2:** reinício da atualização com ambiente independente e confirmação
-da versão efetivamente carregada antes de anunciar a conclusão. Preserva os três
-droides, a roda por níveis, Droid Garage, ferramentas, minigames e projeções.
-Painéis minimizados são restaurados e a Central de Áudio acompanha as preferências
-salvas ao reabrir. Novidades completas no [changelog](packaging/docs/CHANGELOG.md).
+**Versão 1.1.3:** corrige o clique simples descartado após um clique duplo e a
+primeira ferramenta oculta nativamente depois de uma atualização. A roda aceita
+seleções durante a entrada dos submenus e recupera transições interrompidas.
+Preserva os três droides, animações, ferramentas, projeções e dados anteriores.
+Novidades completas no [changelog](packaging/docs/CHANGELOG.md).
 
 Equipe o Original, Vesper (grafite/bronze) ou Orbita (esférico branco/laranja) sem
 reiniciar. Cada um tem voz, personalidade, personalizações e tema próprios.
@@ -25,12 +25,11 @@ Consulte a [arquitetura](ARCHITECTURE.md).
 
 ## Executar pelo código
 
-Notas da release: [Changelog](packaging/docs/CHANGELOG.md) e [1.1.2](packaging/docs/release-notes/v1.1.2.md).
+Notas da release: [Changelog](packaging/docs/CHANGELOG.md) e [1.1.3](packaging/docs/release-notes/v1.1.3.md).
 
-Esta branch contém uma candidata local refeita da 1.1.2, identificada como
-`wheel-20261113`. Ela corrige casos reproduzidos de interação da roda; os episódios
-intermitentes históricos continuam exigindo correlação com os eventos da execução
-afetada. A release existente permanece como referência preservada.
+A versão 1.1.3 incorpora as correções investigadas sobre a 1.1.2; as releases e
+evidências anteriores permanecem como referência. Os episódios históricos sem
+rastreamento não são atribuídos individualmente a uma causa sem comprovação.
 
 Requer Python 3.12+ x64. Combinação exercitada: Python 3.13.12 e Qt/PySide6 6.10.2
 no Windows 10 22H2. Abra PowerShell na raiz deste repositório:
@@ -180,7 +179,7 @@ e usa uma release fictícia apenas para validar a interface. O roteiro
 encerramento, backup e reinício com executáveis e transporte local de teste.
 Os relatórios ficam em pastas `.runtime-*`, sem alterar os dados normais.
 
-O ensaio `tools/verify_post_update.py --data-dir .runtime-upgrade-112` usa o build
+O ensaio `tools/verify_post_update.py --data-dir .runtime-upgrade-121` usa o build
 real anterior em `dist/1.1.1/R2Companion` e o ZIP atual. Abre ferramentas e Garage,
 atualiza em cópia isolada, testa a roda no primeiro reinício e compara com abertura
 direta. `--legacy-updater` exercita o instalador anterior; `--fail-startup` injeta
@@ -191,22 +190,22 @@ Para conferir os painéis novos e a reprodução Qt com dados isolados, execute
 `tools\verify_features.py` pelo mesmo Python do ambiente virtual. Esse ensaio
 reproduz um efeito a 5% de volume e salva capturas/diagnóstico em `.runtime-features-v03`.
 Depois do build, `tools\verify_package.py` verifica ZIP/hash e abre o EXE com PATH
-restrito ao Windows. `tools\verify_release.py` ensaia a migração real 1.1.1 → 1.1.2
+restrito ao Windows. `tools\verify_release.py` ensaia a migração real 1.1.1 → 1.1.3
 em cópias locais; requer também o build anterior preservado em dist/1.1.1.
 
 ## Gerar o executável
 
 ```powershell
 .\.venv\Scripts\python.exe tools\build_windows.py
-.\dist\1.1.2\R2Companion\R2Companion.exe
+.\dist\1.1.3\R2Companion\R2Companion.exe
 ```
 
 O build é Windows x64, one-folder, sem console e sem solicitação de elevação.
 O script mantém o cache do empacotador no projeto. Distribua **toda a pasta**
-`dist\1.1.2\R2Companion`, incluindo `_internal`, assets, `release.json` e licenças.
+`dist\1.1.3\R2Companion`, incluindo `_internal`, assets, `release.json` e licenças.
 O ZIP e SHA-256 são gerados em `dist\R2Companion-Windows-x64.zip` e `.zip.sha256`.
 Para validar uma candidata preservando esses artefatos, use
-`tools\build_windows.py --artifact-label wheel-20261113-ui`; o rótulo separa
+`tools\build_windows.py --artifact-label release-113-rc1`; o rótulo separa
 a pasta, o ZIP e o checksum. `verify_package.py --artifact-label` e os ensaios
 de atualização com `--archive` aceitam esses pacotes locais sem publicá-los.
 Ao testar a candidata com verify_post_update.py, use também
@@ -222,7 +221,7 @@ das bibliotecas incluídas em [THIRD_PARTY_NOTICES.md](packaging/docs/THIRD_PART
 Diagnóstico do executável, sem usar o diretório normal de dados:
 
 ```powershell
-.\dist\1.1.2\R2Companion\R2Companion.exe --data-dir .runtime-exe --smoke-test
+.\dist\1.1.3\R2Companion\R2Companion.exe --data-dir .runtime-exe --smoke-test
 ```
 
 Se não abrir, consulte `companion.log` no diretório escolhido. Configuração inválida
@@ -300,7 +299,7 @@ ser removidas com a central fechada. O instalador reconsulta a release e verific
 novamente o checksum publicado, além da validação feita no download pela interface.
 
 A versão 0.2.0 não incluía metadata nem atualizador. Para migrar dela, instale
-manualmente a pasta 1.1.2 completa uma vez; os dados normais serão reutilizados.
+manualmente a pasta 1.1.3 completa uma vez; os dados normais serão reutilizados.
 Mantenha `release.json` e o diretório `_internal` junto ao executável.
 
 Para iniciar com o Windows, copie a instalação para um local estável e marque
@@ -326,13 +325,13 @@ API pública sem credenciais e pressupõe releases e assets acessíveis publicam
 O checksum detecta corrupção; o pacote ainda não tem assinatura digital.
 
 O instalador já distribuído na versão 1.1.1 mantém seu protocolo anterior ao migrar
-para a 1.1.2. O novo executável verifica a correspondência entre código e bundle
-também nessa primeira migração; as atualizações iniciadas pela 1.1.2 usam a
-confirmação completa do reinício.
+para a 1.1.3. O novo executável verifica a correspondência entre código e bundle
+também nessa primeira migração; as atualizações iniciadas a partir da 1.1.2 usam
+a confirmação completa do reinício.
 
 A arquitetura separa pet (estados, animação e movimento), services (áudio,
 Windows, persistência e updates), features (ferramentas) e ui (menus e painéis).
 A documentação interna e evidências ficam em `local_docs/`, ignorado pelo Git. Changelog, notas de versão e avisos de terceiros públicos ficam em `packaging/docs/`.
 
 Continuam pendentes validações físicas em Windows 11, monitores com DPI misto,
-suspensão real e teste prolongado. A versão 1.1.2 mantém a arte original provisória.
+suspensão real e teste prolongado. A versão 1.1.3 mantém a arte original provisória.

@@ -1,6 +1,6 @@
 # Arquitetura do R2 Desktop Companion
 
-Versão 1.1.2. Aplicativo local Python/PySide6 para Windows 10/11, com uma
+Versão 1.1.3. Aplicativo local Python/PySide6 para Windows 10/11, com uma
 QApplication por processo, sem backend, modelos de IA ou telemetria.
 
 ## Composição
