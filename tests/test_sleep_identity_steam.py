@@ -71,10 +71,12 @@ def test_active_name_appears_in_transmission_preferences_and_preview(pet, identi
 
 
 @pytest.mark.parametrize('identifier', ['r2_default','dark_astromech','spherical_droid'])
-def test_overheat_emits_smoke_for_each_droid_and_cleans_it_up(pet, identifier):
+def test_overheat_emits_smoke_for_each_droid_and_cleans_it_up(pet, identifier, clock):
+    pet.animation.clock = clock
     assert pet.equip_droid(identifier)
     pet.controller.enter(State.IDLE)
     assert pet.controller.react(State.OVERHEAT)
+    clock.advance(0.08)
     QTest.qWait(80)
     steam = pet.window.steam
     assert steam.active and steam.isVisible() and steam.timer.isActive()
