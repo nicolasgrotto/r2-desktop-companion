@@ -8,4 +8,7 @@ build/
 dist/
 *.egg-info/
 /docs/
+/.aws/
+/.env
+/.env.*
 /local_docs/

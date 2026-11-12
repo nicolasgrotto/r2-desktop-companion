@@ -1,5 +1,14 @@
 # Changelog
 
+## 1.1.2
+
+- Atualizações verificam a inicialização da nova versão antes de confirmar a conclusão, com recuperação do backup em caso de falha.
+- Melhorias no reinício após atualizar e no encerramento dos componentes da aplicação.
+- Aplicativos e Meus locais restauram painéis minimizados; Preferências recebe foco ao reabrir.
+- A Central de Áudio recarrega os ajustes salvos ao reabrir.
+
+[Notas da versão](release-notes/v1.1.2.md).
+
 ## 1.1.1
 
 - Roda organizada em Droid Garage, Ferramentas, Minigames, Autodiagnóstico, Projetar e Configurações, com submenus animados.
