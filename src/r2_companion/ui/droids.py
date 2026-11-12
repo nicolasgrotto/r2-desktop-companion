@@ -485,3 +485,8 @@ class AudioCenter(QDialog):
     def hideEvent(self, event):
         self.companion.audio.clear_preview()
         super().hideEvent(event)
+
+    def showEvent(self, event):
+        self.master.setChecked(self.companion.store.settings.sound_enabled)
+        self.load_selected()
+        super().showEvent(event)
