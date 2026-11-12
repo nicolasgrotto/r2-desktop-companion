@@ -256,19 +256,61 @@ public static class R2WindowCloser {
         [R2WindowCloser]::Close($process.Id)
         if (-not $process.WaitForExit(15000)) { throw 'O R2 nao encerrou. Feche pelo menu Sair e tente novamente.' }
     }
+    $remaining = @(Get-Process -Name R2Companion -ErrorAction SilentlyContinue | Where-Object {
+        try { $_.Path -ieq $expectedPath } catch { $false }
+    })
+    if ($remaining.Count) { throw 'Ainda existem processos usando a instalacao. Nenhum arquivo foi substituido.' }
 }
 
 function Start-R2Installation([string]$Directory, [string]$UserData = '') {
+    $metadata = Read-R2Release $Directory
     $arguments = @()
     if ($UserData) {
         if ($UserData.Contains('"')) { throw 'Diretorio de dados invalido.' }
         $arguments = @('--data-dir', ('"{0}"' -f $UserData.TrimEnd('\')))
     }
+    $readyPath = ''
+    if ((Convert-R2Version $metadata.version) -ge [version]'1.1.2') {
+        $data = if ($UserData) { Get-R2FullPath $UserData } else {
+            Join-Path ([Environment]::GetFolderPath('LocalApplicationData')) 'R2DesktopCompanion\R2Companion'
+        }
+        $readyRoot = Join-Path $data 'updates'
+        Assert-R2NoLinks $readyRoot
+        $null = New-Item -Path $readyRoot -ItemType Directory -Force
+        $readyPath = Join-Path $readyRoot ('startup-' + [Guid]::NewGuid().ToString('N') + '.json')
+        $arguments += @('--startup-ready-file', ('"{0}"' -f $readyPath))
+    }
     $options = @{ FilePath = (Join-Path $Directory 'R2Companion.exe'); WorkingDirectory = $Directory;
                   WindowStyle = 'Hidden'; PassThru = $true }
     if ($arguments.Count) { $options.ArgumentList = $arguments }
-    $process = Start-Process @options
-    if ($process.WaitForExit(3000)) { throw "O aplicativo encerrou durante a inicializacao (codigo $($process.ExitCode))." }
+    $previousReset = [Environment]::GetEnvironmentVariable('PYINSTALLER_RESET_ENVIRONMENT', 'Process')
+    try {
+        $env:PYINSTALLER_RESET_ENVIRONMENT = '1'
+        $process = Start-Process @options
+    } finally {
+        [Environment]::SetEnvironmentVariable('PYINSTALLER_RESET_ENVIRONMENT', $previousReset, 'Process')
+    }
+    if (-not $readyPath) {
+        if ($process.WaitForExit(3000)) { throw "O aplicativo encerrou durante a inicializacao (codigo $($process.ExitCode))." }
+        return
+    }
+    $deadline = [DateTime]::UtcNow.AddSeconds(30)
+    while ([DateTime]::UtcNow -lt $deadline) {
+        if ($process.WaitForExit(100)) { throw "O aplicativo encerrou antes de confirmar a inicializacao (codigo $($process.ExitCode))." }
+        if (Test-Path -LiteralPath $readyPath) {
+            Assert-R2NoLinks $readyPath
+            if ((Get-Item -LiteralPath $readyPath).Length -gt 4096) { throw 'Confirmacao de inicializacao invalida.' }
+            $ready = Get-Content -LiteralPath $readyPath -Raw -Encoding UTF8 | ConvertFrom-Json
+            if ($ready.pid -ne $process.Id -or $ready.version -cne $metadata.version -or
+                $ready.initialized -ne $true -or $ready.executable -ine $options.FilePath -or
+                $ready.bundle -ine (Join-Path $Directory '_internal') -or $ready.data_directory -ine $data) {
+                throw 'O processo iniciado nao confirmou a versao, os recursos e os dados esperados.'
+            }
+            Write-R2Log "Inicializacao confirmada: versao $($ready.version), PID $($ready.pid), bundle $($ready.bundle)."
+            return
+        }
+    }
+    throw 'O novo processo nao confirmou a inicializacao em 30 segundos.'
 }
 
 function Wait-R2FileAccess {
@@ -311,6 +353,7 @@ function Install-R2Package([string]$Directory, [string]$Package, [string]$Reposi
     $movedOld = $false
     $movedNew = $false
     try {
+        Stop-R2Installation $install
         Move-R2Directory $install $backup
         $movedOld = $true
         Move-R2Directory $packagePath $install

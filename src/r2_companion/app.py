@@ -33,7 +33,7 @@ from .services.audio import AudioService
 from .services.storage import ConfigStore
 from .services.system_info import SystemInfo
 from .services.tasks import LocalTasks
-from .services.updates import UpdateService
+from .services.updates import UpdateService, confirm_startup, runtime_identity
 from .services.windows import (SessionEvents, StartupService, foreground_fullscreen, idle_seconds,
                                packaged_executable, uptime, foreground_window_rect)
 from .ui.bubble import Bubble
@@ -767,6 +767,12 @@ def configure_logging(directory: Path):
     root.addHandler(handler)
 
 
+def log_callback_error(kind, value, traceback):
+    log.error("Falha em callback da aplicação", exc_info=(kind, value, traceback))
+    if sys.stderr is not None:
+        sys.__excepthook__(kind, value, traceback)
+
+
 def main(argv=None) -> int:
     parser = argparse.ArgumentParser(description="R2 Companion — mascote local para Windows")
     parser.add_argument("--data-dir", type=Path, help="Diretório alternativo de dados, útil para testes isolados")
@@ -780,6 +786,7 @@ def main(argv=None) -> int:
     parser.add_argument("--owner-start", type=int, default=0)
     parser.add_argument("--resume-update", type=Path)
     parser.add_argument("--update-ready-file", type=Path)
+    parser.add_argument("--startup-ready-file", type=Path)
     args = parser.parse_args(argv)
     if args.update_center:
         from .ui.updates import run_update_center
@@ -802,20 +809,35 @@ def main(argv=None) -> int:
     directory = args.data_dir.resolve() if args.data_dir else Path(QStandardPaths.writableLocation(QStandardPaths.StandardLocation.AppLocalDataLocation))
     store = ConfigStore(directory)
     if not store.acquire():
-        if args.smoke_test:
+        if args.smoke_test or args.startup_ready_file:
             return 2
         QMessageBox.information(None, "R2 Companion", "Já existe uma instância usando este diretório de dados.")
         return 2
     configure_logging(directory)
+    sys.excepthook = log_callback_error
     store.load()
     try:
+        identity = runtime_identity()
+        log.info("Inicializando: %s", json.dumps(identity))
         companion = Companion(app, store)
     except Exception:
         log.exception("Falha ao iniciar")
         store.close()
-        if not args.smoke_test:
+        if not args.smoke_test and not args.startup_ready_file:
             QMessageBox.critical(None, "R2 Companion", "Não foi possível iniciar. Consulte companion.log no diretório de dados.")
         return 1
+    if args.startup_ready_file:
+        def ready():
+            try:
+                if companion.closed or companion.initializing:
+                    raise ValueError("Inicialização incompleta.")
+                confirm_startup(args.startup_ready_file, directory)
+                log.info("Inicialização confirmada para o instalador")
+            except (OSError, ValueError):
+                log.exception("Não foi possível confirmar a inicialização")
+                companion.shutdown()
+                app.exit(1)
+        QTimer.singleShot(0, ready)
     if args.smoke_test:
         droid_checks = []
         navigation_checks = {}
@@ -870,6 +892,11 @@ def main(argv=None) -> int:
             report["version"] = __version__
             report["navigation"] = navigation_checks
             report["active_droid"] = companion.profile.id
+            effects = companion.audio.all_effects()
+            report["audio_effects"] = len(effects)
+            report["audio_loaded_effects"] = sum(effect.isLoaded() for effect in effects)
+            report["audio_errors"] = sum(effect.status().name == "Error" for effect in effects)
+            report["audio_output_available"] = companion.audio.available()
             companion.window.grab().save(str(directory / "smoke.png"))
             companion.shutdown()
             report["movement_timer_after_shutdown"] = bool(getattr(companion.positioning.movement, "timer", None)

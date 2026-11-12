@@ -14,7 +14,7 @@ from .. import __version__
 from ..pet.animation import AnimationManager
 from ..pet.state import State
 from ..services.update_client import check_release, download_release, validate_release, version_tuple, REPOSITORY
-from ..services.updates import read_release
+from ..services.updates import independent_environment, read_release
 from ..services.storage import ConfigStore
 from .theme import fit_dialog
 from ..droids.themes import PersistedThemeWatcher, styled
@@ -281,7 +281,7 @@ class UpdateCenter(QDialog):
                               "--data-dir", str(self.directory), "--owner-pid", str(self.owner_pid),
                               "--owner-start", str(self.owner_started), "--resume-update", str(self.prepared),
                               "--update-ready-file", str(self.handoff_file)],
-                             cwd=str(destination), creationflags=subprocess.CREATE_NO_WINDOW)
+                             cwd=str(destination), env=independent_environment(), creationflags=subprocess.CREATE_NO_WINDOW)
             self.handoff_started = time.monotonic()
             self.set_state("handoff", "Abrindo acompanhamento da instalação…",
                            "Esta janela permanece aberta até a central independente estar visível.")
@@ -345,7 +345,7 @@ class UpdateCenter(QDialog):
                     "-ExpectedProcessId", str(self.owner_pid), "-ProcessStarted", str(self.owner_started),
                     "-PreparedDirectory", str(prepared), "-PreparedVersion", self.release["version"],
                     "-StatusPath", str(self.status_path)], stdout=log, stderr=log,
-                    cwd=str(prepared), creationflags=subprocess.CREATE_NO_WINDOW)
+                    cwd=str(prepared), env=independent_environment(), creationflags=subprocess.CREATE_NO_WINDOW)
             finally:
                 log.close()
             self.set_state("installing", "Instalando atualização…", "Encerrando o R2, criando backup e preparando o reinício.")
@@ -381,6 +381,9 @@ class UpdateCenter(QDialog):
                 restart_required = self.installer_state == "restart_required"
                 if self.installer_state != "current" and self.release is not None and self.metadata["version"] != self.release["version"]:
                     self.fail("A versão instalada não corresponde ao pacote solicitado. Consulte o log e tente novamente.")
+                    return
+                if self.installer_state not in {"current", "done", "restart_required"}:
+                    self.fail("O instalador encerrou sem confirmar a conclusão. Consulte o log de atualização.")
                     return
                 self.set_state("restart_required" if restart_required else "done",
                                "Reinicie para utilizar a nova versão" if restart_required else "Atualização concluída",
