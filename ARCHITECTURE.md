@@ -1,6 +1,13 @@
 # Arquitetura do R2 Desktop Companion
 
-Versão 1.1.3. Aplicativo local Python/PySide6 para Windows 10/11, com uma
+SleepOverlay desenha símbolos Z durante SLEEP, sem capturar entrada. Ocultar o
+mascote suspende o efeito; despertar e encerramento param seu timer. Countdown
+continua como fonte única da contagem projetada, atualizada pelo timer de
+hologramas. A preferência timer_projection é aditiva no schema 1 e começa
+desativada em configurações antigas. Pausa, retomada, reinício e conclusão usam
+os sinais existentes; ticks não substituem projeções escolhidas manualmente.
+
+Versão 1.1.4. Aplicativo local Python/PySide6 para Windows 10/11, com uma
 QApplication por processo, sem backend, modelos de IA ou telemetria.
 
 ## Composição

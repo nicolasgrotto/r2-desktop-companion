@@ -1,5 +1,14 @@
 # Changelog
 
+## 1.1.4
+
+- Símbolos Z animados acompanham o sono de Original, Vesper e Orbita.
+- Nova opção **Projetar timer** no Temporizador: acompanhe a contagem pelo holograma do droide, inclusive ao pausar e retomar.
+- A preferência de projeção é salva. Fechar Ferramentas mantém a contagem e a projeção até o término do temporizador.
+- A projeção respeita a configuração de hologramas e pode ser encerrada ou substituída pelo menu Projetar.
+
+[Notas da versão](release-notes/v1.1.4.md).
+
 ## 1.1.3
 
 - Correções na abertura da roda após cliques duplos e durante sequências rápidas de cliques.
