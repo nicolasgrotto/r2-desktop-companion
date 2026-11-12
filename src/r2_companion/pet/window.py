@@ -60,6 +60,9 @@ class PetWindow(QWidget):
         self.projection_overlay = ProjectionOverlay(self)
         from ..ui.steam import SteamOverlay
         self.steam = SteamOverlay(self)
+        from ..ui.sleep import SleepOverlay
+        self.sleep_effect = SleepOverlay(self)
+        self.timer_projection_source = None
 
     def pet_head(self):
         if self.press_global is not None and not self.dragging:
@@ -79,7 +82,7 @@ class PetWindow(QWidget):
         self.update()
 
     def show_projection(self, kind):
-        if kind not in {"clock", "date"}:
+        if kind not in {"clock", "date", "timer"}:
             return False
         self.clear_projection()
         self.projection_kind = kind
@@ -92,8 +95,16 @@ class PetWindow(QWidget):
         if self.projection_kind is None:
             return
         time_text, date_text = local_clock().split("\n", 1)
+        if self.projection_kind == "timer":
+            value = self.timer_projection_source() if self.timer_projection_source else None
+            if value is None:
+                self.clear_projection()
+                return
+            time_text, date_text = value
         self.projection_text = time_text + ("\n" + date_text if self.projection_kind == "date" else "")
-        picture = QPixmap(320, 164 if self.projection_kind == "date" else 76)
+        if self.projection_kind == "timer":
+            self.projection_text = time_text + "\n" + date_text
+        picture = QPixmap(320, 164 if self.projection_kind in {"date", "timer"} else 76)
         picture.fill(Qt.GlobalColor.transparent)
         painter = QPainter(picture)
         painter.setRenderHint(QPainter.RenderHint.Antialiasing)
@@ -105,7 +116,7 @@ class PetWindow(QWidget):
         painter.setPen(QColor(color("hologram")))
         painter.setFont(QFont("Consolas", 30, QFont.Weight.Bold))
         painter.drawText(QRectF(8, 6, 304, 62), Qt.AlignmentFlag.AlignCenter, time_text)
-        if self.projection_kind == "date":
+        if self.projection_kind in {"date", "timer"}:
             painter.setFont(QFont("Segoe UI", 18))
             painter.drawText(QRectF(12, 67, 296, 90), Qt.AlignmentFlag.AlignCenter | Qt.TextFlag.TextWordWrap, date_text)
         painter.end()
@@ -123,12 +134,14 @@ class PetWindow(QWidget):
         self.update()
 
     def stop_effects(self):
+        self.sleep_effect.set_active(False)
         self.steam.set_active(False)
         self.affection_timer.stop()
         self.hologram_timer.stop()
         self.clear_projection()
 
     def showEvent(self, event):
+        self.sleep_effect.reposition()
         self.steam.reposition()
         if self.projection_kind:
             self.refresh_projection()
@@ -136,6 +149,8 @@ class PetWindow(QWidget):
         super().showEvent(event)
 
     def hideEvent(self, event):
+        self.sleep_effect.timer.stop()
+        self.sleep_effect.hide()
         self.projection_timer.stop()
         self.projection_overlay.hide()
         self.steam.timer.stop()

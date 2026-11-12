@@ -2,7 +2,7 @@ import math
 
 from PySide6.QtCore import QRectF, Qt, QTimer, Signal
 from PySide6.QtGui import QColor, QFont, QPainter, QPen
-from PySide6.QtWidgets import (QAbstractSpinBox, QDialog, QHBoxLayout, QProgressBar,
+from PySide6.QtWidgets import (QAbstractSpinBox, QCheckBox, QDialog, QHBoxLayout, QProgressBar,
                               QPushButton, QScrollArea, QSpinBox, QTabWidget, QVBoxLayout, QWidget)
 
 from ..features.clock import local_clock
@@ -49,12 +49,15 @@ class TimerDial(QWidget):
 class ToolsDialog(QDialog):
     duration_selected = Signal(int)
 
-    def __init__(self, countdown, monitor, duration: int, productivity=None):
+    def __init__(self, countdown, monitor, duration: int, productivity=None, project_timer=False):
         super().__init__()
         self.setWindowTitle("Central de ferramentas · R2 Companion")
         self.resize(760, 650)
         apply_theme(self)
         self.countdown, self.monitor = countdown, monitor
+        self.project_timer = QCheckBox("Projetar timer")
+        self.project_timer.setChecked(project_timer)
+        self.project_timer.setToolTip("Exibir a contagem no holograma do droide até terminar.")
         self.battery = None
         outer = QVBoxLayout(self)
         outer.setContentsMargins(0, 0, 0, 0)
@@ -199,6 +202,7 @@ class ToolsDialog(QDialog):
             presets.addWidget(button)
             self.presets.append(button)
         controls.addLayout(presets)
+        controls.addWidget(self.project_timer)
         self.start_button = QPushButton("Iniciar contagem")
         self.start_button.setIcon(icon("play", "#ffffff"))
         self.start_button.setProperty("role", "primary")

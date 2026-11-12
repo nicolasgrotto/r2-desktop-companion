@@ -16,7 +16,7 @@ from . import __version__
 from .features.launcher import launch
 from .features.locations import validate_location
 from .features.system_monitor import SystemMonitor
-from .features.timer import Countdown
+from .features.timer import Countdown, TimerState
 from .features.productivity import ProductivityStore
 from .features.minigames import open_game
 from .features.diagnostics import collect_diagnostics
@@ -41,7 +41,7 @@ from .services.windows import reveal_requested_window
 from .ui.bubble import Bubble
 from .ui.context_menu import create_menu
 from .ui.settings import SettingsDialog
-from .ui.tools import ToolsDialog
+from .ui.tools import ToolsDialog, timer_text
 from .ui.tray import Tray
 from .ui.radial import RadialMenu
 from .ui.targets import LaunchpadDialog
@@ -114,7 +114,12 @@ class Companion(QObject):
         self.updates = UpdateService(store.directory)
         self.tasks = LocalTasks()
         self.startup = StartupService(packaged_executable())
-        self.tools = ToolsDialog(self.countdown, self.monitor, store.settings.timer_seconds, self.productivity)
+        self.tools = ToolsDialog(self.countdown, self.monitor, store.settings.timer_seconds, self.productivity,
+                                 project_timer=store.settings.timer_projection)
+        self._timer_projection_run = 0
+        self.window.timer_projection_source = self.timer_projection_text
+        self.countdown.changed.connect(self.update_timer_projection)
+        self.tools.project_timer.toggled.connect(self.timer_projection_toggled)
         self.navigation_trace = NavigationTrace(store.directory)
         self.radial.trace = self.trace_navigation
         self.radial.begin_attempt = self.navigation_trace.begin
@@ -235,6 +240,11 @@ class Companion(QObject):
         return False
 
     def apply_preferences(self, settings):
+        blocked = self.tools.project_timer.blockSignals(True)
+        self.tools.project_timer.setChecked(settings.timer_projection)
+        self.tools.project_timer.blockSignals(blocked)
+        self.tools.project_timer.setEnabled(settings.holograms)
+        self.update_timer_projection()
         self.behavior.settings = deepcopy(settings.behavior)
         self.positioning.display_size = settings.visual_scale
         self.positioning.aspect = self.profile.canvas[0] / self.profile.canvas[1]
@@ -383,7 +393,33 @@ class Companion(QObject):
         settings.timer_seconds = seconds
         self.store.apply(settings, notify=False)
 
+    def timer_projection_toggled(self, enabled):
+        settings = deepcopy(self.store.settings)
+        settings.timer_projection = enabled
+        self.store.apply(settings, notify=False)
+        self.update_timer_projection(force=True)
+
+    def timer_projection_text(self):
+        if self.closed or self.countdown.state not in {TimerState.RUNNING, TimerState.PAUSED}:
+            return None
+        return timer_text(self.countdown.remaining), self.countdown.state.value
+
+    def update_timer_projection(self, force=False):
+        new_run = self._timer_projection_run != self.countdown.run_id
+        self._timer_projection_run = self.countdown.run_id
+        active = (not self.closed and self.store.settings.holograms and self.tools.project_timer.isChecked()
+                  and self.countdown.state in {TimerState.RUNNING, TimerState.PAUSED})
+        if not active:
+            if self.window.projection_kind == "timer":
+                self.window.clear_projection()
+            return
+        if force or new_run:
+            self.window.show_projection("timer")
+        elif self.window.projection_kind == "timer":
+            self.window.refresh_projection()
+
     def state_changed(self, state):
+        self.window.sleep_effect.set_active(state == State.SLEEP)
         self.window.steam.set_active(state == State.OVERHEAT)
         self.audio.set_context(bool(self.controller.gates - {"radial"}) or self.fullscreen_active,
                                state == State.SLEEP or self.controller.inactive)
@@ -1020,7 +1056,8 @@ def main(argv=None) -> int:
                  companion.desktop_timer, companion.tools.clock_timer, companion.bubble.timer,
                  companion.radial.dismiss_timer, companion.radial.deactivate_timer, companion.greeting_timer, companion.awareness.timer,
                  companion.productivity.timer, companion.tray.notice.timer, companion.window.affection_timer,
-                 companion.window.hologram_timer, companion.window.projection_timer, companion.window.steam.timer, companion.tools.diagnostics_page.timer, store.timer])
+                 companion.window.hologram_timer, companion.window.projection_timer, companion.window.steam.timer,
+                 companion.window.sleep_effect.timer, companion.tools.diagnostics_page.timer, store.timer])
             (directory / "smoke.json").write_text(json.dumps(report, indent=2), encoding="utf-8")
         QTimer.singleShot(round(args.smoke_seconds * 1000), finish_smoke)
     return app.exec()
