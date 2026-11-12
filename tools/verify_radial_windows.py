@@ -50,7 +50,7 @@ def main():
     try:
         wheel = open_wheel(process.pid)
         pet_handle = next(handle for title, handle in windows(process.pid).items()
-                          if title.endswith(" · R2 Companion") and title.startswith(("R2", "Vesper", "Orbita")))
+                          if title.endswith(" · R2 Companion") and title.startswith(("R2", "Vesper", "Orbita", "Lumo", "Vigia", "Pico", "Tranco")))
         rectangle = wintypes.RECT()
         user32.GetClientRect(pet_handle, ctypes.byref(rectangle))
         from verify_post_update import mouse_click

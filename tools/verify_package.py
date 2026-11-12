@@ -36,7 +36,9 @@ def main():
         raise RuntimeError("Smoke failed: visibility or shutdown")
     if not smoke["navigation"] or not all(smoke["navigation"].values()):
         raise RuntimeError("Packaged navigation smoke failed")
-    if len(smoke["droids"]) != 3 or not all(item["accepted"] for item in smoke["droids"]):
+    expected_droids = {json.loads(path.read_text(encoding="utf-8"))["id"]
+                       for path in (root / "src/r2_companion/assets/droids").glob("*/profile.json")}
+    if {item["id"] for item in smoke["droids"]} != expected_droids or not all(item["accepted"] for item in smoke["droids"]):
         raise RuntimeError("Packaged droid smoke failed")
     if smoke["audio_effects"] == 0 or smoke["audio_output_available"] and (
             smoke["audio_errors"] or smoke["audio_loaded_effects"] != smoke["audio_effects"]):

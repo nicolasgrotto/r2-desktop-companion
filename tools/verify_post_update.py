@@ -84,7 +84,7 @@ def mouse_click(handle, x, y):
 
 def open_wheel(pid):
     pet = wait_until(lambda: next((handle for title, handle in windows(pid).items()
-                                  if title.endswith(" · R2 Companion") and title.startswith(("R2", "Vesper", "Orbita"))), None))
+                                  if title.endswith(" · R2 Companion") and title.startswith(("R2", "Vesper", "Orbita", "Lumo", "Vigia", "Pico", "Tranco"))), None))
     rectangle = wintypes.RECT()
     user32.GetClientRect(pet, ctypes.byref(rectangle))
     mouse_click(pet, rectangle.right / 2, rectangle.bottom * 0.7)
@@ -131,13 +131,16 @@ def main():
         parser.error("É necessário um executável anterior real para este ensaio.")
     data = workspace / "dados do usuário"
     data.mkdir()
-    settings = Settings(suppress_fullscreen=False)
+    settings = Settings(suppress_fullscreen=False, fullscreen_mode="quiet")
     registry = DroidRegistry(root / "src/r2_companion/assets")
     for index, profile in enumerate(registry.profiles.values()):
         settings = select_droid(settings, profile)
         settings.audio.volume = 0.13 + index * 0.1
         settings.behavior.movement = False
         settings.behavior.cursor_attention = False
+        # Native navigation checks run independently of OS idle/fullscreen state.
+        # Sleep/wake policy has its own tests; a click during WAKE is consumed.
+        settings.behavior.frequency = "off"
         settings.capture_droid()
     expected_preferences = settings.to_dict()["droid_preferences"]
     (data / "config.json").write_text(json.dumps(settings.to_dict()), encoding="utf-8")
@@ -236,6 +239,19 @@ try {{ Invoke-R2Update }} catch {{ Write-R2Status 'error' $_.Exception.Message; 
                 if r["event"] == "navigation_smoke_completed"), None), 10)
             if not completed["passed"]:
                 raise RuntimeError("Navegação inicial pós-atualização falhou")
+            if completed.get("controller_state") == "WAKE":
+                # The smoke scene explicitly sleeps and wakes the character.
+                # Respect the wake animation before issuing a native menu click.
+                assets = installed / "_internal/r2_companion/assets"
+                active = json.loads((data / "config.json").read_text(encoding="utf-8"))["active_droid"]
+                profiles = (json.loads(path.read_text(encoding="utf-8")) for path in
+                            (assets / "droids").glob("*/profile.json"))
+                profile = next(profile for profile in profiles if profile["id"] == active)
+                manifest = json.loads((assets / profile["manifest"]).read_text(encoding="utf-8"))
+                duration = sum(frame["duration_ms"] for frame in manifest["clips"]["WAKE"]["frames"])
+                ready_at = completed["monotonic_ns"] / 1e9 + duration / 1000 + 0.15
+                wait_until(lambda: time.monotonic() >= ready_at, duration / 1000 + 3)
+                report["wake_animation_wait_ms"] = duration
         else:
             time.sleep(3)
         report["native_post_update_tools"] = {}
@@ -278,11 +294,13 @@ try {{ Invoke-R2Update }} catch {{ Write-R2Status 'error' $_.Exception.Message; 
         report["direct_launch"] = direct_smoke
         report["same_navigation_on_first_and_direct_launch"] = smoke["navigation"] == direct_smoke["navigation"]
         expected_version = original_version if args.fail_startup else version
+        installed_droids = {json.loads(path.read_text(encoding="utf-8"))["id"] for path in
+                            (installed / "_internal/r2_companion/assets/droids").glob("*/profile.json")}
         report["passed"] = (report["old_exited"] and report["tools_preserved"] and report["all_droid_preferences_preserved"]
                             and len(report["native_post_update_tools"]) == 7 and all(report["native_post_update_tools"].values())
                             and report["installed_version"] == expected_version and smoke["version"] == expected_version
                             and bool(smoke["navigation"]) and all(smoke["navigation"].values())
-                            and len(smoke["droids"]) == 3 and all(item["accepted"] for item in smoke["droids"])
+                            and {item["id"] for item in smoke["droids"]} == installed_droids and all(item["accepted"] for item in smoke["droids"])
                             and smoke["active_timers_after_shutdown"] == 0 and not smoke["movement_timer_after_shutdown"]
                             and direct.returncode == 0 and report["same_navigation_on_first_and_direct_launch"]
                             and (bool(report["failed_versions"]) if args.fail_startup else report["backup_versions"] == [original_version])

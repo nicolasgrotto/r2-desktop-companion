@@ -7,7 +7,7 @@ hologramas. A preferência timer_projection é aditiva no schema 1 e começa
 desativada em configurações antigas. Pausa, retomada, reinício e conclusão usam
 os sinais existentes; ticks não substituem projeções escolhidas manualmente.
 
-Versão 1.1.4. Aplicativo local Python/PySide6 para Windows 10/11, com uma
+Versão 1.2.0. Aplicativo local Python/PySide6 para Windows 10/11, com uma
 QApplication por processo, sem backend, modelos de IA ou telemetria.
 
 ## Composição
@@ -35,16 +35,33 @@ flowchart LR
 
 ## Personagens, movimento e áudio
 
-DroidRegistry valida e registra perfis de Original, Vesper e Orbita em
+DroidRegistry valida e registra perfis de R2, Vesper, Orbita, Lumo, Vigia, Pico e Tranco em
 `assets/droids/`. DroidProfile descreve tema, catálogo, renderer, áudio,
 personalidade e personalizações. Os atlas PNG anteriores continuam preservados;
 DroidVisual permite corpo e cabeça independentes na renderização em camadas.
 
+ArticulatedVisual acrescenta o manifesto v3 (`renderer: rigged`), sem alterar
+os formatos v1/v2. Cada PNG de 96 × 96 tem junta, pai, ordem de desenho e canais
+de movimento opcionais. Poses contêm ângulo, deslocamento, retração/escala e
+opacidade. Transformações hierárquicas mantêm sensores, pernas e garras conectados.
+O loader limita peças, frames, coordenadas, duração e tamanho; rejeita ciclos,
+PNG corrompido, referências externas e canais desconhecidos antes da troca.
+
+O mesmo paint_visual atende PetWindow, Garage e Central de Atualizações. A prévia
+possui seu próprio controlador e libera timers ao parar, ocultar ou fechar.
+O sensor definido no manifesto fornece a origem móvel dos feixes de projeção.
+
 DroidController prepara recursos antes de uma troca. Companion preserva a posição
 e transfere os recursos ao controlador existente; falhas restauram o estado
 anterior. Positioner continua responsável por limites, monitores e posição em DIP.
-Os controladores de movimento adaptam locomoção comum ou esférica sem duplicar a
-máquina de estados. Tokens invalidam callbacks de ações interrompidas.
+Os controladores de movimento adaptam locomoção sem duplicar a máquina de estados.
+MonocycleMovementController transforma distância em rotação de roda e inclinação
+por velocidade/aceleração; HoverMovementController usa aceleração suave e balanço
+aéreo; BipedMovementController alterna quadris, joelhos e pés pela distância;
+TractionMovementController oferece partida decidida, rodas e pequenos solavancos.
+Um contrato capture/restore/release preserva a recuperação após arrasto para cada
+estrutura física. O timer de recuperação é transitório; a flutuação contínua e os
+gestos autônomos pertencem aos clips. Tokens invalidam callbacks interrompidos.
 
 AudioService mantém QSoundEffect, bancos por perfil, frases geradas com sílabas
 originais, volume, categorias, cooldowns e contexto. ReactionDirector coordena
@@ -173,6 +190,14 @@ em droid_preferences. ConfigStore mantém QLockFile, QSaveFile, debounce, backup
 recuperação de corrupção e proteção de schema futuro. Campos antigos desconhecidos
 são ignorados pela leitura sem remover catálogos de recursos. ProductivityStore
 reutiliza escrita atômica em tools.json, com backup e limites próprios.
+
+Os IDs persistidos anteriores continuam válidos. Os novos IDs são `lumo`, `vigia`,
+`pico` e `tranco`. A versão da aplicação não participa da escolha do personagem;
+não há migração destrutiva de preferências na expansão. Se os recursos do perfil
+salvo falharem, a inicialização tenta R2 antes dos outros perfis e preserva as
+preferências do modelo indisponível. Adicionar um modelo articulado exige perfil,
+PNG e manifesto; uma nova estrutura física pode registrar um controlador no mapa
+MOVEMENT_CONTROLLERS. Ferramentas continuam usando intenções e State.
 
 Contagem regressiva usa deadline e run ID; continua oculta ou em sono. Gates de
 arraste, menu, roda, configurações, ocultação e sessão suspendem autonomia.

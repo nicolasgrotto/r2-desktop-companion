@@ -1,25 +1,28 @@
 # R2 Desktop Companion
 
 Mascote desktop local para Windows 10/11, em Python/PySide6. Robô branco e azul com
-janela transparente, animações por atlas/PNG e comportamento convencional.
+janela transparente, animações por atlas/PNG e peças articuladas.
 **Não utiliza IA, backend, modelos locais ou telemetria.** O mascote funciona
 offline; somente o atualizador manual consulta o GitHub por solicitação do usuário.
 
-Esta versão funcional usa **arte provisória original**, não os sprites HD finais.
+Os personagens usam arte original em pixels; os recursos dos modelos anteriores
+permanecem preservados.
 O Companion é independente do casemod e não executa nem altera seus scripts de som.
 
-**Versão 1.1.4:** símbolos Z animados acompanham o sono dos três droides.
-A opção Projetar timer mantém a contagem no holograma até terminar, incluindo
-pausa e retomada. A escolha é salva nas preferências e respeita a permissão de
-hologramas. As correções da roda da 1.1.3 permanecem presentes.
+**Versão 1.2.0:** a Droid Garage reúne sete companheiros. Lumo equilibra-se em
+uma roda, Vigia flutua com sensores e manipuladores independentes, Pico caminha
+com pernas articuladas e cabeça binocular expressiva, e Tranco usa tração própria
+e braços retráteis. Sono, projeção do timer e ferramentas continuam disponíveis.
 Novidades no [changelog](packaging/docs/CHANGELOG.md).
 
 A reação por CPU exige **90%**, com leitura a cada 15 segundos e intervalo mínimo
 de cinco minutos. Requer reações do sistema habilitadas, autonomia disponível e
 droide em repouso; não mede temperatura física.
 
-Equipe o Original, Vesper (grafite/bronze) ou Orbita (esférico branco/laranja) sem
-reiniciar. Cada um tem voz, personalidade, personalizações e tema próprios.
+Equipe R2, Vesper (grafite/bronze), Orbita (esférico branco/laranja), Lumo,
+Vigia, Pico ou Tranco sem reiniciar. Cada um tem voz, personalidade,
+personalizações e tema próprios. A seleção e as preferências individuais são
+salvas automaticamente e mantidas ao reiniciar ou atualizar.
 Orbita rola com corpo e cabeça independentes. O Droid Garage permite explorar
 categorias, reproduzir, repetir, parar e inspecionar frames sem alterar o personagem
 ativo. A Central de Áudio mantém as preferências de cada personagem.
@@ -29,11 +32,7 @@ Consulte a [arquitetura](ARCHITECTURE.md).
 
 ## Executar pelo código
 
-Notas da release: [Changelog](packaging/docs/CHANGELOG.md) e [1.1.4](packaging/docs/release-notes/v1.1.4.md).
-
-A versão 1.1.4 incorpora as correções investigadas sobre a 1.1.2; as releases e
-evidências anteriores permanecem como referência. Os episódios históricos sem
-rastreamento não são atribuídos individualmente a uma causa sem comprovação.
+Notas da release: [Changelog](packaging/docs/CHANGELOG.md) e [1.2.0](packaging/docs/release-notes/v1.2.0.md).
 
 Requer Python 3.12+ x64. Combinação exercitada: Python 3.13.12 e Qt/PySide6 6.10.2
 no Windows 10 22H2. Abra PowerShell na raiz deste repositório:
@@ -154,6 +153,10 @@ animações, UI Qt e um teste nativo Windows com uma janela temporária de outro
 processo. Esse teste verifica hit testing e foco sem enviar cliques a aplicações
 do usuário. Os testes gráficos precisam de uma sessão Windows interativa.
 
+`tools/preview_garage.py` exporta poses em 160 px e sequências animadas para
+`local_docs/v12-visual/animations.html`. `tools/generate_garage.py` reproduz
+somente os quatro novos modelos; não regrava os atlas anteriores.
+
 O estresse da roda registra cada sequência e preserva as falhas em uma pasta nova:
 
 ```powershell
@@ -194,7 +197,7 @@ Para conferir os painéis novos e a reprodução Qt com dados isolados, execute
 `tools\verify_features.py` pelo mesmo Python do ambiente virtual. Esse ensaio
 reproduz um efeito a 5% de volume e salva capturas/diagnóstico em `.runtime-features-v03`.
 Depois do build, `tools\verify_package.py` verifica ZIP/hash e abre o EXE com PATH
-restrito ao Windows. `tools\verify_release.py` ensaia a migração real 1.1.1 → 1.1.4
+restrito ao Windows. `tools\verify_release.py` ensaia a migração real 1.1.1 → versão atual
 em cópias locais; requer também o build anterior preservado em dist/1.1.1.
 
 ## Gerar o executável

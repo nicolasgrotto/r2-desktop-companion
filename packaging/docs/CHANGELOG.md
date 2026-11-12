@@ -1,5 +1,16 @@
 # Changelog
 
+## 1.2.0
+
+- Quatro companheiros na Droid Garage existente: Lumo, Vigia, Pico e Tranco.
+- Lumo equilibra-se sobre uma roda; Vigia flutua com cinco manipuladores; Pico usa passos articulados e cabeça binocular; Tranco oferece braços retráteis e gestos decididos.
+- Vinte animações por novo modelo, vozes, temas e iluminação próprios.
+- Prévia de locomoção independente; projeções acompanham o sensor de cada modelo.
+- Seleção e preferências individuais mantidas ao reiniciar e atualizar. Recursos anteriores preservados.
+- Recuperação de inicialização prioriza R2 quando os recursos do personagem salvo estão indisponíveis.
+
+[Notas da versão](release-notes/v1.2.0.md).
+
 ## 1.1.4
 
 - Símbolos Z animados acompanham o sono de Original, Vesper e Orbita.

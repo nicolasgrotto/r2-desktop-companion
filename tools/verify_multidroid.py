@@ -93,6 +93,7 @@ def main():
         capture(identifier, "gallery", companion.garage_dialog)
         capture(identifier, "desktop", companion.window)
         report["profiles"][identifier]["body_angle_during_walk"] = companion.window.body_angle
+        report["profiles"][identifier]["articulation_during_walk"] = companion.window.articulation
         report["profiles"][identifier]["walk_observed"] = {"state": companion.controller.state.value,
             "gates": sorted(companion.controller.gates), "position": companion.window.pos().toTuple(),
             "timer": companion.positioning.timer.isActive()}
