@@ -45,6 +45,7 @@ def visible_windows(pid):
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--data-dir", type=Path, default=Path(".runtime-update-center-install"))
+    parser.add_argument("--previous-install", type=Path, default=Path("dist/1.1.1/R2Companion"))
     args = parser.parse_args()
     root = Path(__file__).resolve().parents[1]
     workspace = args.data_dir.resolve()
@@ -53,11 +54,9 @@ def main():
     workspace.mkdir(parents=True)
     installed = workspace / "installed"
     version = tomllib.loads((root / "pyproject.toml").read_text(encoding="utf-8"))["project"]["version"]
-    source = root / "dist" / version / "R2Companion"
+    source = args.previous_install.resolve()
     shutil.copytree(source, installed)
     metadata = json.loads((installed / "release.json").read_text())
-    metadata["version"] = "1.0.1"
-    (installed / "release.json").write_text(json.dumps(metadata), encoding="utf-8")
     archive = root / "dist" / ASSET
     checksum = archive.with_suffix(".zip.sha256")
     raw = {"tag_name": f"v{version}", "draft": False, "prerelease": False, "body": "Teste local do fluxo de atualização.",
@@ -67,7 +66,7 @@ def main():
     fixture = workspace / "release-fixture.json"
     fixture.write_text(json.dumps(raw), encoding="utf-8")
     script = installed / "_internal/scripts/update-r2-companion.ps1"
-    text = script.read_text(encoding="utf-8")
+    text = (root / "scripts/update-r2-companion.ps1").read_text(encoding="utf-8")
     first, last = text.index("function Get-R2LatestRelease("), text.index("function Get-R2Asset(")
     text = text[:first] + f"function Get-R2LatestRelease {{ Get-Content -LiteralPath {quote(fixture)} -Raw -Encoding UTF8 | ConvertFrom-Json }}\n\n" + text[last:]
     first, last = text.index("function Get-R2Download("), text.index("function Test-R2Checksum(")
@@ -88,7 +87,7 @@ def main():
     update_ui.download_release = local_download
     center = UpdateCenter(data, installed, old.pid, int(psutil.Process(old.pid).create_time()),
                           client=lambda repository: validate_release(raw, repository))
-    report = {"transport": "local fixture", "installed_metadata_fixture": "1.0.1", "executable_code": version,
+    report = {"transport": "local fixture", "original_version": metadata["version"], "target_version": version,
               "download_counts": [], "states": [], "cloned_gui_detected": False, "cloned_gui_visible": False, "successor_capture": False, "feedback_gap": False}
     original_progress = center.download_progress
     def progress(received, total):
@@ -116,6 +115,14 @@ def main():
         close_installation(installed)
         for clone in (data / "updates").glob("center-*/R2Companion"):
             close_installation(clone)
+        report["residual_pids"] = []
+        for process in psutil.process_iter(["exe"]):
+            try:
+                if process.info["exe"] and Path(process.info["exe"]).resolve().is_relative_to(workspace):
+                    report["residual_pids"].append(process.pid)
+            except (psutil.Error, OSError):
+                pass
+        report["startup_confirmations"] = [json.loads(path.read_text()) for path in (data / "updates").glob("startup-*.json")]
         center.close()
         (workspace / "validation.json").write_text(json.dumps(report, indent=2), encoding="utf-8")
         app.quit()
@@ -158,7 +165,9 @@ def main():
     timer.timeout.connect(tick)
     timer.start()
     app.exec()
-    return 0 if report.get("passed") and report.get("notes_preserved") and report.get("cloned_gui_visible") and not report.get("feedback_gap") else 1
+    return 0 if (report.get("passed") and report.get("notes_preserved") and report.get("cloned_gui_visible")
+                 and report.get("old_exited") and report.get("installed_version") == version
+                 and report.get("startup_confirmations") and not report.get("residual_pids") and not report.get("feedback_gap")) else 1
 
 
 if __name__ == "__main__":

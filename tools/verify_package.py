@@ -36,6 +36,9 @@ def main():
         raise RuntimeError("Packaged navigation smoke failed")
     if len(smoke["droids"]) != 3 or not all(item["accepted"] for item in smoke["droids"]):
         raise RuntimeError("Packaged droid smoke failed")
+    if smoke["audio_effects"] == 0 or smoke["audio_output_available"] and (
+            smoke["audio_errors"] or smoke["audio_loaded_effects"] != smoke["audio_effects"]):
+        raise RuntimeError("Packaged audio resources did not load")
     with archive.open("rb") as handle:
         digest = hashlib.file_digest(handle, "sha256").hexdigest()
     if archive.with_suffix(".zip.sha256").read_text().split()[0] != digest:
@@ -50,12 +53,21 @@ def main():
         script = "R2Companion/_internal/scripts/update-r2-companion.ps1"
         if bundle.read(script) != (root / "scripts/update-r2-companion.ps1").read_bytes():
             raise RuntimeError("Updater mismatch")
+        resources = 0
+        assets = root / "src/r2_companion/assets"
+        for resource in assets.rglob("*"):
+            if resource.is_file():
+                name = "R2Companion/_internal/r2_companion/assets/" + resource.relative_to(assets).as_posix()
+                if bundle.read(name) != resource.read_bytes():
+                    raise RuntimeError(f"Packaged resource mismatch: {resource.name}")
+                resources += 1
         sounds = sum("/assets/sounds/" in name and name.endswith(".wav") for name in names)
         if sounds < 15 or not any("/licenses/PySide6-Addons/" in name for name in names):
             raise RuntimeError("Missing sounds or licenses")
         report = {"exe_exit": process.returncode, "smoke": smoke, "zip_files": len(names),
                   "zip_bytes": archive.stat().st_size, "uncompressed_bytes": sum(item.file_size for item in bundle.infolist()),
-                  "sha256": digest, "integrity": "passed", "clean_path": environment["PATH"], "sounds": sounds}
+                  "sha256": digest, "integrity": "passed", "clean_path": environment["PATH"], "sounds": sounds,
+                  "verified_resources": resources}
     (output / "package-validation.json").write_text(json.dumps(report, indent=2), encoding="utf-8")
     print(json.dumps(report, indent=2))
     return 0

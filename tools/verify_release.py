@@ -27,7 +27,7 @@ def main():
     installed = workspace / "installed"
     if installed.exists():
         parser.error("Use um diretorio de teste novo para preservar evidencias anteriores.")
-    shutil.copytree(args.previous_install or root / "dist/1.0.1/R2Companion", installed)
+    shutil.copytree(args.previous_install or root / "dist/1.1.1/R2Companion", installed)
     metadata = json.loads((installed / "release.json").read_text())
     (installed / "release.json").write_text(json.dumps(metadata), encoding="utf-8")
     data = workspace / "dados com espaço"
