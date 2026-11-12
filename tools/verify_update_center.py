@@ -1,5 +1,6 @@
 import argparse
 import ctypes
+import hashlib
 from ctypes import wintypes
 import json
 from pathlib import Path
@@ -46,6 +47,7 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--data-dir", type=Path, default=Path(".runtime-update-center-install"))
     parser.add_argument("--previous-install", type=Path, default=Path("dist/1.1.1/R2Companion"))
+    parser.add_argument("--archive", type=Path)
     args = parser.parse_args()
     root = Path(__file__).resolve().parents[1]
     workspace = args.data_dir.resolve()
@@ -57,7 +59,17 @@ def main():
     source = args.previous_install.resolve()
     shutil.copytree(source, installed)
     metadata = json.loads((installed / "release.json").read_text())
-    archive = root / "dist" / ASSET
+    archive = args.archive.resolve() if args.archive else root / "dist" / ASSET
+    if archive.name != ASSET:
+        transport = workspace / "transport"
+        transport.mkdir()
+        source_archive = archive
+        archive = transport / ASSET
+        shutil.copyfile(source_archive, archive)
+        digest = hashlib.sha256(archive.read_bytes()).hexdigest()
+        if source_archive.with_suffix(".zip.sha256").read_text().split()[0] != digest:
+            raise ValueError("Checksum da candidata divergente")
+        archive.with_suffix(".zip.sha256").write_text(digest + "  " + ASSET + "\n")
     checksum = archive.with_suffix(".zip.sha256")
     raw = {"tag_name": f"v{version}", "draft": False, "prerelease": False, "body": "Teste local do fluxo de atualização.",
            "assets": [{"name": path.name, "size": path.stat().st_size,
@@ -135,6 +147,7 @@ def main():
             try:
                 if process.info["exe"] and any(Path(process.info["exe"]).parent == clone for clone in clones):
                     report["cloned_gui_detected"] = True
+                    report["successor_pid"] = process.pid
                     windows = visible_windows(process.pid)
                     if windows:
                         successor_visible = True
@@ -155,6 +168,38 @@ def main():
             try:
                 value = json.loads(status.read_text(encoding="utf-8-sig"))
                 if value["state"] in {"done", "error"}:
+                    if value["state"] == "done":
+                        from verify_post_update import navigation_records, open_wheel, select_item, user32, wait_until, windows
+                        report["wheel_with_center_visible"] = successor_visible
+                        report["native_post_update_tools"] = {}
+                        report["native_post_update_activation"] = {}
+                        report["center_visible_during_actions"] = {}
+                        user32.GetForegroundWindow.restype = wintypes.HWND
+                        try:
+                            restarted = next(process for process in psutil.process_iter(["exe"])
+                                if process.info["exe"] and Path(process.info["exe"]).resolve() == (installed / "R2Companion.exe").resolve())
+                            for page in ("clock", "timer", "system", "tasks", "notes", "minigames", "diagnostics"):
+                                wheel = open_wheel(restarted.pid)
+                                if page not in {"minigames", "diagnostics"}:
+                                    select_item(wheel, "main", "tools")
+                                    select_item(wheel, "tools", page)
+                                else:
+                                    select_item(wheel, "main", page)
+                                destination = wait_until(lambda: windows(restarted.pid).get("Central de ferramentas · R2 Companion"), 5)
+                                observed = wait_until(lambda: next((r for r in reversed(navigation_records(data, restarted.pid))
+                                    if r["event"] == "destination_observed" and r.get("action") == page), None), 3)
+                                if not observed["destination_visible"] or observed["destination_page"] != page:
+                                    raise RuntimeError("Ferramenta pós-atualização divergente")
+                                report["native_post_update_tools"][page] = True
+                                report["native_post_update_activation"][page] = user32.GetForegroundWindow() == destination
+                                report["center_visible_during_actions"][page] = bool(visible_windows(report["successor_pid"]))
+                                if not report["native_post_update_activation"][page] or not report["center_visible_during_actions"][page]:
+                                    raise RuntimeError("Ativação do destino ou continuidade da central falhou")
+                                user32.PostMessageW(destination, 0x0010, 0, 0)
+                                wait_until(lambda: "Central de ferramentas · R2 Companion" not in windows(restarted.pid), 3)
+                        except Exception as error:
+                            finish(False, type(error).__name__ + ": " + str(error))
+                            return
                     finish(value["state"] == "done", value["message"])
                     return
             except (FileNotFoundError, ValueError):
@@ -167,7 +212,8 @@ def main():
     app.exec()
     return 0 if (report.get("passed") and report.get("notes_preserved") and report.get("cloned_gui_visible")
                  and report.get("old_exited") and report.get("installed_version") == version
-                 and report.get("startup_confirmations") and not report.get("residual_pids") and not report.get("feedback_gap")) else 1
+                 and report.get("startup_confirmations") and not report.get("residual_pids") and not report.get("feedback_gap")
+                 and report.get("wheel_with_center_visible") and len(report.get("native_post_update_tools", {})) == 7) else 1
 
 
 if __name__ == "__main__":

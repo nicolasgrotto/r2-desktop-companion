@@ -27,6 +27,11 @@ Consulte a [arquitetura](ARCHITECTURE.md).
 
 Notas da release: [Changelog](packaging/docs/CHANGELOG.md) e [1.1.2](packaging/docs/release-notes/v1.1.2.md).
 
+Esta branch contém uma candidata local refeita da 1.1.2, identificada como
+`wheel-20261113`. Ela corrige casos reproduzidos de interação da roda; os episódios
+intermitentes históricos continuam exigindo correlação com os eventos da execução
+afetada. A release existente permanece como referência preservada.
+
 Requer Python 3.12+ x64. Combinação exercitada: Python 3.13.12 e Qt/PySide6 6.10.2
 no Windows 10 22H2. Abra PowerShell na raiz deste repositório:
 
@@ -146,6 +151,12 @@ animações, UI Qt e um teste nativo Windows com uma janela temporária de outro
 processo. Esse teste verifica hit testing e foco sem enviar cliques a aplicações
 do usuário. Os testes gráficos precisam de uma sessão Windows interativa.
 
+O estresse da roda registra cada sequência e preserva as falhas em uma pasta nova:
+
+```powershell
+.\.venv\Scripts\python.exe tools\stress_radial.py --data-dir .runtime-wheel-stress --cycles 140
+```
+
 Medição curta opcional (gera relatório local e encerra):
 
 ```powershell
@@ -194,6 +205,14 @@ O build é Windows x64, one-folder, sem console e sem solicitação de elevaçã
 O script mantém o cache do empacotador no projeto. Distribua **toda a pasta**
 `dist\1.1.2\R2Companion`, incluindo `_internal`, assets, `release.json` e licenças.
 O ZIP e SHA-256 são gerados em `dist\R2Companion-Windows-x64.zip` e `.zip.sha256`.
+Para validar uma candidata preservando esses artefatos, use
+`tools\build_windows.py --artifact-label wheel-20261113-ui`; o rótulo separa
+a pasta, o ZIP e o checksum. `verify_package.py --artifact-label` e os ensaios
+de atualização com `--archive` aceitam esses pacotes locais sem publicá-los.
+Ao testar a candidata com verify_post_update.py, use também
+`--require-navigation-trace`: o verificador aguarda a conclusão registrada do
+smoke antes de iniciar seu próprio fluxo de cliques, inclusive com o instalador
+legado sem confirmação de inicialização.
 Não copie somente o EXE. O spec inclui Qt Multimedia, seus plugins e dependências;
 exclui QML/Quick/Test e outros módulos não utilizados.
 O executável não tem assinatura digital nesta entrega. Antes de publicação,
@@ -209,6 +228,13 @@ Diagnóstico do executável, sem usar o diretório normal de dados:
 Se não abrir, consulte `companion.log` no diretório escolhido. Configuração inválida
 usa backup/default; erro de leitura do manifesto/PNG obrigatório impede início e
 gera mensagem/log. Caminho favorito indisponível mostra erro sem chamar um shell.
+
+A navegação também registra `navigation.jsonl` no diretório de dados, com PID,
+identificador da interação, página, animação, gate, callback e estado da ferramenta.
+O arquivo possui rotação de 1 MiB e até três backups. Para incluir os eventos Qt
+de entrada e foco, defina `$env:R2_NAV_TRACE = '1'` antes de iniciar. Remova essa
+variável ou use `0` para manter somente os registros essenciais. A gravação ocorre
+fora da thread da interface; o log não inclui textos de tarefas, notas ou favoritos.
 
 Para atualizar do pacote anterior, encerre a versão antiga pelo menu Sair e extraia
 o novo ZIP em outra pasta. As preferências/favoritos no diretório normal são reutilizados.

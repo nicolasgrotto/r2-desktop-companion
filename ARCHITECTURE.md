@@ -59,9 +59,37 @@ inatividade fecham e restauram a raiz. A desativação da janela é confirmada a
 80 ms para tolerar eventos transitórios de foco do Windows.
 
 QParallelAnimationGroup coordena geometria e opacidade: saída de 80 ms e entrada
-de 160 ms. A transição desabilita seleções duplicadas. Fechar interrompe e libera
-os grupos; nenhum loop de animação bloqueia a GUI. O gate radial suspende autonomia
-durante toda a navegação e é liberado no fechamento.
+de 160 ms. A saída bloqueia seleções dos itens que estão desaparecendo; os itens
+da página de entrada já aceitam seleção. Selecionar nessa fase conclui a interação
+na página exibida e cancela sua animação. Parada, pausa, destruição e fechamento
+liberam a transição, restaurando geometria, opacidade e botões da página atual.
+Callbacks verificam a identidade do grupo e a validade do objeto C++ antes de agir.
+O gate radial suspende autonomia enquanto a roda está aberta e é liberado ao fechar.
+
+Um pressionamento no mascote fecha a roda existente e marca essa interação; sua
+soltura consome o mesmo fechamento. Cliques rápidos continuam contando para a
+reação CONFUSED, executada depois da navegação em vez de impedir sua abertura.
+Sono e despertar mantêm sua política anterior e registram o redirecionamento.
+
+NavigationTrace grava JSONL por uma fila e uma thread dedicada, com rotação de
+1 MiB e três backups. Registros essenciais incluem abertura, seleção, despacho,
+callback, visibilidade, exposição e ativação dos componentes, cancelamentos e erros.
+R2_NAV_TRACE=1 acrescenta entrada, aceitação, foco e eventos Qt. Cada interação tem
+identificador, relógio monotônico, UTC, PID, versão e identificação da candidata.
+O encerramento drena a fila com espera limitada. Os logs omitem conteúdo de dados
+do usuário. Exceções de ações são registradas e continuam chegando ao excepthook.
+O smoke encadeia a troca dos droides e a navegação pelos sinais de conclusão.
+
+No Windows, um reinício com STARTUPINFO/SW_HIDE pode deixar a primeira janela
+Dialog oculta nativamente, apesar de QWidget.isVisible retornar verdadeiro. Os
+widgets Tool do mascote e da roda usam outra política nativa de exibição. Após
+uma solicitação explícita de painel, present_dialog confronta o estado Qt com
+IsWindowVisible. Somente com lançamento SW_HIDE, widget visível, não minimizado
+e HWND oculto, reveal_requested_window faz uma única apresentação nativa sem
+ativação. Os pedidos existentes de raise/activate continuam no fluxo da ação.
+Não há timer, repetição ou mudança de foco no tratamento dessa divergência.
+Se a janela nativa continuar oculta, o componente fecha e a ação reporta erro.
+Isso mantém compatibilidade com os instaladores anteriores que iniciam oculto.
 
 DroidGarage é a única janela de personagens e animações. Reutiliza DroidStudio,
 PreviewCanvas e AnimationManager para categorias, sequências, repetição, frames e

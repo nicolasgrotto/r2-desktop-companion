@@ -11,15 +11,17 @@ from zipfile import ZipFile
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--data-dir", type=Path, default=Path(".runtime-package-verification"))
+    parser.add_argument("--artifact-label")
     args = parser.parse_args()
     root = Path(__file__).resolve().parents[1]
     version = tomllib.loads((root / "pyproject.toml").read_text(encoding="utf-8"))["project"]["version"]
     output = args.data_dir.resolve()
-    output.mkdir(parents=True, exist_ok=True)
+    output.mkdir(parents=True, exist_ok=False)
     work = output / "working directory"
     work.mkdir(exist_ok=True)
-    directory = root / "dist" / version / "R2Companion"
-    archive = root / "dist/R2Companion-Windows-x64.zip"
+    suffix = "-" + args.artifact_label if args.artifact_label else ""
+    directory = root / "dist" / (version + suffix) / "R2Companion"
+    archive = root / ("dist/R2Companion-Windows-x64" + suffix + ".zip")
     executable = directory / "R2Companion.exe"
     environment = {key: value for key, value in os.environ.items()
                    if not key.upper().startswith(("PYTHON", "QT_")) and key != "VIRTUAL_ENV"}
