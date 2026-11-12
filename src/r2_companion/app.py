@@ -404,7 +404,7 @@ class Companion(QObject):
         self.radial.hide()
         panel.set_settings(self.store.settings)
         fit_dialog(panel, self.window)
-        panel.show()
+        panel.showNormal()
         panel.raise_()
         panel.activateWindow()
 
@@ -643,6 +643,7 @@ class Companion(QObject):
         if self.settings_dialog is not None:
             self.settings_dialog.showNormal()
             self.settings_dialog.raise_()
+            self.settings_dialog.activateWindow()
             return
         try:
             enabled = self.startup.enabled()
