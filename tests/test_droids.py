@@ -76,7 +76,7 @@ def test_invalid_profile_is_isolated_from_other_characters(tmp_path, mutation):
         data["renderer"] = "missing"
     path.write_text(json.dumps(data), encoding="utf-8")
     registry = DroidRegistry(root)
-    assert set(registry.profiles) == {"r2_default", "spherical_droid"}
+    assert set(registry.profiles) == {"r2_default", "spherical_droid", "lumo", "vigia", "pico", "tranco"}
     assert "dark_astromech" in registry.errors
 
 

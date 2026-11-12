@@ -1,0 +1,3987 @@
+{
+  "manifest_version": 3,
+  "canvas": [
+    96,
+    96
+  ],
+  "parts": [
+    {
+      "name": "body",
+      "parent": null,
+      "image": "../sprites/body.png",
+      "position": [
+        47,
+        51
+      ],
+      "pivot": [
+        47,
+        51
+      ],
+      "z": 4,
+      "motion": {
+        "angle": [
+          "lean",
+          1
+        ],
+        "y": [
+          "lift",
+          1
+        ]
+      }
+    },
+    {
+      "name": "left_thigh",
+      "parent": "body",
+      "image": "../sprites/left_thigh.png",
+      "position": [
+        -10,
+        0
+      ],
+      "pivot": [
+        37,
+        51
+      ],
+      "z": 2,
+      "motion": {
+        "angle": [
+          "left_step",
+          1
+        ]
+      }
+    },
+    {
+      "name": "left_shin",
+      "parent": "left_thigh",
+      "image": "../sprites/left_shin.png",
+      "position": [
+        -7,
+        15
+      ],
+      "pivot": [
+        30,
+        66
+      ],
+      "z": 2.1,
+      "motion": {
+        "angle": [
+          "left_knee",
+          1
+        ]
+      }
+    },
+    {
+      "name": "left_foot",
+      "parent": "left_shin",
+      "image": "../sprites/left_foot.png",
+      "position": [
+        5,
+        16
+      ],
+      "pivot": [
+        35,
+        82
+      ],
+      "z": 2.2,
+      "motion": {
+        "angle": [
+          "left_foot",
+          1
+        ]
+      }
+    },
+    {
+      "name": "right_thigh",
+      "parent": "body",
+      "image": "../sprites/right_thigh.png",
+      "position": [
+        10,
+        0
+      ],
+      "pivot": [
+        57,
+        51
+      ],
+      "z": 5,
+      "motion": {
+        "angle": [
+          "right_step",
+          1
+        ]
+      }
+    },
+    {
+      "name": "right_shin",
+      "parent": "right_thigh",
+      "image": "../sprites/right_shin.png",
+      "position": [
+        7,
+        15
+      ],
+      "pivot": [
+        64,
+        66
+      ],
+      "z": 5.1,
+      "motion": {
+        "angle": [
+          "right_knee",
+          -1
+        ]
+      }
+    },
+    {
+      "name": "right_foot",
+      "parent": "right_shin",
+      "image": "../sprites/right_foot.png",
+      "position": [
+        -5,
+        16
+      ],
+      "pivot": [
+        59,
+        82
+      ],
+      "z": 5.2,
+      "motion": {
+        "angle": [
+          "right_foot",
+          1
+        ]
+      }
+    },
+    {
+      "name": "neck",
+      "parent": "body",
+      "image": "../sprites/neck.png",
+      "position": [
+        0,
+        -7
+      ],
+      "pivot": [
+        47,
+        44
+      ],
+      "z": 6,
+      "motion": {}
+    },
+    {
+      "name": "head",
+      "parent": "neck",
+      "image": "../sprites/head.png",
+      "position": [
+        1,
+        -11
+      ],
+      "pivot": [
+        48,
+        33
+      ],
+      "z": 7,
+      "motion": {
+        "angle": [
+          "head",
+          1
+        ]
+      },
+      "lamp": [
+        -5,
+        -8,
+        3,
+        2
+      ]
+    }
+  ],
+  "emitter": {
+    "part": "head",
+    "point": [
+      -16,
+      -4
+    ]
+  },
+  "clips": {
+    "IDLE": {
+      "loop": true,
+      "frames": [
+        {
+          "duration_ms": 210,
+          "pose": {
+            "head": {
+              "angle": 0.0,
+              "x": 0
+            },
+            "neck": {
+              "angle": -1.29
+            },
+            "body": {
+              "y": -0.0
+            }
+          }
+        },
+        {
+          "duration_ms": 210,
+          "pose": {
+            "head": {
+              "angle": 3.25,
+              "x": 0
+            },
+            "neck": {
+              "angle": -1.88
+            },
+            "body": {
+              "y": -0.3
+            }
+          }
+        },
+        {
+          "duration_ms": 210,
+          "pose": {
+            "head": {
+              "angle": 5.6290000000000004,
+              "x": 0
+            },
+            "neck": {
+              "angle": -1.97
+            },
+            "body": {
+              "y": -0.52
+            }
+          }
+        },
+        {
+          "duration_ms": 210,
+          "pose": {
+            "head": {
+              "angle": 6.5,
+              "x": 0
+            },
+            "neck": {
+              "angle": -1.53
+            },
+            "body": {
+              "y": -0.6
+            }
+          }
+        },
+        {
+          "duration_ms": 210,
+          "pose": {
+            "head": {
+              "angle": 5.6290000000000004,
+              "x": 0
+            },
+            "neck": {
+              "angle": -0.68
+            },
+            "body": {
+              "y": -0.52
+            }
+          }
+        },
+        {
+          "duration_ms": 210,
+          "pose": {
+            "head": {
+              "angle": 3.25,
+              "x": 0
+            },
+            "neck": {
+              "angle": 0.35
+            },
+            "body": {
+              "y": -0.3
+            }
+          }
+        },
+        {
+          "duration_ms": 210,
+          "pose": {
+            "head": {
+              "angle": 0.0,
+              "x": 0
+            },
+            "neck": {
+              "angle": 1.29
+            },
+            "body": {
+              "y": -0.0
+            }
+          }
+        },
+        {
+          "duration_ms": 210,
+          "pose": {
+            "head": {
+              "angle": -3.25,
+              "x": 0
+            },
+            "neck": {
+              "angle": 1.88
+            },
+            "body": {
+              "y": -0.3
+            }
+          }
+        },
+        {
+          "duration_ms": 210,
+          "pose": {
+            "head": {
+              "angle": -5.6290000000000004,
+              "x": 0
+            },
+            "neck": {
+              "angle": 1.97
+            },
+            "body": {
+              "y": -0.52
+            }
+          }
+        },
+        {
+          "duration_ms": 210,
+          "pose": {
+            "head": {
+              "angle": -6.5,
+              "x": 0
+            },
+            "neck": {
+              "angle": 1.53
+            },
+            "body": {
+              "y": -0.6
+            }
+          }
+        },
+        {
+          "duration_ms": 210,
+          "pose": {
+            "head": {
+              "angle": -5.6290000000000004,
+              "x": 0
+            },
+            "neck": {
+              "angle": 0.68
+            },
+            "body": {
+              "y": -0.52
+            }
+          }
+        },
+        {
+          "duration_ms": 210,
+          "pose": {
+            "head": {
+              "angle": -3.25,
+              "x": 0
+            },
+            "neck": {
+              "angle": -0.35
+            },
+            "body": {
+              "y": -0.3
+            }
+          }
+        }
+      ]
+    },
+    "BLINK": {
+      "loop": false,
+      "frames": [
+        {
+          "duration_ms": 85,
+          "pose": {
+            "head": {
+              "angle": 0.0,
+              "x": 0,
+              "scale_y": 1,
+              "opacity": 1
+            },
+            "neck": {
+              "angle": -1.29
+            },
+            "body": {
+              "y": -0.0
+            }
+          }
+        },
+        {
+          "duration_ms": 85,
+          "pose": {
+            "head": {
+              "angle": 3.25,
+              "x": 0,
+              "scale_y": 1,
+              "opacity": 1
+            },
+            "neck": {
+              "angle": -1.88
+            },
+            "body": {
+              "y": -0.3
+            }
+          }
+        },
+        {
+          "duration_ms": 85,
+          "pose": {
+            "head": {
+              "angle": 5.6290000000000004,
+              "x": 0,
+              "scale_y": 1,
+              "opacity": 1
+            },
+            "neck": {
+              "angle": -1.97
+            },
+            "body": {
+              "y": -0.52
+            }
+          }
+        },
+        {
+          "duration_ms": 85,
+          "pose": {
+            "head": {
+              "angle": 6.5,
+              "x": 0,
+              "scale_y": 1,
+              "opacity": 1
+            },
+            "neck": {
+              "angle": -1.53
+            },
+            "body": {
+              "y": -0.6
+            }
+          }
+        },
+        {
+          "duration_ms": 85,
+          "pose": {
+            "head": {
+              "angle": 5.6290000000000004,
+              "x": 0,
+              "scale_y": 0.92,
+              "opacity": 0.55
+            },
+            "neck": {
+              "angle": -0.68
+            },
+            "body": {
+              "y": -0.52
+            }
+          }
+        },
+        {
+          "duration_ms": 85,
+          "pose": {
+            "head": {
+              "angle": 3.25,
+              "x": 0,
+              "scale_y": 0.92,
+              "opacity": 0.55
+            },
+            "neck": {
+              "angle": 0.35
+            },
+            "body": {
+              "y": -0.3
+            }
+          }
+        },
+        {
+          "duration_ms": 85,
+          "pose": {
+            "head": {
+              "angle": 0.0,
+              "x": 0,
+              "scale_y": 1,
+              "opacity": 1
+            },
+            "neck": {
+              "angle": 1.29
+            },
+            "body": {
+              "y": -0.0
+            }
+          }
+        },
+        {
+          "duration_ms": 85,
+          "pose": {
+            "head": {
+              "angle": -3.25,
+              "x": 0,
+              "scale_y": 1,
+              "opacity": 1
+            },
+            "neck": {
+              "angle": 1.88
+            },
+            "body": {
+              "y": -0.3
+            }
+          }
+        },
+        {
+          "duration_ms": 85,
+          "pose": {
+            "head": {
+              "angle": -5.6290000000000004,
+              "x": 0,
+              "scale_y": 1,
+              "opacity": 1
+            },
+            "neck": {
+              "angle": 1.97
+            },
+            "body": {
+              "y": -0.52
+            }
+          }
+        },
+        {
+          "duration_ms": 85,
+          "pose": {
+            "head": {
+              "angle": -6.5,
+              "x": 0,
+              "scale_y": 1,
+              "opacity": 1
+            },
+            "neck": {
+              "angle": 1.53
+            },
+            "body": {
+              "y": -0.6
+            }
+          }
+        },
+        {
+          "duration_ms": 85,
+          "pose": {
+            "head": {
+              "angle": -5.6290000000000004,
+              "x": 0,
+              "scale_y": 1,
+              "opacity": 1
+            },
+            "neck": {
+              "angle": 0.68
+            },
+            "body": {
+              "y": -0.52
+            }
+          }
+        },
+        {
+          "duration_ms": 85,
+          "pose": {
+            "head": {
+              "angle": -3.25,
+              "x": 0,
+              "scale_y": 1,
+              "opacity": 1
+            },
+            "neck": {
+              "angle": -0.35
+            },
+            "body": {
+              "y": -0.3
+            }
+          }
+        }
+      ]
+    },
+    "LOOK_AROUND": {
+      "loop": false,
+      "frames": [
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": 0.0,
+              "x": 0.0
+            },
+            "neck": {
+              "angle": -5.15
+            },
+            "body": {
+              "y": -0.0,
+              "angle": 0.0
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": 9.75,
+              "x": 1.0
+            },
+            "neck": {
+              "angle": -7.52
+            },
+            "body": {
+              "y": -0.3,
+              "angle": 1.5
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": 16.887,
+              "x": 1.73
+            },
+            "neck": {
+              "angle": -7.88
+            },
+            "body": {
+              "y": -0.52,
+              "angle": 2.6
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": 19.5,
+              "x": 2.0
+            },
+            "neck": {
+              "angle": -6.12
+            },
+            "body": {
+              "y": -0.6,
+              "angle": 3.0
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": 16.887,
+              "x": 1.73
+            },
+            "neck": {
+              "angle": -2.72
+            },
+            "body": {
+              "y": -0.52,
+              "angle": 2.6
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": 9.75,
+              "x": 1.0
+            },
+            "neck": {
+              "angle": 1.4
+            },
+            "body": {
+              "y": -0.3,
+              "angle": 1.5
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": 0.0,
+              "x": 0.0
+            },
+            "neck": {
+              "angle": 5.15
+            },
+            "body": {
+              "y": -0.0,
+              "angle": 0.0
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": -9.75,
+              "x": -1.0
+            },
+            "neck": {
+              "angle": 7.52
+            },
+            "body": {
+              "y": -0.3,
+              "angle": -1.5
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": -16.887,
+              "x": -1.73
+            },
+            "neck": {
+              "angle": 7.88
+            },
+            "body": {
+              "y": -0.52,
+              "angle": -2.6
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": -19.5,
+              "x": -2.0
+            },
+            "neck": {
+              "angle": 6.12
+            },
+            "body": {
+              "y": -0.6,
+              "angle": -3.0
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": -16.887,
+              "x": -1.73
+            },
+            "neck": {
+              "angle": 2.72
+            },
+            "body": {
+              "y": -0.52,
+              "angle": -2.6
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": -9.75,
+              "x": -1.0
+            },
+            "neck": {
+              "angle": -1.4
+            },
+            "body": {
+              "y": -0.3,
+              "angle": -1.5
+            }
+          }
+        }
+      ]
+    },
+    "WALK": {
+      "loop": true,
+      "frames": [
+        {
+          "duration_ms": 100,
+          "pose": {
+            "head": {
+              "angle": 0.0,
+              "x": 0
+            },
+            "neck": {
+              "angle": -1.29
+            },
+            "body": {
+              "y": -0.0
+            }
+          }
+        },
+        {
+          "duration_ms": 100,
+          "pose": {
+            "head": {
+              "angle": 3.25,
+              "x": 0
+            },
+            "neck": {
+              "angle": -1.88
+            },
+            "body": {
+              "y": -0.3
+            }
+          }
+        },
+        {
+          "duration_ms": 100,
+          "pose": {
+            "head": {
+              "angle": 5.6290000000000004,
+              "x": 0
+            },
+            "neck": {
+              "angle": -1.97
+            },
+            "body": {
+              "y": -0.52
+            }
+          }
+        },
+        {
+          "duration_ms": 100,
+          "pose": {
+            "head": {
+              "angle": 6.5,
+              "x": 0
+            },
+            "neck": {
+              "angle": -1.53
+            },
+            "body": {
+              "y": -0.6
+            }
+          }
+        },
+        {
+          "duration_ms": 100,
+          "pose": {
+            "head": {
+              "angle": 5.6290000000000004,
+              "x": 0
+            },
+            "neck": {
+              "angle": -0.68
+            },
+            "body": {
+              "y": -0.52
+            }
+          }
+        },
+        {
+          "duration_ms": 100,
+          "pose": {
+            "head": {
+              "angle": 3.25,
+              "x": 0
+            },
+            "neck": {
+              "angle": 0.35
+            },
+            "body": {
+              "y": -0.3
+            }
+          }
+        },
+        {
+          "duration_ms": 100,
+          "pose": {
+            "head": {
+              "angle": 0.0,
+              "x": 0
+            },
+            "neck": {
+              "angle": 1.29
+            },
+            "body": {
+              "y": -0.0
+            }
+          }
+        },
+        {
+          "duration_ms": 100,
+          "pose": {
+            "head": {
+              "angle": -3.25,
+              "x": 0
+            },
+            "neck": {
+              "angle": 1.88
+            },
+            "body": {
+              "y": -0.3
+            }
+          }
+        },
+        {
+          "duration_ms": 100,
+          "pose": {
+            "head": {
+              "angle": -5.6290000000000004,
+              "x": 0
+            },
+            "neck": {
+              "angle": 1.97
+            },
+            "body": {
+              "y": -0.52
+            }
+          }
+        },
+        {
+          "duration_ms": 100,
+          "pose": {
+            "head": {
+              "angle": -6.5,
+              "x": 0
+            },
+            "neck": {
+              "angle": 1.53
+            },
+            "body": {
+              "y": -0.6
+            }
+          }
+        },
+        {
+          "duration_ms": 100,
+          "pose": {
+            "head": {
+              "angle": -5.6290000000000004,
+              "x": 0
+            },
+            "neck": {
+              "angle": 0.68
+            },
+            "body": {
+              "y": -0.52
+            }
+          }
+        },
+        {
+          "duration_ms": 100,
+          "pose": {
+            "head": {
+              "angle": -3.25,
+              "x": 0
+            },
+            "neck": {
+              "angle": -0.35
+            },
+            "body": {
+              "y": -0.3
+            }
+          }
+        }
+      ]
+    },
+    "HAPPY": {
+      "loop": false,
+      "frames": [
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": 0.0,
+              "x": 0
+            },
+            "neck": {
+              "angle": -1.29
+            },
+            "body": {
+              "y": -0.0
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": 9.75,
+              "x": 0
+            },
+            "neck": {
+              "angle": -1.88
+            },
+            "body": {
+              "y": -1.0
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": 16.887,
+              "x": 0
+            },
+            "neck": {
+              "angle": -1.97
+            },
+            "body": {
+              "y": -1.73
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": 19.5,
+              "x": 0
+            },
+            "neck": {
+              "angle": -1.53
+            },
+            "body": {
+              "y": -2.0
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": 16.887,
+              "x": 0
+            },
+            "neck": {
+              "angle": -0.68
+            },
+            "body": {
+              "y": -1.73
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": 9.75,
+              "x": 0
+            },
+            "neck": {
+              "angle": 0.35
+            },
+            "body": {
+              "y": -1.0
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": 0.0,
+              "x": 0
+            },
+            "neck": {
+              "angle": 1.29
+            },
+            "body": {
+              "y": -0.0
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": -9.75,
+              "x": 0
+            },
+            "neck": {
+              "angle": 1.88
+            },
+            "body": {
+              "y": -1.0
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": -16.887,
+              "x": 0
+            },
+            "neck": {
+              "angle": 1.97
+            },
+            "body": {
+              "y": -1.73
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": -19.5,
+              "x": 0
+            },
+            "neck": {
+              "angle": 1.53
+            },
+            "body": {
+              "y": -2.0
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": -16.887,
+              "x": 0
+            },
+            "neck": {
+              "angle": 0.68
+            },
+            "body": {
+              "y": -1.73
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": -9.75,
+              "x": 0
+            },
+            "neck": {
+              "angle": -0.35
+            },
+            "body": {
+              "y": -1.0
+            }
+          }
+        }
+      ]
+    },
+    "CURIOUS": {
+      "loop": false,
+      "frames": [
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": 0.0,
+              "x": 0.0
+            },
+            "neck": {
+              "angle": -5.15
+            },
+            "body": {
+              "y": -0.0,
+              "angle": 0.0
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": 9.75,
+              "x": 1.0
+            },
+            "neck": {
+              "angle": -7.52
+            },
+            "body": {
+              "y": -0.3,
+              "angle": 1.5
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": 16.887,
+              "x": 1.73
+            },
+            "neck": {
+              "angle": -7.88
+            },
+            "body": {
+              "y": -0.52,
+              "angle": 2.6
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": 19.5,
+              "x": 2.0
+            },
+            "neck": {
+              "angle": -6.12
+            },
+            "body": {
+              "y": -0.6,
+              "angle": 3.0
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": 16.887,
+              "x": 1.73
+            },
+            "neck": {
+              "angle": -2.72
+            },
+            "body": {
+              "y": -0.52,
+              "angle": 2.6
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": 9.75,
+              "x": 1.0
+            },
+            "neck": {
+              "angle": 1.4
+            },
+            "body": {
+              "y": -0.3,
+              "angle": 1.5
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": 0.0,
+              "x": 0.0
+            },
+            "neck": {
+              "angle": 5.15
+            },
+            "body": {
+              "y": -0.0,
+              "angle": 0.0
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": -9.75,
+              "x": -1.0
+            },
+            "neck": {
+              "angle": 7.52
+            },
+            "body": {
+              "y": -0.3,
+              "angle": -1.5
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": -16.887,
+              "x": -1.73
+            },
+            "neck": {
+              "angle": 7.88
+            },
+            "body": {
+              "y": -0.52,
+              "angle": -2.6
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": -19.5,
+              "x": -2.0
+            },
+            "neck": {
+              "angle": 6.12
+            },
+            "body": {
+              "y": -0.6,
+              "angle": -3.0
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": -16.887,
+              "x": -1.73
+            },
+            "neck": {
+              "angle": 2.72
+            },
+            "body": {
+              "y": -0.52,
+              "angle": -2.6
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": -9.75,
+              "x": -1.0
+            },
+            "neck": {
+              "angle": -1.4
+            },
+            "body": {
+              "y": -0.3,
+              "angle": -1.5
+            }
+          }
+        }
+      ]
+    },
+    "SLEEP": {
+      "loop": true,
+      "frames": [
+        {
+          "duration_ms": 210,
+          "pose": {
+            "head": {
+              "angle": 16,
+              "x": 0
+            },
+            "neck": {
+              "angle": 13
+            },
+            "body": {
+              "y": 3
+            }
+          }
+        },
+        {
+          "duration_ms": 210,
+          "pose": {
+            "head": {
+              "angle": 16,
+              "x": 0
+            },
+            "neck": {
+              "angle": 13
+            },
+            "body": {
+              "y": 3
+            }
+          }
+        },
+        {
+          "duration_ms": 210,
+          "pose": {
+            "head": {
+              "angle": 16,
+              "x": 0
+            },
+            "neck": {
+              "angle": 13
+            },
+            "body": {
+              "y": 3
+            }
+          }
+        },
+        {
+          "duration_ms": 210,
+          "pose": {
+            "head": {
+              "angle": 16,
+              "x": 0
+            },
+            "neck": {
+              "angle": 13
+            },
+            "body": {
+              "y": 3
+            }
+          }
+        },
+        {
+          "duration_ms": 210,
+          "pose": {
+            "head": {
+              "angle": 16,
+              "x": 0
+            },
+            "neck": {
+              "angle": 13
+            },
+            "body": {
+              "y": 3
+            }
+          }
+        },
+        {
+          "duration_ms": 210,
+          "pose": {
+            "head": {
+              "angle": 16,
+              "x": 0
+            },
+            "neck": {
+              "angle": 13
+            },
+            "body": {
+              "y": 3
+            }
+          }
+        },
+        {
+          "duration_ms": 210,
+          "pose": {
+            "head": {
+              "angle": 16,
+              "x": 0
+            },
+            "neck": {
+              "angle": 13
+            },
+            "body": {
+              "y": 3
+            }
+          }
+        },
+        {
+          "duration_ms": 210,
+          "pose": {
+            "head": {
+              "angle": 16,
+              "x": 0
+            },
+            "neck": {
+              "angle": 13
+            },
+            "body": {
+              "y": 3
+            }
+          }
+        },
+        {
+          "duration_ms": 210,
+          "pose": {
+            "head": {
+              "angle": 16,
+              "x": 0
+            },
+            "neck": {
+              "angle": 13
+            },
+            "body": {
+              "y": 3
+            }
+          }
+        },
+        {
+          "duration_ms": 210,
+          "pose": {
+            "head": {
+              "angle": 16,
+              "x": 0
+            },
+            "neck": {
+              "angle": 13
+            },
+            "body": {
+              "y": 3
+            }
+          }
+        },
+        {
+          "duration_ms": 210,
+          "pose": {
+            "head": {
+              "angle": 16,
+              "x": 0
+            },
+            "neck": {
+              "angle": 13
+            },
+            "body": {
+              "y": 3
+            }
+          }
+        },
+        {
+          "duration_ms": 210,
+          "pose": {
+            "head": {
+              "angle": 16,
+              "x": 0
+            },
+            "neck": {
+              "angle": 13
+            },
+            "body": {
+              "y": 3
+            }
+          }
+        }
+      ]
+    },
+    "INTERACT": {
+      "loop": false,
+      "frames": [
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": 0.0,
+              "x": 0
+            },
+            "neck": {
+              "angle": -1.29
+            },
+            "body": {
+              "y": -0.0
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": 9.75,
+              "x": 0
+            },
+            "neck": {
+              "angle": -1.88
+            },
+            "body": {
+              "y": -1.0
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": 16.887,
+              "x": 0
+            },
+            "neck": {
+              "angle": -1.97
+            },
+            "body": {
+              "y": -1.73
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": 19.5,
+              "x": 0
+            },
+            "neck": {
+              "angle": -1.53
+            },
+            "body": {
+              "y": -2.0
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": 16.887,
+              "x": 0
+            },
+            "neck": {
+              "angle": -0.68
+            },
+            "body": {
+              "y": -1.73
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": 9.75,
+              "x": 0
+            },
+            "neck": {
+              "angle": 0.35
+            },
+            "body": {
+              "y": -1.0
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": 0.0,
+              "x": 0
+            },
+            "neck": {
+              "angle": 1.29
+            },
+            "body": {
+              "y": -0.0
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": -9.75,
+              "x": 0
+            },
+            "neck": {
+              "angle": 1.88
+            },
+            "body": {
+              "y": -1.0
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": -16.887,
+              "x": 0
+            },
+            "neck": {
+              "angle": 1.97
+            },
+            "body": {
+              "y": -1.73
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": -19.5,
+              "x": 0
+            },
+            "neck": {
+              "angle": 1.53
+            },
+            "body": {
+              "y": -2.0
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": -16.887,
+              "x": 0
+            },
+            "neck": {
+              "angle": 0.68
+            },
+            "body": {
+              "y": -1.73
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": -9.75,
+              "x": 0
+            },
+            "neck": {
+              "angle": -0.35
+            },
+            "body": {
+              "y": -1.0
+            }
+          }
+        }
+      ]
+    },
+    "NOTIFICATION": {
+      "loop": false,
+      "frames": [
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": 0.0,
+              "x": 0
+            },
+            "neck": {
+              "angle": -1.29
+            },
+            "body": {
+              "y": -0.0
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": 9.75,
+              "x": 0
+            },
+            "neck": {
+              "angle": -1.88
+            },
+            "body": {
+              "y": -1.0
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": 16.887,
+              "x": 0
+            },
+            "neck": {
+              "angle": -1.97
+            },
+            "body": {
+              "y": -1.73
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": 19.5,
+              "x": 0
+            },
+            "neck": {
+              "angle": -1.53
+            },
+            "body": {
+              "y": -2.0
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": 16.887,
+              "x": 0
+            },
+            "neck": {
+              "angle": -0.68
+            },
+            "body": {
+              "y": -1.73
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": 9.75,
+              "x": 0
+            },
+            "neck": {
+              "angle": 0.35
+            },
+            "body": {
+              "y": -1.0
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": 0.0,
+              "x": 0
+            },
+            "neck": {
+              "angle": 1.29
+            },
+            "body": {
+              "y": -0.0
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": -9.75,
+              "x": 0
+            },
+            "neck": {
+              "angle": 1.88
+            },
+            "body": {
+              "y": -1.0
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": -16.887,
+              "x": 0
+            },
+            "neck": {
+              "angle": 1.97
+            },
+            "body": {
+              "y": -1.73
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": -19.5,
+              "x": 0
+            },
+            "neck": {
+              "angle": 1.53
+            },
+            "body": {
+              "y": -2.0
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": -16.887,
+              "x": 0
+            },
+            "neck": {
+              "angle": 0.68
+            },
+            "body": {
+              "y": -1.73
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": -9.75,
+              "x": 0
+            },
+            "neck": {
+              "angle": -0.35
+            },
+            "body": {
+              "y": -1.0
+            }
+          }
+        }
+      ]
+    },
+    "SURPRISED": {
+      "loop": false,
+      "frames": [
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": 0.0,
+              "x": 0,
+              "y": -0.0
+            },
+            "neck": {
+              "angle": -1.29
+            },
+            "body": {
+              "y": -0.0
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": 3.25,
+              "x": 0,
+              "y": -0.85
+            },
+            "neck": {
+              "angle": -1.88
+            },
+            "body": {
+              "y": -0.3
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": 5.6290000000000004,
+              "x": 0,
+              "y": -1.62
+            },
+            "neck": {
+              "angle": -1.97
+            },
+            "body": {
+              "y": -0.52
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": 6.5,
+              "x": 0,
+              "y": -2.27
+            },
+            "neck": {
+              "angle": -1.53
+            },
+            "body": {
+              "y": -0.6
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": 5.6290000000000004,
+              "x": 0,
+              "y": -2.73
+            },
+            "neck": {
+              "angle": -0.68
+            },
+            "body": {
+              "y": -0.52
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": 3.25,
+              "x": 0,
+              "y": -2.97
+            },
+            "neck": {
+              "angle": 0.35
+            },
+            "body": {
+              "y": -0.3
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": 0.0,
+              "x": 0,
+              "y": -2.97
+            },
+            "neck": {
+              "angle": 1.29
+            },
+            "body": {
+              "y": -0.0
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": -3.25,
+              "x": 0,
+              "y": -2.73
+            },
+            "neck": {
+              "angle": 1.88
+            },
+            "body": {
+              "y": -0.3
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": -5.6290000000000004,
+              "x": 0,
+              "y": -2.27
+            },
+            "neck": {
+              "angle": 1.97
+            },
+            "body": {
+              "y": -0.52
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": -6.5,
+              "x": 0,
+              "y": -1.62
+            },
+            "neck": {
+              "angle": 1.53
+            },
+            "body": {
+              "y": -0.6
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": -5.6290000000000004,
+              "x": 0,
+              "y": -0.85
+            },
+            "neck": {
+              "angle": 0.68
+            },
+            "body": {
+              "y": -0.52
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": -3.25,
+              "x": 0,
+              "y": -0.0
+            },
+            "neck": {
+              "angle": -0.35
+            },
+            "body": {
+              "y": -0.3
+            }
+          }
+        }
+      ]
+    },
+    "WORK": {
+      "loop": false,
+      "frames": [
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": 0.0,
+              "x": 0.0
+            },
+            "neck": {
+              "angle": -5.15
+            },
+            "body": {
+              "y": -0.0,
+              "angle": 0.0
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": 9.75,
+              "x": 1.0
+            },
+            "neck": {
+              "angle": -7.52
+            },
+            "body": {
+              "y": -0.3,
+              "angle": 1.5
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": 16.887,
+              "x": 1.73
+            },
+            "neck": {
+              "angle": -7.88
+            },
+            "body": {
+              "y": -0.52,
+              "angle": 2.6
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": 19.5,
+              "x": 2.0
+            },
+            "neck": {
+              "angle": -6.12
+            },
+            "body": {
+              "y": -0.6,
+              "angle": 3.0
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": 16.887,
+              "x": 1.73
+            },
+            "neck": {
+              "angle": -2.72
+            },
+            "body": {
+              "y": -0.52,
+              "angle": 2.6
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": 9.75,
+              "x": 1.0
+            },
+            "neck": {
+              "angle": 1.4
+            },
+            "body": {
+              "y": -0.3,
+              "angle": 1.5
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": 0.0,
+              "x": 0.0
+            },
+            "neck": {
+              "angle": 5.15
+            },
+            "body": {
+              "y": -0.0,
+              "angle": 0.0
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": -9.75,
+              "x": -1.0
+            },
+            "neck": {
+              "angle": 7.52
+            },
+            "body": {
+              "y": -0.3,
+              "angle": -1.5
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": -16.887,
+              "x": -1.73
+            },
+            "neck": {
+              "angle": 7.88
+            },
+            "body": {
+              "y": -0.52,
+              "angle": -2.6
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": -19.5,
+              "x": -2.0
+            },
+            "neck": {
+              "angle": 6.12
+            },
+            "body": {
+              "y": -0.6,
+              "angle": -3.0
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": -16.887,
+              "x": -1.73
+            },
+            "neck": {
+              "angle": 2.72
+            },
+            "body": {
+              "y": -0.52,
+              "angle": -2.6
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": -9.75,
+              "x": -1.0
+            },
+            "neck": {
+              "angle": -1.4
+            },
+            "body": {
+              "y": -0.3,
+              "angle": -1.5
+            }
+          }
+        }
+      ]
+    },
+    "CONFUSED": {
+      "loop": false,
+      "frames": [
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": 0.0,
+              "x": 0
+            },
+            "neck": {
+              "angle": -1.29
+            },
+            "body": {
+              "y": -0.0
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": 7.15,
+              "x": 0
+            },
+            "neck": {
+              "angle": -1.88
+            },
+            "body": {
+              "y": -0.3
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": 12.389,
+              "x": 0
+            },
+            "neck": {
+              "angle": -1.97
+            },
+            "body": {
+              "y": -0.52
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": 14.3,
+              "x": 0
+            },
+            "neck": {
+              "angle": -1.53
+            },
+            "body": {
+              "y": -0.6
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": 12.389,
+              "x": 0
+            },
+            "neck": {
+              "angle": -0.68
+            },
+            "body": {
+              "y": -0.52
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": 7.15,
+              "x": 0
+            },
+            "neck": {
+              "angle": 0.35
+            },
+            "body": {
+              "y": -0.3
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": 0.0,
+              "x": 0
+            },
+            "neck": {
+              "angle": 1.29
+            },
+            "body": {
+              "y": -0.0
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": -7.15,
+              "x": 0
+            },
+            "neck": {
+              "angle": 1.88
+            },
+            "body": {
+              "y": -0.3
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": -12.389,
+              "x": 0
+            },
+            "neck": {
+              "angle": 1.97
+            },
+            "body": {
+              "y": -0.52
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": -14.3,
+              "x": 0
+            },
+            "neck": {
+              "angle": 1.53
+            },
+            "body": {
+              "y": -0.6
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": -12.389,
+              "x": 0
+            },
+            "neck": {
+              "angle": 0.68
+            },
+            "body": {
+              "y": -0.52
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": -7.15,
+              "x": 0
+            },
+            "neck": {
+              "angle": -0.35
+            },
+            "body": {
+              "y": -0.3
+            }
+          }
+        }
+      ]
+    },
+    "DRAG": {
+      "loop": false,
+      "frames": [
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": 0.0,
+              "x": 0
+            },
+            "neck": {
+              "angle": -1.29
+            },
+            "body": {
+              "y": -0.0
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": 7.15,
+              "x": 0
+            },
+            "neck": {
+              "angle": -1.88
+            },
+            "body": {
+              "y": -0.3
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": 12.389,
+              "x": 0
+            },
+            "neck": {
+              "angle": -1.97
+            },
+            "body": {
+              "y": -0.52
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": 14.3,
+              "x": 0
+            },
+            "neck": {
+              "angle": -1.53
+            },
+            "body": {
+              "y": -0.6
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": 12.389,
+              "x": 0
+            },
+            "neck": {
+              "angle": -0.68
+            },
+            "body": {
+              "y": -0.52
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": 7.15,
+              "x": 0
+            },
+            "neck": {
+              "angle": 0.35
+            },
+            "body": {
+              "y": -0.3
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": 0.0,
+              "x": 0
+            },
+            "neck": {
+              "angle": 1.29
+            },
+            "body": {
+              "y": -0.0
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": -7.15,
+              "x": 0
+            },
+            "neck": {
+              "angle": 1.88
+            },
+            "body": {
+              "y": -0.3
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": -12.389,
+              "x": 0
+            },
+            "neck": {
+              "angle": 1.97
+            },
+            "body": {
+              "y": -0.52
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": -14.3,
+              "x": 0
+            },
+            "neck": {
+              "angle": 1.53
+            },
+            "body": {
+              "y": -0.6
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": -12.389,
+              "x": 0
+            },
+            "neck": {
+              "angle": 0.68
+            },
+            "body": {
+              "y": -0.52
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": -7.15,
+              "x": 0
+            },
+            "neck": {
+              "angle": -0.35
+            },
+            "body": {
+              "y": -0.3
+            }
+          }
+        }
+      ]
+    },
+    "RECOVER": {
+      "loop": false,
+      "frames": [
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": 0.0,
+              "x": 0
+            },
+            "neck": {
+              "angle": -1.29
+            },
+            "body": {
+              "y": -0.0
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": 6.5520000000000005,
+              "x": 0
+            },
+            "neck": {
+              "angle": -1.88
+            },
+            "body": {
+              "y": -0.3
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": 10.322000000000001,
+              "x": 0
+            },
+            "neck": {
+              "angle": -1.97
+            },
+            "body": {
+              "y": -0.52
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": 10.725,
+              "x": 0
+            },
+            "neck": {
+              "angle": -1.53
+            },
+            "body": {
+              "y": -0.6
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": 8.254999999999999,
+              "x": 0
+            },
+            "neck": {
+              "angle": -0.68
+            },
+            "body": {
+              "y": -0.52
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": 4.173,
+              "x": 0
+            },
+            "neck": {
+              "angle": 0.35
+            },
+            "body": {
+              "y": -0.3
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": 0.0,
+              "x": 0
+            },
+            "neck": {
+              "angle": 1.29
+            },
+            "body": {
+              "y": -0.0
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": -2.9770000000000003,
+              "x": 0
+            },
+            "neck": {
+              "angle": 1.88
+            },
+            "body": {
+              "y": -0.3
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": -4.134,
+              "x": 0
+            },
+            "neck": {
+              "angle": 1.97
+            },
+            "body": {
+              "y": -0.52
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": -3.575,
+              "x": 0
+            },
+            "neck": {
+              "angle": 1.53
+            },
+            "body": {
+              "y": -0.6
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": -2.067,
+              "x": 0
+            },
+            "neck": {
+              "angle": 0.68
+            },
+            "body": {
+              "y": -0.52
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": -0.5980000000000001,
+              "x": 0
+            },
+            "neck": {
+              "angle": -0.35
+            },
+            "body": {
+              "y": -0.3
+            }
+          }
+        }
+      ]
+    },
+    "WAKE": {
+      "loop": false,
+      "frames": [
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": 0.0,
+              "x": 0,
+              "y": -0.0
+            },
+            "neck": {
+              "angle": -1.29
+            },
+            "body": {
+              "y": -0.0
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": 3.25,
+              "x": 0,
+              "y": -0.85
+            },
+            "neck": {
+              "angle": -1.88
+            },
+            "body": {
+              "y": -0.3
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": 5.6290000000000004,
+              "x": 0,
+              "y": -1.62
+            },
+            "neck": {
+              "angle": -1.97
+            },
+            "body": {
+              "y": -0.52
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": 6.5,
+              "x": 0,
+              "y": -2.27
+            },
+            "neck": {
+              "angle": -1.53
+            },
+            "body": {
+              "y": -0.6
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": 5.6290000000000004,
+              "x": 0,
+              "y": -2.73
+            },
+            "neck": {
+              "angle": -0.68
+            },
+            "body": {
+              "y": -0.52
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": 3.25,
+              "x": 0,
+              "y": -2.97
+            },
+            "neck": {
+              "angle": 0.35
+            },
+            "body": {
+              "y": -0.3
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": 0.0,
+              "x": 0,
+              "y": -2.97
+            },
+            "neck": {
+              "angle": 1.29
+            },
+            "body": {
+              "y": -0.0
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": -3.25,
+              "x": 0,
+              "y": -2.73
+            },
+            "neck": {
+              "angle": 1.88
+            },
+            "body": {
+              "y": -0.3
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": -5.6290000000000004,
+              "x": 0,
+              "y": -2.27
+            },
+            "neck": {
+              "angle": 1.97
+            },
+            "body": {
+              "y": -0.52
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": -6.5,
+              "x": 0,
+              "y": -1.62
+            },
+            "neck": {
+              "angle": 1.53
+            },
+            "body": {
+              "y": -0.6
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": -5.6290000000000004,
+              "x": 0,
+              "y": -0.85
+            },
+            "neck": {
+              "angle": 0.68
+            },
+            "body": {
+              "y": -0.52
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": -3.25,
+              "x": 0,
+              "y": -0.0
+            },
+            "neck": {
+              "angle": -0.35
+            },
+            "body": {
+              "y": -0.3
+            }
+          }
+        }
+      ]
+    },
+    "GREETING": {
+      "loop": false,
+      "frames": [
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": 0.0,
+              "x": 0
+            },
+            "neck": {
+              "angle": -1.29
+            },
+            "body": {
+              "y": -0.0
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": 9.75,
+              "x": 0
+            },
+            "neck": {
+              "angle": -1.88
+            },
+            "body": {
+              "y": -1.0
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": 16.887,
+              "x": 0
+            },
+            "neck": {
+              "angle": -1.97
+            },
+            "body": {
+              "y": -1.73
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": 19.5,
+              "x": 0
+            },
+            "neck": {
+              "angle": -1.53
+            },
+            "body": {
+              "y": -2.0
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": 16.887,
+              "x": 0
+            },
+            "neck": {
+              "angle": -0.68
+            },
+            "body": {
+              "y": -1.73
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": 9.75,
+              "x": 0
+            },
+            "neck": {
+              "angle": 0.35
+            },
+            "body": {
+              "y": -1.0
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": 0.0,
+              "x": 0
+            },
+            "neck": {
+              "angle": 1.29
+            },
+            "body": {
+              "y": -0.0
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": -9.75,
+              "x": 0
+            },
+            "neck": {
+              "angle": 1.88
+            },
+            "body": {
+              "y": -1.0
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": -16.887,
+              "x": 0
+            },
+            "neck": {
+              "angle": 1.97
+            },
+            "body": {
+              "y": -1.73
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": -19.5,
+              "x": 0
+            },
+            "neck": {
+              "angle": 1.53
+            },
+            "body": {
+              "y": -2.0
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": -16.887,
+              "x": 0
+            },
+            "neck": {
+              "angle": 0.68
+            },
+            "body": {
+              "y": -1.73
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": -9.75,
+              "x": 0
+            },
+            "neck": {
+              "angle": -0.35
+            },
+            "body": {
+              "y": -1.0
+            }
+          }
+        }
+      ]
+    },
+    "WORRIED": {
+      "loop": false,
+      "frames": [
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": 0.0,
+              "x": 0
+            },
+            "neck": {
+              "angle": -1.29
+            },
+            "body": {
+              "y": -0.0
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": 7.15,
+              "x": 0
+            },
+            "neck": {
+              "angle": -1.88
+            },
+            "body": {
+              "y": -0.3
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": 12.389,
+              "x": 0
+            },
+            "neck": {
+              "angle": -1.97
+            },
+            "body": {
+              "y": -0.52
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": 14.3,
+              "x": 0
+            },
+            "neck": {
+              "angle": -1.53
+            },
+            "body": {
+              "y": -0.6
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": 12.389,
+              "x": 0
+            },
+            "neck": {
+              "angle": -0.68
+            },
+            "body": {
+              "y": -0.52
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": 7.15,
+              "x": 0
+            },
+            "neck": {
+              "angle": 0.35
+            },
+            "body": {
+              "y": -0.3
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": 0.0,
+              "x": 0
+            },
+            "neck": {
+              "angle": 1.29
+            },
+            "body": {
+              "y": -0.0
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": -7.15,
+              "x": 0
+            },
+            "neck": {
+              "angle": 1.88
+            },
+            "body": {
+              "y": -0.3
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": -12.389,
+              "x": 0
+            },
+            "neck": {
+              "angle": 1.97
+            },
+            "body": {
+              "y": -0.52
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": -14.3,
+              "x": 0
+            },
+            "neck": {
+              "angle": 1.53
+            },
+            "body": {
+              "y": -0.6
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": -12.389,
+              "x": 0
+            },
+            "neck": {
+              "angle": 0.68
+            },
+            "body": {
+              "y": -0.52
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": -7.15,
+              "x": 0
+            },
+            "neck": {
+              "angle": -0.35
+            },
+            "body": {
+              "y": -0.3
+            }
+          }
+        }
+      ]
+    },
+    "OVERHEAT": {
+      "loop": false,
+      "frames": [
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": 0.0,
+              "x": 0
+            },
+            "neck": {
+              "angle": -1.29
+            },
+            "body": {
+              "y": -0.0
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": 7.15,
+              "x": 0
+            },
+            "neck": {
+              "angle": -1.88
+            },
+            "body": {
+              "y": -0.3
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": 12.389,
+              "x": 0
+            },
+            "neck": {
+              "angle": -1.97
+            },
+            "body": {
+              "y": -0.52
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": 14.3,
+              "x": 0
+            },
+            "neck": {
+              "angle": -1.53
+            },
+            "body": {
+              "y": -0.6
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": 12.389,
+              "x": 0
+            },
+            "neck": {
+              "angle": -0.68
+            },
+            "body": {
+              "y": -0.52
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": 7.15,
+              "x": 0
+            },
+            "neck": {
+              "angle": 0.35
+            },
+            "body": {
+              "y": -0.3
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": 0.0,
+              "x": 0
+            },
+            "neck": {
+              "angle": 1.29
+            },
+            "body": {
+              "y": -0.0
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": -7.15,
+              "x": 0
+            },
+            "neck": {
+              "angle": 1.88
+            },
+            "body": {
+              "y": -0.3
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": -12.389,
+              "x": 0
+            },
+            "neck": {
+              "angle": 1.97
+            },
+            "body": {
+              "y": -0.52
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": -14.3,
+              "x": 0
+            },
+            "neck": {
+              "angle": 1.53
+            },
+            "body": {
+              "y": -0.6
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": -12.389,
+              "x": 0
+            },
+            "neck": {
+              "angle": 0.68
+            },
+            "body": {
+              "y": -0.52
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": -7.15,
+              "x": 0
+            },
+            "neck": {
+              "angle": -0.35
+            },
+            "body": {
+              "y": -0.3
+            }
+          }
+        }
+      ]
+    },
+    "LOOK_LEFT": {
+      "loop": false,
+      "frames": [
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": -0.0,
+              "x": -0.0
+            },
+            "neck": {
+              "angle": -1.29
+            },
+            "body": {
+              "y": -0.0
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": -3.302,
+              "x": -0.85
+            },
+            "neck": {
+              "angle": -1.88
+            },
+            "body": {
+              "y": -0.3
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": -6.331,
+              "x": -1.62
+            },
+            "neck": {
+              "angle": -1.97
+            },
+            "body": {
+              "y": -0.52
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": -8.84,
+              "x": -2.27
+            },
+            "neck": {
+              "angle": -1.53
+            },
+            "body": {
+              "y": -0.6
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": -10.647,
+              "x": -2.73
+            },
+            "neck": {
+              "angle": -0.68
+            },
+            "body": {
+              "y": -0.52
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": -11.583,
+              "x": -2.97
+            },
+            "neck": {
+              "angle": 0.35
+            },
+            "body": {
+              "y": -0.3
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": -11.583,
+              "x": -2.97
+            },
+            "neck": {
+              "angle": 1.29
+            },
+            "body": {
+              "y": -0.0
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": -10.647,
+              "x": -2.73
+            },
+            "neck": {
+              "angle": 1.88
+            },
+            "body": {
+              "y": -0.3
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": -8.84,
+              "x": -2.27
+            },
+            "neck": {
+              "angle": 1.97
+            },
+            "body": {
+              "y": -0.52
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": -6.331,
+              "x": -1.62
+            },
+            "neck": {
+              "angle": 1.53
+            },
+            "body": {
+              "y": -0.6
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": -3.302,
+              "x": -0.85
+            },
+            "neck": {
+              "angle": 0.68
+            },
+            "body": {
+              "y": -0.52
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": -0.0,
+              "x": -0.0
+            },
+            "neck": {
+              "angle": -0.35
+            },
+            "body": {
+              "y": -0.3
+            }
+          }
+        }
+      ]
+    },
+    "LOOK_RIGHT": {
+      "loop": false,
+      "frames": [
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": 0.0,
+              "x": 0.0
+            },
+            "neck": {
+              "angle": -1.29
+            },
+            "body": {
+              "y": -0.0
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": 3.302,
+              "x": 0.85
+            },
+            "neck": {
+              "angle": -1.88
+            },
+            "body": {
+              "y": -0.3
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": 6.331,
+              "x": 1.62
+            },
+            "neck": {
+              "angle": -1.97
+            },
+            "body": {
+              "y": -0.52
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": 8.84,
+              "x": 2.27
+            },
+            "neck": {
+              "angle": -1.53
+            },
+            "body": {
+              "y": -0.6
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": 10.647,
+              "x": 2.73
+            },
+            "neck": {
+              "angle": -0.68
+            },
+            "body": {
+              "y": -0.52
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": 11.583,
+              "x": 2.97
+            },
+            "neck": {
+              "angle": 0.35
+            },
+            "body": {
+              "y": -0.3
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": 11.583,
+              "x": 2.97
+            },
+            "neck": {
+              "angle": 1.29
+            },
+            "body": {
+              "y": -0.0
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": 10.647,
+              "x": 2.73
+            },
+            "neck": {
+              "angle": 1.88
+            },
+            "body": {
+              "y": -0.3
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": 8.84,
+              "x": 2.27
+            },
+            "neck": {
+              "angle": 1.97
+            },
+            "body": {
+              "y": -0.52
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": 6.331,
+              "x": 1.62
+            },
+            "neck": {
+              "angle": 1.53
+            },
+            "body": {
+              "y": -0.6
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": 3.302,
+              "x": 0.85
+            },
+            "neck": {
+              "angle": 0.68
+            },
+            "body": {
+              "y": -0.52
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": 0.0,
+              "x": 0.0
+            },
+            "neck": {
+              "angle": -0.35
+            },
+            "body": {
+              "y": -0.3
+            }
+          }
+        }
+      ]
+    }
+  }
+}

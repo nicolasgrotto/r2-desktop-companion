@@ -50,3 +50,16 @@ Cada novo personagem possui 12 sílabas PCM originais (mono, 22050 Hz, 16 bits),
 geradas por síntese matemática, sem samples. As frases usam o compositor existente
 com mapeamentos próprios; efeitos comuns continuam sendo os originais do projeto.
 A definição de licença de distribuição continua a cargo do proprietário.
+
+## Droid Garage 1.2.0
+
+Em 13/11/2026, `tools/generate_garage.py` produziu as peças PNG articuladas,
+os manifestos e as vozes de Lumo, Vigia, Pico e Tranco. Os desenhos em 96 × 96
+são construídos localmente com QPainter, com contornos, painéis, ópticas e juntas
+próprios. Não incluem sprites, logotipos, gravações ou samples extraídos de outras
+obras. O gerador é reproduzível e não é executado durante o uso do Companion.
+
+As vozes são sínteses matemáticas PCM mono 22.050 Hz/16 bits, usando o compositor
+existente com timbres e cadências individuais. Os efeitos comuns e os recursos
+gráficos e sonoros dos três modelos anteriores permanecem preservados.
+A definição de licença de distribuição segue a política do projeto acima.

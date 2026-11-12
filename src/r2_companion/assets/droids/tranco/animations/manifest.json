@@ -1,0 +1,6574 @@
+{
+  "manifest_version": 3,
+  "canvas": [
+    96,
+    96
+  ],
+  "parts": [
+    {
+      "name": "body",
+      "parent": null,
+      "image": "../sprites/body.png",
+      "position": [
+        47,
+        73
+      ],
+      "pivot": [
+        47,
+        73
+      ],
+      "z": 4,
+      "motion": {
+        "angle": [
+          "lean",
+          1
+        ],
+        "y": [
+          "lift",
+          1
+        ]
+      }
+    },
+    {
+      "name": "left_strut",
+      "parent": "body",
+      "image": "../sprites/left_strut.png",
+      "position": [
+        -23,
+        -26
+      ],
+      "pivot": [
+        24,
+        47
+      ],
+      "z": 3,
+      "motion": {}
+    },
+    {
+      "name": "left_wheel",
+      "parent": "left_strut",
+      "image": "../sprites/left_wheel.png",
+      "position": [
+        0,
+        37
+      ],
+      "pivot": [
+        24,
+        84
+      ],
+      "z": 3.1,
+      "motion": {
+        "angle": [
+          "wheel",
+          1
+        ]
+      }
+    },
+    {
+      "name": "right_strut",
+      "parent": "body",
+      "image": "../sprites/right_strut.png",
+      "position": [
+        25,
+        -26
+      ],
+      "pivot": [
+        72,
+        47
+      ],
+      "z": 5,
+      "motion": {}
+    },
+    {
+      "name": "right_wheel",
+      "parent": "right_strut",
+      "image": "../sprites/right_wheel.png",
+      "position": [
+        0,
+        37
+      ],
+      "pivot": [
+        72,
+        84
+      ],
+      "z": 5.1,
+      "motion": {
+        "angle": [
+          "wheel",
+          1
+        ]
+      }
+    },
+    {
+      "name": "head",
+      "parent": "body",
+      "image": "../sprites/head.png",
+      "position": [
+        1,
+        -38
+      ],
+      "pivot": [
+        48,
+        35
+      ],
+      "z": 7,
+      "motion": {
+        "angle": [
+          "head",
+          1
+        ]
+      },
+      "lamp": [
+        13,
+        -7,
+        2,
+        2
+      ]
+    },
+    {
+      "name": "left_arm",
+      "parent": "body",
+      "image": "../sprites/left_arm.png",
+      "position": [
+        -19,
+        -29
+      ],
+      "pivot": [
+        28,
+        44
+      ],
+      "z": 8,
+      "motion": {}
+    },
+    {
+      "name": "left_claw",
+      "parent": "left_arm",
+      "image": "../sprites/left_claw.png",
+      "position": [
+        -5,
+        11
+      ],
+      "pivot": [
+        23,
+        55
+      ],
+      "z": 8.1,
+      "motion": {}
+    },
+    {
+      "name": "right_arm",
+      "parent": "body",
+      "image": "../sprites/right_arm.png",
+      "position": [
+        19,
+        -29
+      ],
+      "pivot": [
+        66,
+        44
+      ],
+      "z": 8,
+      "motion": {}
+    },
+    {
+      "name": "right_claw",
+      "parent": "right_arm",
+      "image": "../sprites/right_claw.png",
+      "position": [
+        5,
+        11
+      ],
+      "pivot": [
+        71,
+        55
+      ],
+      "z": 8.1,
+      "motion": {}
+    }
+  ],
+  "emitter": {
+    "part": "head",
+    "point": [
+      3,
+      -8
+    ]
+  },
+  "clips": {
+    "IDLE": {
+      "loop": true,
+      "frames": [
+        {
+          "duration_ms": 210,
+          "pose": {
+            "head": {
+              "angle": 0,
+              "x": 0
+            },
+            "body": {
+              "angle": 0.0
+            },
+            "left_arm": {
+              "angle": 2.58
+            },
+            "left_claw": {
+              "y": -6,
+              "angle": 0.0
+            },
+            "right_arm": {
+              "angle": -2.58
+            },
+            "right_claw": {
+              "y": -6,
+              "angle": -0.0
+            }
+          }
+        },
+        {
+          "duration_ms": 210,
+          "pose": {
+            "head": {
+              "angle": -3,
+              "x": 0
+            },
+            "body": {
+              "angle": -0.4
+            },
+            "left_arm": {
+              "angle": 3.76
+            },
+            "left_claw": {
+              "y": -6,
+              "angle": 1.5
+            },
+            "right_arm": {
+              "angle": -3.76
+            },
+            "right_claw": {
+              "y": -6,
+              "angle": -1.5
+            }
+          }
+        },
+        {
+          "duration_ms": 210,
+          "pose": {
+            "head": {
+              "angle": -3,
+              "x": 0
+            },
+            "body": {
+              "angle": -0.4
+            },
+            "left_arm": {
+              "angle": 3.94
+            },
+            "left_claw": {
+              "y": -6,
+              "angle": 2.6
+            },
+            "right_arm": {
+              "angle": -3.94
+            },
+            "right_claw": {
+              "y": -6,
+              "angle": -2.6
+            }
+          }
+        },
+        {
+          "duration_ms": 210,
+          "pose": {
+            "head": {
+              "angle": 1.7999999999999998,
+              "x": 0
+            },
+            "body": {
+              "angle": 0.24
+            },
+            "left_arm": {
+              "angle": 3.06
+            },
+            "left_claw": {
+              "y": -6,
+              "angle": 3.0
+            },
+            "right_arm": {
+              "angle": -3.06
+            },
+            "right_claw": {
+              "y": -6,
+              "angle": -3.0
+            }
+          }
+        },
+        {
+          "duration_ms": 210,
+          "pose": {
+            "head": {
+              "angle": 1.7999999999999998,
+              "x": 0
+            },
+            "body": {
+              "angle": 0.24
+            },
+            "left_arm": {
+              "angle": 1.36
+            },
+            "left_claw": {
+              "y": -6,
+              "angle": 2.6
+            },
+            "right_arm": {
+              "angle": -1.36
+            },
+            "right_claw": {
+              "y": -6,
+              "angle": -2.6
+            }
+          }
+        },
+        {
+          "duration_ms": 210,
+          "pose": {
+            "head": {
+              "angle": 0,
+              "x": 0
+            },
+            "body": {
+              "angle": 0.0
+            },
+            "left_arm": {
+              "angle": -0.7
+            },
+            "left_claw": {
+              "y": -6,
+              "angle": 1.5
+            },
+            "right_arm": {
+              "angle": 0.7
+            },
+            "right_claw": {
+              "y": -6,
+              "angle": -1.5
+            }
+          }
+        },
+        {
+          "duration_ms": 210,
+          "pose": {
+            "head": {
+              "angle": 0,
+              "x": 0
+            },
+            "body": {
+              "angle": 0.0
+            },
+            "left_arm": {
+              "angle": -2.58
+            },
+            "left_claw": {
+              "y": -6,
+              "angle": 0.0
+            },
+            "right_arm": {
+              "angle": 2.58
+            },
+            "right_claw": {
+              "y": -6,
+              "angle": -0.0
+            }
+          }
+        },
+        {
+          "duration_ms": 210,
+          "pose": {
+            "head": {
+              "angle": 3,
+              "x": 0
+            },
+            "body": {
+              "angle": 0.4
+            },
+            "left_arm": {
+              "angle": -3.76
+            },
+            "left_claw": {
+              "y": -6,
+              "angle": -1.5
+            },
+            "right_arm": {
+              "angle": 3.76
+            },
+            "right_claw": {
+              "y": -6,
+              "angle": 1.5
+            }
+          }
+        },
+        {
+          "duration_ms": 210,
+          "pose": {
+            "head": {
+              "angle": 3,
+              "x": 0
+            },
+            "body": {
+              "angle": 0.4
+            },
+            "left_arm": {
+              "angle": -3.94
+            },
+            "left_claw": {
+              "y": -6,
+              "angle": -2.6
+            },
+            "right_arm": {
+              "angle": 3.94
+            },
+            "right_claw": {
+              "y": -6,
+              "angle": 2.6
+            }
+          }
+        },
+        {
+          "duration_ms": 210,
+          "pose": {
+            "head": {
+              "angle": -1.5,
+              "x": 0
+            },
+            "body": {
+              "angle": -0.2
+            },
+            "left_arm": {
+              "angle": -3.06
+            },
+            "left_claw": {
+              "y": -6,
+              "angle": -3.0
+            },
+            "right_arm": {
+              "angle": 3.06
+            },
+            "right_claw": {
+              "y": -6,
+              "angle": 3.0
+            }
+          }
+        },
+        {
+          "duration_ms": 210,
+          "pose": {
+            "head": {
+              "angle": -1.5,
+              "x": 0
+            },
+            "body": {
+              "angle": -0.2
+            },
+            "left_arm": {
+              "angle": -1.36
+            },
+            "left_claw": {
+              "y": -6,
+              "angle": -2.6
+            },
+            "right_arm": {
+              "angle": 1.36
+            },
+            "right_claw": {
+              "y": -6,
+              "angle": 2.6
+            }
+          }
+        },
+        {
+          "duration_ms": 210,
+          "pose": {
+            "head": {
+              "angle": 0,
+              "x": 0
+            },
+            "body": {
+              "angle": 0.0
+            },
+            "left_arm": {
+              "angle": 0.7
+            },
+            "left_claw": {
+              "y": -6,
+              "angle": -1.5
+            },
+            "right_arm": {
+              "angle": -0.7
+            },
+            "right_claw": {
+              "y": -6,
+              "angle": 1.5
+            }
+          }
+        }
+      ]
+    },
+    "BLINK": {
+      "loop": false,
+      "frames": [
+        {
+          "duration_ms": 85,
+          "pose": {
+            "head": {
+              "angle": 0,
+              "x": 0,
+              "scale_y": 1,
+              "opacity": 1
+            },
+            "body": {
+              "angle": 0.0
+            },
+            "left_arm": {
+              "angle": 2.58
+            },
+            "left_claw": {
+              "y": -6,
+              "angle": 0.0
+            },
+            "right_arm": {
+              "angle": -2.58
+            },
+            "right_claw": {
+              "y": -6,
+              "angle": -0.0
+            }
+          }
+        },
+        {
+          "duration_ms": 85,
+          "pose": {
+            "head": {
+              "angle": -3,
+              "x": 0,
+              "scale_y": 1,
+              "opacity": 1
+            },
+            "body": {
+              "angle": -0.4
+            },
+            "left_arm": {
+              "angle": 3.76
+            },
+            "left_claw": {
+              "y": -6,
+              "angle": 1.5
+            },
+            "right_arm": {
+              "angle": -3.76
+            },
+            "right_claw": {
+              "y": -6,
+              "angle": -1.5
+            }
+          }
+        },
+        {
+          "duration_ms": 85,
+          "pose": {
+            "head": {
+              "angle": -3,
+              "x": 0,
+              "scale_y": 1,
+              "opacity": 1
+            },
+            "body": {
+              "angle": -0.4
+            },
+            "left_arm": {
+              "angle": 3.94
+            },
+            "left_claw": {
+              "y": -6,
+              "angle": 2.6
+            },
+            "right_arm": {
+              "angle": -3.94
+            },
+            "right_claw": {
+              "y": -6,
+              "angle": -2.6
+            }
+          }
+        },
+        {
+          "duration_ms": 85,
+          "pose": {
+            "head": {
+              "angle": 1.7999999999999998,
+              "x": 0,
+              "scale_y": 1,
+              "opacity": 1
+            },
+            "body": {
+              "angle": 0.24
+            },
+            "left_arm": {
+              "angle": 3.06
+            },
+            "left_claw": {
+              "y": -6,
+              "angle": 3.0
+            },
+            "right_arm": {
+              "angle": -3.06
+            },
+            "right_claw": {
+              "y": -6,
+              "angle": -3.0
+            }
+          }
+        },
+        {
+          "duration_ms": 85,
+          "pose": {
+            "head": {
+              "angle": 1.7999999999999998,
+              "x": 0,
+              "scale_y": 0.92,
+              "opacity": 0.55
+            },
+            "body": {
+              "angle": 0.24
+            },
+            "left_arm": {
+              "angle": 1.36
+            },
+            "left_claw": {
+              "y": -6,
+              "angle": 2.6
+            },
+            "right_arm": {
+              "angle": -1.36
+            },
+            "right_claw": {
+              "y": -6,
+              "angle": -2.6
+            }
+          }
+        },
+        {
+          "duration_ms": 85,
+          "pose": {
+            "head": {
+              "angle": 0,
+              "x": 0,
+              "scale_y": 0.92,
+              "opacity": 0.55
+            },
+            "body": {
+              "angle": 0.0
+            },
+            "left_arm": {
+              "angle": -0.7
+            },
+            "left_claw": {
+              "y": -6,
+              "angle": 1.5
+            },
+            "right_arm": {
+              "angle": 0.7
+            },
+            "right_claw": {
+              "y": -6,
+              "angle": -1.5
+            }
+          }
+        },
+        {
+          "duration_ms": 85,
+          "pose": {
+            "head": {
+              "angle": 0,
+              "x": 0,
+              "scale_y": 1,
+              "opacity": 1
+            },
+            "body": {
+              "angle": 0.0
+            },
+            "left_arm": {
+              "angle": -2.58
+            },
+            "left_claw": {
+              "y": -6,
+              "angle": 0.0
+            },
+            "right_arm": {
+              "angle": 2.58
+            },
+            "right_claw": {
+              "y": -6,
+              "angle": -0.0
+            }
+          }
+        },
+        {
+          "duration_ms": 85,
+          "pose": {
+            "head": {
+              "angle": 3,
+              "x": 0,
+              "scale_y": 1,
+              "opacity": 1
+            },
+            "body": {
+              "angle": 0.4
+            },
+            "left_arm": {
+              "angle": -3.76
+            },
+            "left_claw": {
+              "y": -6,
+              "angle": -1.5
+            },
+            "right_arm": {
+              "angle": 3.76
+            },
+            "right_claw": {
+              "y": -6,
+              "angle": 1.5
+            }
+          }
+        },
+        {
+          "duration_ms": 85,
+          "pose": {
+            "head": {
+              "angle": 3,
+              "x": 0,
+              "scale_y": 1,
+              "opacity": 1
+            },
+            "body": {
+              "angle": 0.4
+            },
+            "left_arm": {
+              "angle": -3.94
+            },
+            "left_claw": {
+              "y": -6,
+              "angle": -2.6
+            },
+            "right_arm": {
+              "angle": 3.94
+            },
+            "right_claw": {
+              "y": -6,
+              "angle": 2.6
+            }
+          }
+        },
+        {
+          "duration_ms": 85,
+          "pose": {
+            "head": {
+              "angle": -1.5,
+              "x": 0,
+              "scale_y": 1,
+              "opacity": 1
+            },
+            "body": {
+              "angle": -0.2
+            },
+            "left_arm": {
+              "angle": -3.06
+            },
+            "left_claw": {
+              "y": -6,
+              "angle": -3.0
+            },
+            "right_arm": {
+              "angle": 3.06
+            },
+            "right_claw": {
+              "y": -6,
+              "angle": 3.0
+            }
+          }
+        },
+        {
+          "duration_ms": 85,
+          "pose": {
+            "head": {
+              "angle": -1.5,
+              "x": 0,
+              "scale_y": 1,
+              "opacity": 1
+            },
+            "body": {
+              "angle": -0.2
+            },
+            "left_arm": {
+              "angle": -1.36
+            },
+            "left_claw": {
+              "y": -6,
+              "angle": -2.6
+            },
+            "right_arm": {
+              "angle": 1.36
+            },
+            "right_claw": {
+              "y": -6,
+              "angle": 2.6
+            }
+          }
+        },
+        {
+          "duration_ms": 85,
+          "pose": {
+            "head": {
+              "angle": 0,
+              "x": 0,
+              "scale_y": 1,
+              "opacity": 1
+            },
+            "body": {
+              "angle": 0.0
+            },
+            "left_arm": {
+              "angle": 0.7
+            },
+            "left_claw": {
+              "y": -6,
+              "angle": -1.5
+            },
+            "right_arm": {
+              "angle": -0.7
+            },
+            "right_claw": {
+              "y": -6,
+              "angle": 1.5
+            }
+          }
+        }
+      ]
+    },
+    "LOOK_AROUND": {
+      "loop": false,
+      "frames": [
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": 0,
+              "x": 0.0
+            },
+            "body": {
+              "angle": 0.0
+            },
+            "left_arm": {
+              "angle": 2.58
+            },
+            "left_claw": {
+              "y": -6,
+              "angle": 0.0
+            },
+            "right_arm": {
+              "angle": -2.58
+            },
+            "right_claw": {
+              "y": -6,
+              "angle": -0.0
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": -3,
+              "x": 1.0
+            },
+            "body": {
+              "angle": -0.4
+            },
+            "left_arm": {
+              "angle": 3.76
+            },
+            "left_claw": {
+              "y": -6,
+              "angle": 1.5
+            },
+            "right_arm": {
+              "angle": -3.76
+            },
+            "right_claw": {
+              "y": -6,
+              "angle": -1.5
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": -3,
+              "x": 1.73
+            },
+            "body": {
+              "angle": -0.4
+            },
+            "left_arm": {
+              "angle": 3.94
+            },
+            "left_claw": {
+              "y": -6,
+              "angle": 2.6
+            },
+            "right_arm": {
+              "angle": -3.94
+            },
+            "right_claw": {
+              "y": -6,
+              "angle": -2.6
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": 1.7999999999999998,
+              "x": 2.0
+            },
+            "body": {
+              "angle": 0.24
+            },
+            "left_arm": {
+              "angle": 3.06
+            },
+            "left_claw": {
+              "y": -6,
+              "angle": 3.0
+            },
+            "right_arm": {
+              "angle": -3.06
+            },
+            "right_claw": {
+              "y": -6,
+              "angle": -3.0
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": 1.7999999999999998,
+              "x": 1.73
+            },
+            "body": {
+              "angle": 0.24
+            },
+            "left_arm": {
+              "angle": 1.36
+            },
+            "left_claw": {
+              "y": -6,
+              "angle": 2.6
+            },
+            "right_arm": {
+              "angle": -1.36
+            },
+            "right_claw": {
+              "y": -6,
+              "angle": -2.6
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": 0,
+              "x": 1.0
+            },
+            "body": {
+              "angle": 0.0
+            },
+            "left_arm": {
+              "angle": -0.7
+            },
+            "left_claw": {
+              "y": -6,
+              "angle": 1.5
+            },
+            "right_arm": {
+              "angle": 0.7
+            },
+            "right_claw": {
+              "y": -6,
+              "angle": -1.5
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": 0,
+              "x": 0.0
+            },
+            "body": {
+              "angle": 0.0
+            },
+            "left_arm": {
+              "angle": -2.58
+            },
+            "left_claw": {
+              "y": -6,
+              "angle": 0.0
+            },
+            "right_arm": {
+              "angle": 2.58
+            },
+            "right_claw": {
+              "y": -6,
+              "angle": -0.0
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": 3,
+              "x": -1.0
+            },
+            "body": {
+              "angle": 0.4
+            },
+            "left_arm": {
+              "angle": -3.76
+            },
+            "left_claw": {
+              "y": -6,
+              "angle": -1.5
+            },
+            "right_arm": {
+              "angle": 3.76
+            },
+            "right_claw": {
+              "y": -6,
+              "angle": 1.5
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": 3,
+              "x": -1.73
+            },
+            "body": {
+              "angle": 0.4
+            },
+            "left_arm": {
+              "angle": -3.94
+            },
+            "left_claw": {
+              "y": -6,
+              "angle": -2.6
+            },
+            "right_arm": {
+              "angle": 3.94
+            },
+            "right_claw": {
+              "y": -6,
+              "angle": 2.6
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": -1.5,
+              "x": -2.0
+            },
+            "body": {
+              "angle": -0.2
+            },
+            "left_arm": {
+              "angle": -3.06
+            },
+            "left_claw": {
+              "y": -6,
+              "angle": -3.0
+            },
+            "right_arm": {
+              "angle": 3.06
+            },
+            "right_claw": {
+              "y": -6,
+              "angle": 3.0
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": -1.5,
+              "x": -1.73
+            },
+            "body": {
+              "angle": -0.2
+            },
+            "left_arm": {
+              "angle": -1.36
+            },
+            "left_claw": {
+              "y": -6,
+              "angle": -2.6
+            },
+            "right_arm": {
+              "angle": 1.36
+            },
+            "right_claw": {
+              "y": -6,
+              "angle": 2.6
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": 0,
+              "x": -1.0
+            },
+            "body": {
+              "angle": 0.0
+            },
+            "left_arm": {
+              "angle": 0.7
+            },
+            "left_claw": {
+              "y": -6,
+              "angle": -1.5
+            },
+            "right_arm": {
+              "angle": -0.7
+            },
+            "right_claw": {
+              "y": -6,
+              "angle": 1.5
+            }
+          }
+        }
+      ]
+    },
+    "WALK": {
+      "loop": true,
+      "frames": [
+        {
+          "duration_ms": 100,
+          "pose": {
+            "head": {
+              "angle": 0,
+              "x": 0
+            },
+            "body": {
+              "angle": 0.0
+            },
+            "left_arm": {
+              "angle": 2.58
+            },
+            "left_claw": {
+              "y": -6,
+              "angle": 0.0
+            },
+            "right_arm": {
+              "angle": -2.58
+            },
+            "right_claw": {
+              "y": -6,
+              "angle": -0.0
+            }
+          }
+        },
+        {
+          "duration_ms": 100,
+          "pose": {
+            "head": {
+              "angle": -3,
+              "x": 0
+            },
+            "body": {
+              "angle": -0.4
+            },
+            "left_arm": {
+              "angle": 3.76
+            },
+            "left_claw": {
+              "y": -6,
+              "angle": 1.5
+            },
+            "right_arm": {
+              "angle": -3.76
+            },
+            "right_claw": {
+              "y": -6,
+              "angle": -1.5
+            }
+          }
+        },
+        {
+          "duration_ms": 100,
+          "pose": {
+            "head": {
+              "angle": -3,
+              "x": 0
+            },
+            "body": {
+              "angle": -0.4
+            },
+            "left_arm": {
+              "angle": 3.94
+            },
+            "left_claw": {
+              "y": -6,
+              "angle": 2.6
+            },
+            "right_arm": {
+              "angle": -3.94
+            },
+            "right_claw": {
+              "y": -6,
+              "angle": -2.6
+            }
+          }
+        },
+        {
+          "duration_ms": 100,
+          "pose": {
+            "head": {
+              "angle": 1.7999999999999998,
+              "x": 0
+            },
+            "body": {
+              "angle": 0.24
+            },
+            "left_arm": {
+              "angle": 3.06
+            },
+            "left_claw": {
+              "y": -6,
+              "angle": 3.0
+            },
+            "right_arm": {
+              "angle": -3.06
+            },
+            "right_claw": {
+              "y": -6,
+              "angle": -3.0
+            }
+          }
+        },
+        {
+          "duration_ms": 100,
+          "pose": {
+            "head": {
+              "angle": 1.7999999999999998,
+              "x": 0
+            },
+            "body": {
+              "angle": 0.24
+            },
+            "left_arm": {
+              "angle": 1.36
+            },
+            "left_claw": {
+              "y": -6,
+              "angle": 2.6
+            },
+            "right_arm": {
+              "angle": -1.36
+            },
+            "right_claw": {
+              "y": -6,
+              "angle": -2.6
+            }
+          }
+        },
+        {
+          "duration_ms": 100,
+          "pose": {
+            "head": {
+              "angle": 0,
+              "x": 0
+            },
+            "body": {
+              "angle": 0.0
+            },
+            "left_arm": {
+              "angle": -0.7
+            },
+            "left_claw": {
+              "y": -6,
+              "angle": 1.5
+            },
+            "right_arm": {
+              "angle": 0.7
+            },
+            "right_claw": {
+              "y": -6,
+              "angle": -1.5
+            }
+          }
+        },
+        {
+          "duration_ms": 100,
+          "pose": {
+            "head": {
+              "angle": 0,
+              "x": 0
+            },
+            "body": {
+              "angle": 0.0
+            },
+            "left_arm": {
+              "angle": -2.58
+            },
+            "left_claw": {
+              "y": -6,
+              "angle": 0.0
+            },
+            "right_arm": {
+              "angle": 2.58
+            },
+            "right_claw": {
+              "y": -6,
+              "angle": -0.0
+            }
+          }
+        },
+        {
+          "duration_ms": 100,
+          "pose": {
+            "head": {
+              "angle": 3,
+              "x": 0
+            },
+            "body": {
+              "angle": 0.4
+            },
+            "left_arm": {
+              "angle": -3.76
+            },
+            "left_claw": {
+              "y": -6,
+              "angle": -1.5
+            },
+            "right_arm": {
+              "angle": 3.76
+            },
+            "right_claw": {
+              "y": -6,
+              "angle": 1.5
+            }
+          }
+        },
+        {
+          "duration_ms": 100,
+          "pose": {
+            "head": {
+              "angle": 3,
+              "x": 0
+            },
+            "body": {
+              "angle": 0.4
+            },
+            "left_arm": {
+              "angle": -3.94
+            },
+            "left_claw": {
+              "y": -6,
+              "angle": -2.6
+            },
+            "right_arm": {
+              "angle": 3.94
+            },
+            "right_claw": {
+              "y": -6,
+              "angle": 2.6
+            }
+          }
+        },
+        {
+          "duration_ms": 100,
+          "pose": {
+            "head": {
+              "angle": -1.5,
+              "x": 0
+            },
+            "body": {
+              "angle": -0.2
+            },
+            "left_arm": {
+              "angle": -3.06
+            },
+            "left_claw": {
+              "y": -6,
+              "angle": -3.0
+            },
+            "right_arm": {
+              "angle": 3.06
+            },
+            "right_claw": {
+              "y": -6,
+              "angle": 3.0
+            }
+          }
+        },
+        {
+          "duration_ms": 100,
+          "pose": {
+            "head": {
+              "angle": -1.5,
+              "x": 0
+            },
+            "body": {
+              "angle": -0.2
+            },
+            "left_arm": {
+              "angle": -1.36
+            },
+            "left_claw": {
+              "y": -6,
+              "angle": -2.6
+            },
+            "right_arm": {
+              "angle": 1.36
+            },
+            "right_claw": {
+              "y": -6,
+              "angle": 2.6
+            }
+          }
+        },
+        {
+          "duration_ms": 100,
+          "pose": {
+            "head": {
+              "angle": 0,
+              "x": 0
+            },
+            "body": {
+              "angle": 0.0
+            },
+            "left_arm": {
+              "angle": 0.7
+            },
+            "left_claw": {
+              "y": -6,
+              "angle": -1.5
+            },
+            "right_arm": {
+              "angle": -0.7
+            },
+            "right_claw": {
+              "y": -6,
+              "angle": 1.5
+            }
+          }
+        }
+      ]
+    },
+    "HAPPY": {
+      "loop": false,
+      "frames": [
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": 0,
+              "x": 0
+            },
+            "body": {
+              "angle": 0
+            },
+            "left_arm": {
+              "angle": 0.0
+            },
+            "left_claw": {
+              "y": -7.0,
+              "angle": 0.0
+            },
+            "right_arm": {
+              "angle": -0.0
+            },
+            "right_claw": {
+              "y": -7.0,
+              "angle": -0.0
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": -10,
+              "x": 0
+            },
+            "body": {
+              "angle": -2
+            },
+            "left_arm": {
+              "angle": 32.5
+            },
+            "left_claw": {
+              "y": -3.5,
+              "angle": 12.5
+            },
+            "right_arm": {
+              "angle": -32.5
+            },
+            "right_claw": {
+              "y": -3.5,
+              "angle": -12.5
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": -10,
+              "x": 0
+            },
+            "body": {
+              "angle": -2
+            },
+            "left_arm": {
+              "angle": 56.29
+            },
+            "left_claw": {
+              "y": -0.94,
+              "angle": 21.65
+            },
+            "right_arm": {
+              "angle": -56.29
+            },
+            "right_claw": {
+              "y": -0.94,
+              "angle": -21.65
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": 6.0,
+              "x": 0
+            },
+            "body": {
+              "angle": 1.2
+            },
+            "left_arm": {
+              "angle": 65.0
+            },
+            "left_claw": {
+              "y": 0.0,
+              "angle": 25.0
+            },
+            "right_arm": {
+              "angle": -65.0
+            },
+            "right_claw": {
+              "y": 0.0,
+              "angle": -25.0
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": 6.0,
+              "x": 0
+            },
+            "body": {
+              "angle": 1.2
+            },
+            "left_arm": {
+              "angle": 56.29
+            },
+            "left_claw": {
+              "y": -0.94,
+              "angle": 21.65
+            },
+            "right_arm": {
+              "angle": -56.29
+            },
+            "right_claw": {
+              "y": -0.94,
+              "angle": -21.65
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": 0,
+              "x": 0
+            },
+            "body": {
+              "angle": 0
+            },
+            "left_arm": {
+              "angle": 32.5
+            },
+            "left_claw": {
+              "y": -3.5,
+              "angle": 12.5
+            },
+            "right_arm": {
+              "angle": -32.5
+            },
+            "right_claw": {
+              "y": -3.5,
+              "angle": -12.5
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": 0,
+              "x": 0
+            },
+            "body": {
+              "angle": 0
+            },
+            "left_arm": {
+              "angle": 0.0
+            },
+            "left_claw": {
+              "y": -7.0,
+              "angle": 0.0
+            },
+            "right_arm": {
+              "angle": -0.0
+            },
+            "right_claw": {
+              "y": -7.0,
+              "angle": -0.0
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": 10,
+              "x": 0
+            },
+            "body": {
+              "angle": 2
+            },
+            "left_arm": {
+              "angle": 32.5
+            },
+            "left_claw": {
+              "y": -3.5,
+              "angle": -12.5
+            },
+            "right_arm": {
+              "angle": -32.5
+            },
+            "right_claw": {
+              "y": -3.5,
+              "angle": 12.5
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": 10,
+              "x": 0
+            },
+            "body": {
+              "angle": 2
+            },
+            "left_arm": {
+              "angle": 56.29
+            },
+            "left_claw": {
+              "y": -0.94,
+              "angle": -21.65
+            },
+            "right_arm": {
+              "angle": -56.29
+            },
+            "right_claw": {
+              "y": -0.94,
+              "angle": 21.65
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": -5.0,
+              "x": 0
+            },
+            "body": {
+              "angle": -1.0
+            },
+            "left_arm": {
+              "angle": 65.0
+            },
+            "left_claw": {
+              "y": 0.0,
+              "angle": -25.0
+            },
+            "right_arm": {
+              "angle": -65.0
+            },
+            "right_claw": {
+              "y": 0.0,
+              "angle": 25.0
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": -5.0,
+              "x": 0
+            },
+            "body": {
+              "angle": -1.0
+            },
+            "left_arm": {
+              "angle": 56.29
+            },
+            "left_claw": {
+              "y": -0.94,
+              "angle": -21.65
+            },
+            "right_arm": {
+              "angle": -56.29
+            },
+            "right_claw": {
+              "y": -0.94,
+              "angle": 21.65
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": 0,
+              "x": 0
+            },
+            "body": {
+              "angle": 0
+            },
+            "left_arm": {
+              "angle": 32.5
+            },
+            "left_claw": {
+              "y": -3.5,
+              "angle": -12.5
+            },
+            "right_arm": {
+              "angle": -32.5
+            },
+            "right_claw": {
+              "y": -3.5,
+              "angle": 12.5
+            }
+          }
+        }
+      ]
+    },
+    "CURIOUS": {
+      "loop": false,
+      "frames": [
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": 0,
+              "x": 0.0
+            },
+            "body": {
+              "angle": 0.0
+            },
+            "left_arm": {
+              "angle": 2.58
+            },
+            "left_claw": {
+              "y": -6,
+              "angle": 0.0
+            },
+            "right_arm": {
+              "angle": -2.58
+            },
+            "right_claw": {
+              "y": -6,
+              "angle": -0.0
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": -3,
+              "x": 1.0
+            },
+            "body": {
+              "angle": -0.4
+            },
+            "left_arm": {
+              "angle": 3.76
+            },
+            "left_claw": {
+              "y": -6,
+              "angle": 1.5
+            },
+            "right_arm": {
+              "angle": -3.76
+            },
+            "right_claw": {
+              "y": -6,
+              "angle": -1.5
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": -3,
+              "x": 1.73
+            },
+            "body": {
+              "angle": -0.4
+            },
+            "left_arm": {
+              "angle": 3.94
+            },
+            "left_claw": {
+              "y": -6,
+              "angle": 2.6
+            },
+            "right_arm": {
+              "angle": -3.94
+            },
+            "right_claw": {
+              "y": -6,
+              "angle": -2.6
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": 1.7999999999999998,
+              "x": 2.0
+            },
+            "body": {
+              "angle": 0.24
+            },
+            "left_arm": {
+              "angle": 3.06
+            },
+            "left_claw": {
+              "y": -6,
+              "angle": 3.0
+            },
+            "right_arm": {
+              "angle": -3.06
+            },
+            "right_claw": {
+              "y": -6,
+              "angle": -3.0
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": 1.7999999999999998,
+              "x": 1.73
+            },
+            "body": {
+              "angle": 0.24
+            },
+            "left_arm": {
+              "angle": 1.36
+            },
+            "left_claw": {
+              "y": -6,
+              "angle": 2.6
+            },
+            "right_arm": {
+              "angle": -1.36
+            },
+            "right_claw": {
+              "y": -6,
+              "angle": -2.6
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": 0,
+              "x": 1.0
+            },
+            "body": {
+              "angle": 0.0
+            },
+            "left_arm": {
+              "angle": -0.7
+            },
+            "left_claw": {
+              "y": -6,
+              "angle": 1.5
+            },
+            "right_arm": {
+              "angle": 0.7
+            },
+            "right_claw": {
+              "y": -6,
+              "angle": -1.5
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": 0,
+              "x": 0.0
+            },
+            "body": {
+              "angle": 0.0
+            },
+            "left_arm": {
+              "angle": -2.58
+            },
+            "left_claw": {
+              "y": -6,
+              "angle": 0.0
+            },
+            "right_arm": {
+              "angle": 2.58
+            },
+            "right_claw": {
+              "y": -6,
+              "angle": -0.0
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": 3,
+              "x": -1.0
+            },
+            "body": {
+              "angle": 0.4
+            },
+            "left_arm": {
+              "angle": -3.76
+            },
+            "left_claw": {
+              "y": -6,
+              "angle": -1.5
+            },
+            "right_arm": {
+              "angle": 3.76
+            },
+            "right_claw": {
+              "y": -6,
+              "angle": 1.5
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": 3,
+              "x": -1.73
+            },
+            "body": {
+              "angle": 0.4
+            },
+            "left_arm": {
+              "angle": -3.94
+            },
+            "left_claw": {
+              "y": -6,
+              "angle": -2.6
+            },
+            "right_arm": {
+              "angle": 3.94
+            },
+            "right_claw": {
+              "y": -6,
+              "angle": 2.6
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": -1.5,
+              "x": -2.0
+            },
+            "body": {
+              "angle": -0.2
+            },
+            "left_arm": {
+              "angle": -3.06
+            },
+            "left_claw": {
+              "y": -6,
+              "angle": -3.0
+            },
+            "right_arm": {
+              "angle": 3.06
+            },
+            "right_claw": {
+              "y": -6,
+              "angle": 3.0
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": -1.5,
+              "x": -1.73
+            },
+            "body": {
+              "angle": -0.2
+            },
+            "left_arm": {
+              "angle": -1.36
+            },
+            "left_claw": {
+              "y": -6,
+              "angle": -2.6
+            },
+            "right_arm": {
+              "angle": 1.36
+            },
+            "right_claw": {
+              "y": -6,
+              "angle": 2.6
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": 0,
+              "x": -1.0
+            },
+            "body": {
+              "angle": 0.0
+            },
+            "left_arm": {
+              "angle": 0.7
+            },
+            "left_claw": {
+              "y": -6,
+              "angle": -1.5
+            },
+            "right_arm": {
+              "angle": -0.7
+            },
+            "right_claw": {
+              "y": -6,
+              "angle": 1.5
+            }
+          }
+        }
+      ]
+    },
+    "SLEEP": {
+      "loop": true,
+      "frames": [
+        {
+          "duration_ms": 210,
+          "pose": {
+            "head": {
+              "angle": 0,
+              "x": 0,
+              "y": 2
+            },
+            "body": {
+              "angle": 0.0
+            },
+            "left_arm": {
+              "angle": 2.58
+            },
+            "left_claw": {
+              "y": -6,
+              "angle": 0.0
+            },
+            "right_arm": {
+              "angle": -2.58
+            },
+            "right_claw": {
+              "y": -6,
+              "angle": -0.0
+            }
+          }
+        },
+        {
+          "duration_ms": 210,
+          "pose": {
+            "head": {
+              "angle": -3,
+              "x": 0,
+              "y": 2
+            },
+            "body": {
+              "angle": -0.4
+            },
+            "left_arm": {
+              "angle": 3.76
+            },
+            "left_claw": {
+              "y": -6,
+              "angle": 1.5
+            },
+            "right_arm": {
+              "angle": -3.76
+            },
+            "right_claw": {
+              "y": -6,
+              "angle": -1.5
+            }
+          }
+        },
+        {
+          "duration_ms": 210,
+          "pose": {
+            "head": {
+              "angle": -3,
+              "x": 0,
+              "y": 2
+            },
+            "body": {
+              "angle": -0.4
+            },
+            "left_arm": {
+              "angle": 3.94
+            },
+            "left_claw": {
+              "y": -6,
+              "angle": 2.6
+            },
+            "right_arm": {
+              "angle": -3.94
+            },
+            "right_claw": {
+              "y": -6,
+              "angle": -2.6
+            }
+          }
+        },
+        {
+          "duration_ms": 210,
+          "pose": {
+            "head": {
+              "angle": 1.7999999999999998,
+              "x": 0,
+              "y": 2
+            },
+            "body": {
+              "angle": 0.24
+            },
+            "left_arm": {
+              "angle": 3.06
+            },
+            "left_claw": {
+              "y": -6,
+              "angle": 3.0
+            },
+            "right_arm": {
+              "angle": -3.06
+            },
+            "right_claw": {
+              "y": -6,
+              "angle": -3.0
+            }
+          }
+        },
+        {
+          "duration_ms": 210,
+          "pose": {
+            "head": {
+              "angle": 1.7999999999999998,
+              "x": 0,
+              "y": 2
+            },
+            "body": {
+              "angle": 0.24
+            },
+            "left_arm": {
+              "angle": 1.36
+            },
+            "left_claw": {
+              "y": -6,
+              "angle": 2.6
+            },
+            "right_arm": {
+              "angle": -1.36
+            },
+            "right_claw": {
+              "y": -6,
+              "angle": -2.6
+            }
+          }
+        },
+        {
+          "duration_ms": 210,
+          "pose": {
+            "head": {
+              "angle": 0,
+              "x": 0,
+              "y": 2
+            },
+            "body": {
+              "angle": 0.0
+            },
+            "left_arm": {
+              "angle": -0.7
+            },
+            "left_claw": {
+              "y": -6,
+              "angle": 1.5
+            },
+            "right_arm": {
+              "angle": 0.7
+            },
+            "right_claw": {
+              "y": -6,
+              "angle": -1.5
+            }
+          }
+        },
+        {
+          "duration_ms": 210,
+          "pose": {
+            "head": {
+              "angle": 0,
+              "x": 0,
+              "y": 2
+            },
+            "body": {
+              "angle": 0.0
+            },
+            "left_arm": {
+              "angle": -2.58
+            },
+            "left_claw": {
+              "y": -6,
+              "angle": 0.0
+            },
+            "right_arm": {
+              "angle": 2.58
+            },
+            "right_claw": {
+              "y": -6,
+              "angle": -0.0
+            }
+          }
+        },
+        {
+          "duration_ms": 210,
+          "pose": {
+            "head": {
+              "angle": 3,
+              "x": 0,
+              "y": 2
+            },
+            "body": {
+              "angle": 0.4
+            },
+            "left_arm": {
+              "angle": -3.76
+            },
+            "left_claw": {
+              "y": -6,
+              "angle": -1.5
+            },
+            "right_arm": {
+              "angle": 3.76
+            },
+            "right_claw": {
+              "y": -6,
+              "angle": 1.5
+            }
+          }
+        },
+        {
+          "duration_ms": 210,
+          "pose": {
+            "head": {
+              "angle": 3,
+              "x": 0,
+              "y": 2
+            },
+            "body": {
+              "angle": 0.4
+            },
+            "left_arm": {
+              "angle": -3.94
+            },
+            "left_claw": {
+              "y": -6,
+              "angle": -2.6
+            },
+            "right_arm": {
+              "angle": 3.94
+            },
+            "right_claw": {
+              "y": -6,
+              "angle": 2.6
+            }
+          }
+        },
+        {
+          "duration_ms": 210,
+          "pose": {
+            "head": {
+              "angle": -1.5,
+              "x": 0,
+              "y": 2
+            },
+            "body": {
+              "angle": -0.2
+            },
+            "left_arm": {
+              "angle": -3.06
+            },
+            "left_claw": {
+              "y": -6,
+              "angle": -3.0
+            },
+            "right_arm": {
+              "angle": 3.06
+            },
+            "right_claw": {
+              "y": -6,
+              "angle": 3.0
+            }
+          }
+        },
+        {
+          "duration_ms": 210,
+          "pose": {
+            "head": {
+              "angle": -1.5,
+              "x": 0,
+              "y": 2
+            },
+            "body": {
+              "angle": -0.2
+            },
+            "left_arm": {
+              "angle": -1.36
+            },
+            "left_claw": {
+              "y": -6,
+              "angle": -2.6
+            },
+            "right_arm": {
+              "angle": 1.36
+            },
+            "right_claw": {
+              "y": -6,
+              "angle": 2.6
+            }
+          }
+        },
+        {
+          "duration_ms": 210,
+          "pose": {
+            "head": {
+              "angle": 0,
+              "x": 0,
+              "y": 2
+            },
+            "body": {
+              "angle": 0.0
+            },
+            "left_arm": {
+              "angle": 0.7
+            },
+            "left_claw": {
+              "y": -6,
+              "angle": -1.5
+            },
+            "right_arm": {
+              "angle": -0.7
+            },
+            "right_claw": {
+              "y": -6,
+              "angle": 1.5
+            }
+          }
+        }
+      ]
+    },
+    "INTERACT": {
+      "loop": false,
+      "frames": [
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": 0,
+              "x": 0
+            },
+            "body": {
+              "angle": 0
+            },
+            "left_arm": {
+              "angle": 0.0
+            },
+            "left_claw": {
+              "y": -7.0,
+              "angle": 0.0
+            },
+            "right_arm": {
+              "angle": -0.0
+            },
+            "right_claw": {
+              "y": -7.0,
+              "angle": -0.0
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": -10,
+              "x": 0
+            },
+            "body": {
+              "angle": -2
+            },
+            "left_arm": {
+              "angle": 32.5
+            },
+            "left_claw": {
+              "y": -3.5,
+              "angle": 12.5
+            },
+            "right_arm": {
+              "angle": -32.5
+            },
+            "right_claw": {
+              "y": -3.5,
+              "angle": -12.5
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": -10,
+              "x": 0
+            },
+            "body": {
+              "angle": -2
+            },
+            "left_arm": {
+              "angle": 56.29
+            },
+            "left_claw": {
+              "y": -0.94,
+              "angle": 21.65
+            },
+            "right_arm": {
+              "angle": -56.29
+            },
+            "right_claw": {
+              "y": -0.94,
+              "angle": -21.65
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": 6.0,
+              "x": 0
+            },
+            "body": {
+              "angle": 1.2
+            },
+            "left_arm": {
+              "angle": 65.0
+            },
+            "left_claw": {
+              "y": 0.0,
+              "angle": 25.0
+            },
+            "right_arm": {
+              "angle": -65.0
+            },
+            "right_claw": {
+              "y": 0.0,
+              "angle": -25.0
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": 6.0,
+              "x": 0
+            },
+            "body": {
+              "angle": 1.2
+            },
+            "left_arm": {
+              "angle": 56.29
+            },
+            "left_claw": {
+              "y": -0.94,
+              "angle": 21.65
+            },
+            "right_arm": {
+              "angle": -56.29
+            },
+            "right_claw": {
+              "y": -0.94,
+              "angle": -21.65
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": 0,
+              "x": 0
+            },
+            "body": {
+              "angle": 0
+            },
+            "left_arm": {
+              "angle": 32.5
+            },
+            "left_claw": {
+              "y": -3.5,
+              "angle": 12.5
+            },
+            "right_arm": {
+              "angle": -32.5
+            },
+            "right_claw": {
+              "y": -3.5,
+              "angle": -12.5
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": 0,
+              "x": 0
+            },
+            "body": {
+              "angle": 0
+            },
+            "left_arm": {
+              "angle": 0.0
+            },
+            "left_claw": {
+              "y": -7.0,
+              "angle": 0.0
+            },
+            "right_arm": {
+              "angle": -0.0
+            },
+            "right_claw": {
+              "y": -7.0,
+              "angle": -0.0
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": 10,
+              "x": 0
+            },
+            "body": {
+              "angle": 2
+            },
+            "left_arm": {
+              "angle": 32.5
+            },
+            "left_claw": {
+              "y": -3.5,
+              "angle": -12.5
+            },
+            "right_arm": {
+              "angle": -32.5
+            },
+            "right_claw": {
+              "y": -3.5,
+              "angle": 12.5
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": 10,
+              "x": 0
+            },
+            "body": {
+              "angle": 2
+            },
+            "left_arm": {
+              "angle": 56.29
+            },
+            "left_claw": {
+              "y": -0.94,
+              "angle": -21.65
+            },
+            "right_arm": {
+              "angle": -56.29
+            },
+            "right_claw": {
+              "y": -0.94,
+              "angle": 21.65
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": -5.0,
+              "x": 0
+            },
+            "body": {
+              "angle": -1.0
+            },
+            "left_arm": {
+              "angle": 65.0
+            },
+            "left_claw": {
+              "y": 0.0,
+              "angle": -25.0
+            },
+            "right_arm": {
+              "angle": -65.0
+            },
+            "right_claw": {
+              "y": 0.0,
+              "angle": 25.0
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": -5.0,
+              "x": 0
+            },
+            "body": {
+              "angle": -1.0
+            },
+            "left_arm": {
+              "angle": 56.29
+            },
+            "left_claw": {
+              "y": -0.94,
+              "angle": -21.65
+            },
+            "right_arm": {
+              "angle": -56.29
+            },
+            "right_claw": {
+              "y": -0.94,
+              "angle": 21.65
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": 0,
+              "x": 0
+            },
+            "body": {
+              "angle": 0
+            },
+            "left_arm": {
+              "angle": 32.5
+            },
+            "left_claw": {
+              "y": -3.5,
+              "angle": -12.5
+            },
+            "right_arm": {
+              "angle": -32.5
+            },
+            "right_claw": {
+              "y": -3.5,
+              "angle": 12.5
+            }
+          }
+        }
+      ]
+    },
+    "NOTIFICATION": {
+      "loop": false,
+      "frames": [
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": 0,
+              "x": 0
+            },
+            "body": {
+              "angle": 0
+            },
+            "left_arm": {
+              "angle": 0.0
+            },
+            "left_claw": {
+              "y": -7.0,
+              "angle": 0.0
+            },
+            "right_arm": {
+              "angle": -0.0
+            },
+            "right_claw": {
+              "y": -7.0,
+              "angle": -0.0
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": -10,
+              "x": 0
+            },
+            "body": {
+              "angle": -2
+            },
+            "left_arm": {
+              "angle": 32.5
+            },
+            "left_claw": {
+              "y": -3.5,
+              "angle": 12.5
+            },
+            "right_arm": {
+              "angle": -32.5
+            },
+            "right_claw": {
+              "y": -3.5,
+              "angle": -12.5
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": -10,
+              "x": 0
+            },
+            "body": {
+              "angle": -2
+            },
+            "left_arm": {
+              "angle": 56.29
+            },
+            "left_claw": {
+              "y": -0.94,
+              "angle": 21.65
+            },
+            "right_arm": {
+              "angle": -56.29
+            },
+            "right_claw": {
+              "y": -0.94,
+              "angle": -21.65
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": 6.0,
+              "x": 0
+            },
+            "body": {
+              "angle": 1.2
+            },
+            "left_arm": {
+              "angle": 65.0
+            },
+            "left_claw": {
+              "y": 0.0,
+              "angle": 25.0
+            },
+            "right_arm": {
+              "angle": -65.0
+            },
+            "right_claw": {
+              "y": 0.0,
+              "angle": -25.0
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": 6.0,
+              "x": 0
+            },
+            "body": {
+              "angle": 1.2
+            },
+            "left_arm": {
+              "angle": 56.29
+            },
+            "left_claw": {
+              "y": -0.94,
+              "angle": 21.65
+            },
+            "right_arm": {
+              "angle": -56.29
+            },
+            "right_claw": {
+              "y": -0.94,
+              "angle": -21.65
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": 0,
+              "x": 0
+            },
+            "body": {
+              "angle": 0
+            },
+            "left_arm": {
+              "angle": 32.5
+            },
+            "left_claw": {
+              "y": -3.5,
+              "angle": 12.5
+            },
+            "right_arm": {
+              "angle": -32.5
+            },
+            "right_claw": {
+              "y": -3.5,
+              "angle": -12.5
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": 0,
+              "x": 0
+            },
+            "body": {
+              "angle": 0
+            },
+            "left_arm": {
+              "angle": 0.0
+            },
+            "left_claw": {
+              "y": -7.0,
+              "angle": 0.0
+            },
+            "right_arm": {
+              "angle": -0.0
+            },
+            "right_claw": {
+              "y": -7.0,
+              "angle": -0.0
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": 10,
+              "x": 0
+            },
+            "body": {
+              "angle": 2
+            },
+            "left_arm": {
+              "angle": 32.5
+            },
+            "left_claw": {
+              "y": -3.5,
+              "angle": -12.5
+            },
+            "right_arm": {
+              "angle": -32.5
+            },
+            "right_claw": {
+              "y": -3.5,
+              "angle": 12.5
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": 10,
+              "x": 0
+            },
+            "body": {
+              "angle": 2
+            },
+            "left_arm": {
+              "angle": 56.29
+            },
+            "left_claw": {
+              "y": -0.94,
+              "angle": -21.65
+            },
+            "right_arm": {
+              "angle": -56.29
+            },
+            "right_claw": {
+              "y": -0.94,
+              "angle": 21.65
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": -5.0,
+              "x": 0
+            },
+            "body": {
+              "angle": -1.0
+            },
+            "left_arm": {
+              "angle": 65.0
+            },
+            "left_claw": {
+              "y": 0.0,
+              "angle": -25.0
+            },
+            "right_arm": {
+              "angle": -65.0
+            },
+            "right_claw": {
+              "y": 0.0,
+              "angle": 25.0
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": -5.0,
+              "x": 0
+            },
+            "body": {
+              "angle": -1.0
+            },
+            "left_arm": {
+              "angle": 56.29
+            },
+            "left_claw": {
+              "y": -0.94,
+              "angle": -21.65
+            },
+            "right_arm": {
+              "angle": -56.29
+            },
+            "right_claw": {
+              "y": -0.94,
+              "angle": 21.65
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": 0,
+              "x": 0
+            },
+            "body": {
+              "angle": 0
+            },
+            "left_arm": {
+              "angle": 32.5
+            },
+            "left_claw": {
+              "y": -3.5,
+              "angle": -12.5
+            },
+            "right_arm": {
+              "angle": -32.5
+            },
+            "right_claw": {
+              "y": -3.5,
+              "angle": 12.5
+            }
+          }
+        }
+      ]
+    },
+    "SURPRISED": {
+      "loop": false,
+      "frames": [
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": 0,
+              "x": 0
+            },
+            "body": {
+              "angle": 0.0
+            },
+            "left_arm": {
+              "angle": 2.58
+            },
+            "left_claw": {
+              "y": -6,
+              "angle": 0.0
+            },
+            "right_arm": {
+              "angle": -2.58
+            },
+            "right_claw": {
+              "y": -6,
+              "angle": -0.0
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": -3,
+              "x": 0
+            },
+            "body": {
+              "angle": -0.4
+            },
+            "left_arm": {
+              "angle": 3.76
+            },
+            "left_claw": {
+              "y": -6,
+              "angle": 1.5
+            },
+            "right_arm": {
+              "angle": -3.76
+            },
+            "right_claw": {
+              "y": -6,
+              "angle": -1.5
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": -3,
+              "x": 0
+            },
+            "body": {
+              "angle": -0.4
+            },
+            "left_arm": {
+              "angle": 3.94
+            },
+            "left_claw": {
+              "y": -6,
+              "angle": 2.6
+            },
+            "right_arm": {
+              "angle": -3.94
+            },
+            "right_claw": {
+              "y": -6,
+              "angle": -2.6
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": 1.7999999999999998,
+              "x": 0
+            },
+            "body": {
+              "angle": 0.24
+            },
+            "left_arm": {
+              "angle": 3.06
+            },
+            "left_claw": {
+              "y": -6,
+              "angle": 3.0
+            },
+            "right_arm": {
+              "angle": -3.06
+            },
+            "right_claw": {
+              "y": -6,
+              "angle": -3.0
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": 1.7999999999999998,
+              "x": 0
+            },
+            "body": {
+              "angle": 0.24
+            },
+            "left_arm": {
+              "angle": 1.36
+            },
+            "left_claw": {
+              "y": -6,
+              "angle": 2.6
+            },
+            "right_arm": {
+              "angle": -1.36
+            },
+            "right_claw": {
+              "y": -6,
+              "angle": -2.6
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": 0,
+              "x": 0
+            },
+            "body": {
+              "angle": 0.0
+            },
+            "left_arm": {
+              "angle": -0.7
+            },
+            "left_claw": {
+              "y": -6,
+              "angle": 1.5
+            },
+            "right_arm": {
+              "angle": 0.7
+            },
+            "right_claw": {
+              "y": -6,
+              "angle": -1.5
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": 0,
+              "x": 0
+            },
+            "body": {
+              "angle": 0.0
+            },
+            "left_arm": {
+              "angle": -2.58
+            },
+            "left_claw": {
+              "y": -6,
+              "angle": 0.0
+            },
+            "right_arm": {
+              "angle": 2.58
+            },
+            "right_claw": {
+              "y": -6,
+              "angle": -0.0
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": 3,
+              "x": 0
+            },
+            "body": {
+              "angle": 0.4
+            },
+            "left_arm": {
+              "angle": -3.76
+            },
+            "left_claw": {
+              "y": -6,
+              "angle": -1.5
+            },
+            "right_arm": {
+              "angle": 3.76
+            },
+            "right_claw": {
+              "y": -6,
+              "angle": 1.5
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": 3,
+              "x": 0
+            },
+            "body": {
+              "angle": 0.4
+            },
+            "left_arm": {
+              "angle": -3.94
+            },
+            "left_claw": {
+              "y": -6,
+              "angle": -2.6
+            },
+            "right_arm": {
+              "angle": 3.94
+            },
+            "right_claw": {
+              "y": -6,
+              "angle": 2.6
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": -1.5,
+              "x": 0
+            },
+            "body": {
+              "angle": -0.2
+            },
+            "left_arm": {
+              "angle": -3.06
+            },
+            "left_claw": {
+              "y": -6,
+              "angle": -3.0
+            },
+            "right_arm": {
+              "angle": 3.06
+            },
+            "right_claw": {
+              "y": -6,
+              "angle": 3.0
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": -1.5,
+              "x": 0
+            },
+            "body": {
+              "angle": -0.2
+            },
+            "left_arm": {
+              "angle": -1.36
+            },
+            "left_claw": {
+              "y": -6,
+              "angle": -2.6
+            },
+            "right_arm": {
+              "angle": 1.36
+            },
+            "right_claw": {
+              "y": -6,
+              "angle": 2.6
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": 0,
+              "x": 0
+            },
+            "body": {
+              "angle": 0.0
+            },
+            "left_arm": {
+              "angle": 0.7
+            },
+            "left_claw": {
+              "y": -6,
+              "angle": -1.5
+            },
+            "right_arm": {
+              "angle": -0.7
+            },
+            "right_claw": {
+              "y": -6,
+              "angle": 1.5
+            }
+          }
+        }
+      ]
+    },
+    "WORK": {
+      "loop": false,
+      "frames": [
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": 0,
+              "x": 0.0
+            },
+            "body": {
+              "angle": 0.0
+            },
+            "left_arm": {
+              "angle": 2.58
+            },
+            "left_claw": {
+              "y": -6,
+              "angle": 0.0
+            },
+            "right_arm": {
+              "angle": -2.58
+            },
+            "right_claw": {
+              "y": -6,
+              "angle": -0.0
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": -3,
+              "x": 1.0
+            },
+            "body": {
+              "angle": -0.4
+            },
+            "left_arm": {
+              "angle": 3.76
+            },
+            "left_claw": {
+              "y": -6,
+              "angle": 1.5
+            },
+            "right_arm": {
+              "angle": -3.76
+            },
+            "right_claw": {
+              "y": -6,
+              "angle": -1.5
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": -3,
+              "x": 1.73
+            },
+            "body": {
+              "angle": -0.4
+            },
+            "left_arm": {
+              "angle": 3.94
+            },
+            "left_claw": {
+              "y": -6,
+              "angle": 2.6
+            },
+            "right_arm": {
+              "angle": -3.94
+            },
+            "right_claw": {
+              "y": -6,
+              "angle": -2.6
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": 1.7999999999999998,
+              "x": 2.0
+            },
+            "body": {
+              "angle": 0.24
+            },
+            "left_arm": {
+              "angle": 3.06
+            },
+            "left_claw": {
+              "y": -6,
+              "angle": 3.0
+            },
+            "right_arm": {
+              "angle": -3.06
+            },
+            "right_claw": {
+              "y": -6,
+              "angle": -3.0
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": 1.7999999999999998,
+              "x": 1.73
+            },
+            "body": {
+              "angle": 0.24
+            },
+            "left_arm": {
+              "angle": 1.36
+            },
+            "left_claw": {
+              "y": -6,
+              "angle": 2.6
+            },
+            "right_arm": {
+              "angle": -1.36
+            },
+            "right_claw": {
+              "y": -6,
+              "angle": -2.6
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": 0,
+              "x": 1.0
+            },
+            "body": {
+              "angle": 0.0
+            },
+            "left_arm": {
+              "angle": -0.7
+            },
+            "left_claw": {
+              "y": -6,
+              "angle": 1.5
+            },
+            "right_arm": {
+              "angle": 0.7
+            },
+            "right_claw": {
+              "y": -6,
+              "angle": -1.5
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": 0,
+              "x": 0.0
+            },
+            "body": {
+              "angle": 0.0
+            },
+            "left_arm": {
+              "angle": -2.58
+            },
+            "left_claw": {
+              "y": -6,
+              "angle": 0.0
+            },
+            "right_arm": {
+              "angle": 2.58
+            },
+            "right_claw": {
+              "y": -6,
+              "angle": -0.0
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": 3,
+              "x": -1.0
+            },
+            "body": {
+              "angle": 0.4
+            },
+            "left_arm": {
+              "angle": -3.76
+            },
+            "left_claw": {
+              "y": -6,
+              "angle": -1.5
+            },
+            "right_arm": {
+              "angle": 3.76
+            },
+            "right_claw": {
+              "y": -6,
+              "angle": 1.5
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": 3,
+              "x": -1.73
+            },
+            "body": {
+              "angle": 0.4
+            },
+            "left_arm": {
+              "angle": -3.94
+            },
+            "left_claw": {
+              "y": -6,
+              "angle": -2.6
+            },
+            "right_arm": {
+              "angle": 3.94
+            },
+            "right_claw": {
+              "y": -6,
+              "angle": 2.6
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": -1.5,
+              "x": -2.0
+            },
+            "body": {
+              "angle": -0.2
+            },
+            "left_arm": {
+              "angle": -3.06
+            },
+            "left_claw": {
+              "y": -6,
+              "angle": -3.0
+            },
+            "right_arm": {
+              "angle": 3.06
+            },
+            "right_claw": {
+              "y": -6,
+              "angle": 3.0
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": -1.5,
+              "x": -1.73
+            },
+            "body": {
+              "angle": -0.2
+            },
+            "left_arm": {
+              "angle": -1.36
+            },
+            "left_claw": {
+              "y": -6,
+              "angle": -2.6
+            },
+            "right_arm": {
+              "angle": 1.36
+            },
+            "right_claw": {
+              "y": -6,
+              "angle": 2.6
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": 0,
+              "x": -1.0
+            },
+            "body": {
+              "angle": 0.0
+            },
+            "left_arm": {
+              "angle": 0.7
+            },
+            "left_claw": {
+              "y": -6,
+              "angle": -1.5
+            },
+            "right_arm": {
+              "angle": -0.7
+            },
+            "right_claw": {
+              "y": -6,
+              "angle": 1.5
+            }
+          }
+        }
+      ]
+    },
+    "CONFUSED": {
+      "loop": false,
+      "frames": [
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": 0,
+              "x": 0
+            },
+            "body": {
+              "angle": 0.0
+            },
+            "left_arm": {
+              "angle": 2.58
+            },
+            "left_claw": {
+              "y": -6,
+              "angle": 0.0
+            },
+            "right_arm": {
+              "angle": -2.58
+            },
+            "right_claw": {
+              "y": -6,
+              "angle": -0.0
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": -10,
+              "x": 0
+            },
+            "body": {
+              "angle": -0.4
+            },
+            "left_arm": {
+              "angle": 3.76
+            },
+            "left_claw": {
+              "y": -6,
+              "angle": 1.5
+            },
+            "right_arm": {
+              "angle": -3.76
+            },
+            "right_claw": {
+              "y": -6,
+              "angle": -1.5
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": -10,
+              "x": 0
+            },
+            "body": {
+              "angle": -0.4
+            },
+            "left_arm": {
+              "angle": 3.94
+            },
+            "left_claw": {
+              "y": -6,
+              "angle": 2.6
+            },
+            "right_arm": {
+              "angle": -3.94
+            },
+            "right_claw": {
+              "y": -6,
+              "angle": -2.6
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": 6.0,
+              "x": 0
+            },
+            "body": {
+              "angle": 0.24
+            },
+            "left_arm": {
+              "angle": 3.06
+            },
+            "left_claw": {
+              "y": -6,
+              "angle": 3.0
+            },
+            "right_arm": {
+              "angle": -3.06
+            },
+            "right_claw": {
+              "y": -6,
+              "angle": -3.0
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": 6.0,
+              "x": 0
+            },
+            "body": {
+              "angle": 0.24
+            },
+            "left_arm": {
+              "angle": 1.36
+            },
+            "left_claw": {
+              "y": -6,
+              "angle": 2.6
+            },
+            "right_arm": {
+              "angle": -1.36
+            },
+            "right_claw": {
+              "y": -6,
+              "angle": -2.6
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": 0,
+              "x": 0
+            },
+            "body": {
+              "angle": 0.0
+            },
+            "left_arm": {
+              "angle": -0.7
+            },
+            "left_claw": {
+              "y": -6,
+              "angle": 1.5
+            },
+            "right_arm": {
+              "angle": 0.7
+            },
+            "right_claw": {
+              "y": -6,
+              "angle": -1.5
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": 0,
+              "x": 0
+            },
+            "body": {
+              "angle": 0.0
+            },
+            "left_arm": {
+              "angle": -2.58
+            },
+            "left_claw": {
+              "y": -6,
+              "angle": 0.0
+            },
+            "right_arm": {
+              "angle": 2.58
+            },
+            "right_claw": {
+              "y": -6,
+              "angle": -0.0
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": 10,
+              "x": 0
+            },
+            "body": {
+              "angle": 0.4
+            },
+            "left_arm": {
+              "angle": -3.76
+            },
+            "left_claw": {
+              "y": -6,
+              "angle": -1.5
+            },
+            "right_arm": {
+              "angle": 3.76
+            },
+            "right_claw": {
+              "y": -6,
+              "angle": 1.5
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": 10,
+              "x": 0
+            },
+            "body": {
+              "angle": 0.4
+            },
+            "left_arm": {
+              "angle": -3.94
+            },
+            "left_claw": {
+              "y": -6,
+              "angle": -2.6
+            },
+            "right_arm": {
+              "angle": 3.94
+            },
+            "right_claw": {
+              "y": -6,
+              "angle": 2.6
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": -5.0,
+              "x": 0
+            },
+            "body": {
+              "angle": -0.2
+            },
+            "left_arm": {
+              "angle": -3.06
+            },
+            "left_claw": {
+              "y": -6,
+              "angle": -3.0
+            },
+            "right_arm": {
+              "angle": 3.06
+            },
+            "right_claw": {
+              "y": -6,
+              "angle": 3.0
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": -5.0,
+              "x": 0
+            },
+            "body": {
+              "angle": -0.2
+            },
+            "left_arm": {
+              "angle": -1.36
+            },
+            "left_claw": {
+              "y": -6,
+              "angle": -2.6
+            },
+            "right_arm": {
+              "angle": 1.36
+            },
+            "right_claw": {
+              "y": -6,
+              "angle": 2.6
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": 0,
+              "x": 0
+            },
+            "body": {
+              "angle": 0.0
+            },
+            "left_arm": {
+              "angle": 0.7
+            },
+            "left_claw": {
+              "y": -6,
+              "angle": -1.5
+            },
+            "right_arm": {
+              "angle": -0.7
+            },
+            "right_claw": {
+              "y": -6,
+              "angle": 1.5
+            }
+          }
+        }
+      ]
+    },
+    "DRAG": {
+      "loop": false,
+      "frames": [
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": 0,
+              "x": 0
+            },
+            "body": {
+              "angle": 0.0
+            },
+            "left_arm": {
+              "angle": 2.58
+            },
+            "left_claw": {
+              "y": -6,
+              "angle": 0.0
+            },
+            "right_arm": {
+              "angle": -2.58
+            },
+            "right_claw": {
+              "y": -6,
+              "angle": -0.0
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": -10,
+              "x": 0
+            },
+            "body": {
+              "angle": -0.4
+            },
+            "left_arm": {
+              "angle": 3.76
+            },
+            "left_claw": {
+              "y": -6,
+              "angle": 1.5
+            },
+            "right_arm": {
+              "angle": -3.76
+            },
+            "right_claw": {
+              "y": -6,
+              "angle": -1.5
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": -10,
+              "x": 0
+            },
+            "body": {
+              "angle": -0.4
+            },
+            "left_arm": {
+              "angle": 3.94
+            },
+            "left_claw": {
+              "y": -6,
+              "angle": 2.6
+            },
+            "right_arm": {
+              "angle": -3.94
+            },
+            "right_claw": {
+              "y": -6,
+              "angle": -2.6
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": 6.0,
+              "x": 0
+            },
+            "body": {
+              "angle": 0.24
+            },
+            "left_arm": {
+              "angle": 3.06
+            },
+            "left_claw": {
+              "y": -6,
+              "angle": 3.0
+            },
+            "right_arm": {
+              "angle": -3.06
+            },
+            "right_claw": {
+              "y": -6,
+              "angle": -3.0
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": 6.0,
+              "x": 0
+            },
+            "body": {
+              "angle": 0.24
+            },
+            "left_arm": {
+              "angle": 1.36
+            },
+            "left_claw": {
+              "y": -6,
+              "angle": 2.6
+            },
+            "right_arm": {
+              "angle": -1.36
+            },
+            "right_claw": {
+              "y": -6,
+              "angle": -2.6
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": 0,
+              "x": 0
+            },
+            "body": {
+              "angle": 0.0
+            },
+            "left_arm": {
+              "angle": -0.7
+            },
+            "left_claw": {
+              "y": -6,
+              "angle": 1.5
+            },
+            "right_arm": {
+              "angle": 0.7
+            },
+            "right_claw": {
+              "y": -6,
+              "angle": -1.5
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": 0,
+              "x": 0
+            },
+            "body": {
+              "angle": 0.0
+            },
+            "left_arm": {
+              "angle": -2.58
+            },
+            "left_claw": {
+              "y": -6,
+              "angle": 0.0
+            },
+            "right_arm": {
+              "angle": 2.58
+            },
+            "right_claw": {
+              "y": -6,
+              "angle": -0.0
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": 10,
+              "x": 0
+            },
+            "body": {
+              "angle": 0.4
+            },
+            "left_arm": {
+              "angle": -3.76
+            },
+            "left_claw": {
+              "y": -6,
+              "angle": -1.5
+            },
+            "right_arm": {
+              "angle": 3.76
+            },
+            "right_claw": {
+              "y": -6,
+              "angle": 1.5
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": 10,
+              "x": 0
+            },
+            "body": {
+              "angle": 0.4
+            },
+            "left_arm": {
+              "angle": -3.94
+            },
+            "left_claw": {
+              "y": -6,
+              "angle": -2.6
+            },
+            "right_arm": {
+              "angle": 3.94
+            },
+            "right_claw": {
+              "y": -6,
+              "angle": 2.6
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": -5.0,
+              "x": 0
+            },
+            "body": {
+              "angle": -0.2
+            },
+            "left_arm": {
+              "angle": -3.06
+            },
+            "left_claw": {
+              "y": -6,
+              "angle": -3.0
+            },
+            "right_arm": {
+              "angle": 3.06
+            },
+            "right_claw": {
+              "y": -6,
+              "angle": 3.0
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": -5.0,
+              "x": 0
+            },
+            "body": {
+              "angle": -0.2
+            },
+            "left_arm": {
+              "angle": -1.36
+            },
+            "left_claw": {
+              "y": -6,
+              "angle": -2.6
+            },
+            "right_arm": {
+              "angle": 1.36
+            },
+            "right_claw": {
+              "y": -6,
+              "angle": 2.6
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": 0,
+              "x": 0
+            },
+            "body": {
+              "angle": 0.0
+            },
+            "left_arm": {
+              "angle": 0.7
+            },
+            "left_claw": {
+              "y": -6,
+              "angle": -1.5
+            },
+            "right_arm": {
+              "angle": -0.7
+            },
+            "right_claw": {
+              "y": -6,
+              "angle": 1.5
+            }
+          }
+        }
+      ]
+    },
+    "RECOVER": {
+      "loop": false,
+      "frames": [
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": 0,
+              "x": 0
+            },
+            "body": {
+              "angle": 0.0
+            },
+            "left_arm": {
+              "angle": 2.58
+            },
+            "left_claw": {
+              "y": -6,
+              "angle": 0.0
+            },
+            "right_arm": {
+              "angle": -2.58
+            },
+            "right_claw": {
+              "y": -6,
+              "angle": -0.0
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": -10,
+              "x": 0
+            },
+            "body": {
+              "angle": -0.4
+            },
+            "left_arm": {
+              "angle": 3.76
+            },
+            "left_claw": {
+              "y": -6,
+              "angle": 1.5
+            },
+            "right_arm": {
+              "angle": -3.76
+            },
+            "right_claw": {
+              "y": -6,
+              "angle": -1.5
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": -10,
+              "x": 0
+            },
+            "body": {
+              "angle": -0.4
+            },
+            "left_arm": {
+              "angle": 3.94
+            },
+            "left_claw": {
+              "y": -6,
+              "angle": 2.6
+            },
+            "right_arm": {
+              "angle": -3.94
+            },
+            "right_claw": {
+              "y": -6,
+              "angle": -2.6
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": 6.0,
+              "x": 0
+            },
+            "body": {
+              "angle": 0.24
+            },
+            "left_arm": {
+              "angle": 3.06
+            },
+            "left_claw": {
+              "y": -6,
+              "angle": 3.0
+            },
+            "right_arm": {
+              "angle": -3.06
+            },
+            "right_claw": {
+              "y": -6,
+              "angle": -3.0
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": 6.0,
+              "x": 0
+            },
+            "body": {
+              "angle": 0.24
+            },
+            "left_arm": {
+              "angle": 1.36
+            },
+            "left_claw": {
+              "y": -6,
+              "angle": 2.6
+            },
+            "right_arm": {
+              "angle": -1.36
+            },
+            "right_claw": {
+              "y": -6,
+              "angle": -2.6
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": 0,
+              "x": 0
+            },
+            "body": {
+              "angle": 0.0
+            },
+            "left_arm": {
+              "angle": -0.7
+            },
+            "left_claw": {
+              "y": -6,
+              "angle": 1.5
+            },
+            "right_arm": {
+              "angle": 0.7
+            },
+            "right_claw": {
+              "y": -6,
+              "angle": -1.5
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": 0,
+              "x": 0
+            },
+            "body": {
+              "angle": 0.0
+            },
+            "left_arm": {
+              "angle": -2.58
+            },
+            "left_claw": {
+              "y": -6,
+              "angle": 0.0
+            },
+            "right_arm": {
+              "angle": 2.58
+            },
+            "right_claw": {
+              "y": -6,
+              "angle": -0.0
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": 10,
+              "x": 0
+            },
+            "body": {
+              "angle": 0.4
+            },
+            "left_arm": {
+              "angle": -3.76
+            },
+            "left_claw": {
+              "y": -6,
+              "angle": -1.5
+            },
+            "right_arm": {
+              "angle": 3.76
+            },
+            "right_claw": {
+              "y": -6,
+              "angle": 1.5
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": 10,
+              "x": 0
+            },
+            "body": {
+              "angle": 0.4
+            },
+            "left_arm": {
+              "angle": -3.94
+            },
+            "left_claw": {
+              "y": -6,
+              "angle": -2.6
+            },
+            "right_arm": {
+              "angle": 3.94
+            },
+            "right_claw": {
+              "y": -6,
+              "angle": 2.6
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": -5.0,
+              "x": 0
+            },
+            "body": {
+              "angle": -0.2
+            },
+            "left_arm": {
+              "angle": -3.06
+            },
+            "left_claw": {
+              "y": -6,
+              "angle": -3.0
+            },
+            "right_arm": {
+              "angle": 3.06
+            },
+            "right_claw": {
+              "y": -6,
+              "angle": 3.0
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": -5.0,
+              "x": 0
+            },
+            "body": {
+              "angle": -0.2
+            },
+            "left_arm": {
+              "angle": -1.36
+            },
+            "left_claw": {
+              "y": -6,
+              "angle": -2.6
+            },
+            "right_arm": {
+              "angle": 1.36
+            },
+            "right_claw": {
+              "y": -6,
+              "angle": 2.6
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": 0,
+              "x": 0
+            },
+            "body": {
+              "angle": 0.0
+            },
+            "left_arm": {
+              "angle": 0.7
+            },
+            "left_claw": {
+              "y": -6,
+              "angle": -1.5
+            },
+            "right_arm": {
+              "angle": -0.7
+            },
+            "right_claw": {
+              "y": -6,
+              "angle": 1.5
+            }
+          }
+        }
+      ]
+    },
+    "WAKE": {
+      "loop": false,
+      "frames": [
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": 0,
+              "x": 0
+            },
+            "body": {
+              "angle": 0.0
+            },
+            "left_arm": {
+              "angle": 2.58
+            },
+            "left_claw": {
+              "y": -6,
+              "angle": 0.0
+            },
+            "right_arm": {
+              "angle": -2.58
+            },
+            "right_claw": {
+              "y": -6,
+              "angle": -0.0
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": -3,
+              "x": 0
+            },
+            "body": {
+              "angle": -0.4
+            },
+            "left_arm": {
+              "angle": 3.76
+            },
+            "left_claw": {
+              "y": -6,
+              "angle": 1.5
+            },
+            "right_arm": {
+              "angle": -3.76
+            },
+            "right_claw": {
+              "y": -6,
+              "angle": -1.5
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": -3,
+              "x": 0
+            },
+            "body": {
+              "angle": -0.4
+            },
+            "left_arm": {
+              "angle": 3.94
+            },
+            "left_claw": {
+              "y": -6,
+              "angle": 2.6
+            },
+            "right_arm": {
+              "angle": -3.94
+            },
+            "right_claw": {
+              "y": -6,
+              "angle": -2.6
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": 1.7999999999999998,
+              "x": 0
+            },
+            "body": {
+              "angle": 0.24
+            },
+            "left_arm": {
+              "angle": 3.06
+            },
+            "left_claw": {
+              "y": -6,
+              "angle": 3.0
+            },
+            "right_arm": {
+              "angle": -3.06
+            },
+            "right_claw": {
+              "y": -6,
+              "angle": -3.0
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": 1.7999999999999998,
+              "x": 0
+            },
+            "body": {
+              "angle": 0.24
+            },
+            "left_arm": {
+              "angle": 1.36
+            },
+            "left_claw": {
+              "y": -6,
+              "angle": 2.6
+            },
+            "right_arm": {
+              "angle": -1.36
+            },
+            "right_claw": {
+              "y": -6,
+              "angle": -2.6
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": 0,
+              "x": 0
+            },
+            "body": {
+              "angle": 0.0
+            },
+            "left_arm": {
+              "angle": -0.7
+            },
+            "left_claw": {
+              "y": -6,
+              "angle": 1.5
+            },
+            "right_arm": {
+              "angle": 0.7
+            },
+            "right_claw": {
+              "y": -6,
+              "angle": -1.5
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": 0,
+              "x": 0
+            },
+            "body": {
+              "angle": 0.0
+            },
+            "left_arm": {
+              "angle": -2.58
+            },
+            "left_claw": {
+              "y": -6,
+              "angle": 0.0
+            },
+            "right_arm": {
+              "angle": 2.58
+            },
+            "right_claw": {
+              "y": -6,
+              "angle": -0.0
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": 3,
+              "x": 0
+            },
+            "body": {
+              "angle": 0.4
+            },
+            "left_arm": {
+              "angle": -3.76
+            },
+            "left_claw": {
+              "y": -6,
+              "angle": -1.5
+            },
+            "right_arm": {
+              "angle": 3.76
+            },
+            "right_claw": {
+              "y": -6,
+              "angle": 1.5
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": 3,
+              "x": 0
+            },
+            "body": {
+              "angle": 0.4
+            },
+            "left_arm": {
+              "angle": -3.94
+            },
+            "left_claw": {
+              "y": -6,
+              "angle": -2.6
+            },
+            "right_arm": {
+              "angle": 3.94
+            },
+            "right_claw": {
+              "y": -6,
+              "angle": 2.6
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": -1.5,
+              "x": 0
+            },
+            "body": {
+              "angle": -0.2
+            },
+            "left_arm": {
+              "angle": -3.06
+            },
+            "left_claw": {
+              "y": -6,
+              "angle": -3.0
+            },
+            "right_arm": {
+              "angle": 3.06
+            },
+            "right_claw": {
+              "y": -6,
+              "angle": 3.0
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": -1.5,
+              "x": 0
+            },
+            "body": {
+              "angle": -0.2
+            },
+            "left_arm": {
+              "angle": -1.36
+            },
+            "left_claw": {
+              "y": -6,
+              "angle": -2.6
+            },
+            "right_arm": {
+              "angle": 1.36
+            },
+            "right_claw": {
+              "y": -6,
+              "angle": 2.6
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": 0,
+              "x": 0
+            },
+            "body": {
+              "angle": 0.0
+            },
+            "left_arm": {
+              "angle": 0.7
+            },
+            "left_claw": {
+              "y": -6,
+              "angle": -1.5
+            },
+            "right_arm": {
+              "angle": -0.7
+            },
+            "right_claw": {
+              "y": -6,
+              "angle": 1.5
+            }
+          }
+        }
+      ]
+    },
+    "GREETING": {
+      "loop": false,
+      "frames": [
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": 0,
+              "x": 0
+            },
+            "body": {
+              "angle": 0
+            },
+            "left_arm": {
+              "angle": 0.0
+            },
+            "left_claw": {
+              "y": -7.0,
+              "angle": 0.0
+            },
+            "right_arm": {
+              "angle": -0.0
+            },
+            "right_claw": {
+              "y": -7.0,
+              "angle": -0.0
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": -10,
+              "x": 0
+            },
+            "body": {
+              "angle": -2
+            },
+            "left_arm": {
+              "angle": 32.5
+            },
+            "left_claw": {
+              "y": -3.5,
+              "angle": 12.5
+            },
+            "right_arm": {
+              "angle": -32.5
+            },
+            "right_claw": {
+              "y": -3.5,
+              "angle": -12.5
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": -10,
+              "x": 0
+            },
+            "body": {
+              "angle": -2
+            },
+            "left_arm": {
+              "angle": 56.29
+            },
+            "left_claw": {
+              "y": -0.94,
+              "angle": 21.65
+            },
+            "right_arm": {
+              "angle": -56.29
+            },
+            "right_claw": {
+              "y": -0.94,
+              "angle": -21.65
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": 6.0,
+              "x": 0
+            },
+            "body": {
+              "angle": 1.2
+            },
+            "left_arm": {
+              "angle": 65.0
+            },
+            "left_claw": {
+              "y": 0.0,
+              "angle": 25.0
+            },
+            "right_arm": {
+              "angle": -65.0
+            },
+            "right_claw": {
+              "y": 0.0,
+              "angle": -25.0
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": 6.0,
+              "x": 0
+            },
+            "body": {
+              "angle": 1.2
+            },
+            "left_arm": {
+              "angle": 56.29
+            },
+            "left_claw": {
+              "y": -0.94,
+              "angle": 21.65
+            },
+            "right_arm": {
+              "angle": -56.29
+            },
+            "right_claw": {
+              "y": -0.94,
+              "angle": -21.65
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": 0,
+              "x": 0
+            },
+            "body": {
+              "angle": 0
+            },
+            "left_arm": {
+              "angle": 32.5
+            },
+            "left_claw": {
+              "y": -3.5,
+              "angle": 12.5
+            },
+            "right_arm": {
+              "angle": -32.5
+            },
+            "right_claw": {
+              "y": -3.5,
+              "angle": -12.5
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": 0,
+              "x": 0
+            },
+            "body": {
+              "angle": 0
+            },
+            "left_arm": {
+              "angle": 0.0
+            },
+            "left_claw": {
+              "y": -7.0,
+              "angle": 0.0
+            },
+            "right_arm": {
+              "angle": -0.0
+            },
+            "right_claw": {
+              "y": -7.0,
+              "angle": -0.0
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": 10,
+              "x": 0
+            },
+            "body": {
+              "angle": 2
+            },
+            "left_arm": {
+              "angle": 32.5
+            },
+            "left_claw": {
+              "y": -3.5,
+              "angle": -12.5
+            },
+            "right_arm": {
+              "angle": -32.5
+            },
+            "right_claw": {
+              "y": -3.5,
+              "angle": 12.5
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": 10,
+              "x": 0
+            },
+            "body": {
+              "angle": 2
+            },
+            "left_arm": {
+              "angle": 56.29
+            },
+            "left_claw": {
+              "y": -0.94,
+              "angle": -21.65
+            },
+            "right_arm": {
+              "angle": -56.29
+            },
+            "right_claw": {
+              "y": -0.94,
+              "angle": 21.65
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": -5.0,
+              "x": 0
+            },
+            "body": {
+              "angle": -1.0
+            },
+            "left_arm": {
+              "angle": 65.0
+            },
+            "left_claw": {
+              "y": 0.0,
+              "angle": -25.0
+            },
+            "right_arm": {
+              "angle": -65.0
+            },
+            "right_claw": {
+              "y": 0.0,
+              "angle": 25.0
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": -5.0,
+              "x": 0
+            },
+            "body": {
+              "angle": -1.0
+            },
+            "left_arm": {
+              "angle": 56.29
+            },
+            "left_claw": {
+              "y": -0.94,
+              "angle": -21.65
+            },
+            "right_arm": {
+              "angle": -56.29
+            },
+            "right_claw": {
+              "y": -0.94,
+              "angle": 21.65
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": 0,
+              "x": 0
+            },
+            "body": {
+              "angle": 0
+            },
+            "left_arm": {
+              "angle": 32.5
+            },
+            "left_claw": {
+              "y": -3.5,
+              "angle": -12.5
+            },
+            "right_arm": {
+              "angle": -32.5
+            },
+            "right_claw": {
+              "y": -3.5,
+              "angle": 12.5
+            }
+          }
+        }
+      ]
+    },
+    "WORRIED": {
+      "loop": false,
+      "frames": [
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": 0,
+              "x": 0
+            },
+            "body": {
+              "angle": 0.0
+            },
+            "left_arm": {
+              "angle": 2.58
+            },
+            "left_claw": {
+              "y": -6,
+              "angle": 0.0
+            },
+            "right_arm": {
+              "angle": -2.58
+            },
+            "right_claw": {
+              "y": -6,
+              "angle": -0.0
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": -10,
+              "x": 0
+            },
+            "body": {
+              "angle": -0.4
+            },
+            "left_arm": {
+              "angle": 3.76
+            },
+            "left_claw": {
+              "y": -6,
+              "angle": 1.5
+            },
+            "right_arm": {
+              "angle": -3.76
+            },
+            "right_claw": {
+              "y": -6,
+              "angle": -1.5
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": -10,
+              "x": 0
+            },
+            "body": {
+              "angle": -0.4
+            },
+            "left_arm": {
+              "angle": 3.94
+            },
+            "left_claw": {
+              "y": -6,
+              "angle": 2.6
+            },
+            "right_arm": {
+              "angle": -3.94
+            },
+            "right_claw": {
+              "y": -6,
+              "angle": -2.6
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": 6.0,
+              "x": 0
+            },
+            "body": {
+              "angle": 0.24
+            },
+            "left_arm": {
+              "angle": 3.06
+            },
+            "left_claw": {
+              "y": -6,
+              "angle": 3.0
+            },
+            "right_arm": {
+              "angle": -3.06
+            },
+            "right_claw": {
+              "y": -6,
+              "angle": -3.0
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": 6.0,
+              "x": 0
+            },
+            "body": {
+              "angle": 0.24
+            },
+            "left_arm": {
+              "angle": 1.36
+            },
+            "left_claw": {
+              "y": -6,
+              "angle": 2.6
+            },
+            "right_arm": {
+              "angle": -1.36
+            },
+            "right_claw": {
+              "y": -6,
+              "angle": -2.6
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": 0,
+              "x": 0
+            },
+            "body": {
+              "angle": 0.0
+            },
+            "left_arm": {
+              "angle": -0.7
+            },
+            "left_claw": {
+              "y": -6,
+              "angle": 1.5
+            },
+            "right_arm": {
+              "angle": 0.7
+            },
+            "right_claw": {
+              "y": -6,
+              "angle": -1.5
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": 0,
+              "x": 0
+            },
+            "body": {
+              "angle": 0.0
+            },
+            "left_arm": {
+              "angle": -2.58
+            },
+            "left_claw": {
+              "y": -6,
+              "angle": 0.0
+            },
+            "right_arm": {
+              "angle": 2.58
+            },
+            "right_claw": {
+              "y": -6,
+              "angle": -0.0
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": 10,
+              "x": 0
+            },
+            "body": {
+              "angle": 0.4
+            },
+            "left_arm": {
+              "angle": -3.76
+            },
+            "left_claw": {
+              "y": -6,
+              "angle": -1.5
+            },
+            "right_arm": {
+              "angle": 3.76
+            },
+            "right_claw": {
+              "y": -6,
+              "angle": 1.5
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": 10,
+              "x": 0
+            },
+            "body": {
+              "angle": 0.4
+            },
+            "left_arm": {
+              "angle": -3.94
+            },
+            "left_claw": {
+              "y": -6,
+              "angle": -2.6
+            },
+            "right_arm": {
+              "angle": 3.94
+            },
+            "right_claw": {
+              "y": -6,
+              "angle": 2.6
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": -5.0,
+              "x": 0
+            },
+            "body": {
+              "angle": -0.2
+            },
+            "left_arm": {
+              "angle": -3.06
+            },
+            "left_claw": {
+              "y": -6,
+              "angle": -3.0
+            },
+            "right_arm": {
+              "angle": 3.06
+            },
+            "right_claw": {
+              "y": -6,
+              "angle": 3.0
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": -5.0,
+              "x": 0
+            },
+            "body": {
+              "angle": -0.2
+            },
+            "left_arm": {
+              "angle": -1.36
+            },
+            "left_claw": {
+              "y": -6,
+              "angle": -2.6
+            },
+            "right_arm": {
+              "angle": 1.36
+            },
+            "right_claw": {
+              "y": -6,
+              "angle": 2.6
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": 0,
+              "x": 0
+            },
+            "body": {
+              "angle": 0.0
+            },
+            "left_arm": {
+              "angle": 0.7
+            },
+            "left_claw": {
+              "y": -6,
+              "angle": -1.5
+            },
+            "right_arm": {
+              "angle": -0.7
+            },
+            "right_claw": {
+              "y": -6,
+              "angle": 1.5
+            }
+          }
+        }
+      ]
+    },
+    "OVERHEAT": {
+      "loop": false,
+      "frames": [
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": 0,
+              "x": 0
+            },
+            "body": {
+              "angle": 0.0
+            },
+            "left_arm": {
+              "angle": 2.58
+            },
+            "left_claw": {
+              "y": -6,
+              "angle": 0.0
+            },
+            "right_arm": {
+              "angle": -2.58
+            },
+            "right_claw": {
+              "y": -6,
+              "angle": -0.0
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": -10,
+              "x": 0
+            },
+            "body": {
+              "angle": -0.4
+            },
+            "left_arm": {
+              "angle": 3.76
+            },
+            "left_claw": {
+              "y": -6,
+              "angle": 1.5
+            },
+            "right_arm": {
+              "angle": -3.76
+            },
+            "right_claw": {
+              "y": -6,
+              "angle": -1.5
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": -10,
+              "x": 0
+            },
+            "body": {
+              "angle": -0.4
+            },
+            "left_arm": {
+              "angle": 3.94
+            },
+            "left_claw": {
+              "y": -6,
+              "angle": 2.6
+            },
+            "right_arm": {
+              "angle": -3.94
+            },
+            "right_claw": {
+              "y": -6,
+              "angle": -2.6
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": 6.0,
+              "x": 0
+            },
+            "body": {
+              "angle": 0.24
+            },
+            "left_arm": {
+              "angle": 3.06
+            },
+            "left_claw": {
+              "y": -6,
+              "angle": 3.0
+            },
+            "right_arm": {
+              "angle": -3.06
+            },
+            "right_claw": {
+              "y": -6,
+              "angle": -3.0
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": 6.0,
+              "x": 0
+            },
+            "body": {
+              "angle": 0.24
+            },
+            "left_arm": {
+              "angle": 1.36
+            },
+            "left_claw": {
+              "y": -6,
+              "angle": 2.6
+            },
+            "right_arm": {
+              "angle": -1.36
+            },
+            "right_claw": {
+              "y": -6,
+              "angle": -2.6
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": 0,
+              "x": 0
+            },
+            "body": {
+              "angle": 0.0
+            },
+            "left_arm": {
+              "angle": -0.7
+            },
+            "left_claw": {
+              "y": -6,
+              "angle": 1.5
+            },
+            "right_arm": {
+              "angle": 0.7
+            },
+            "right_claw": {
+              "y": -6,
+              "angle": -1.5
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": 0,
+              "x": 0
+            },
+            "body": {
+              "angle": 0.0
+            },
+            "left_arm": {
+              "angle": -2.58
+            },
+            "left_claw": {
+              "y": -6,
+              "angle": 0.0
+            },
+            "right_arm": {
+              "angle": 2.58
+            },
+            "right_claw": {
+              "y": -6,
+              "angle": -0.0
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": 10,
+              "x": 0
+            },
+            "body": {
+              "angle": 0.4
+            },
+            "left_arm": {
+              "angle": -3.76
+            },
+            "left_claw": {
+              "y": -6,
+              "angle": -1.5
+            },
+            "right_arm": {
+              "angle": 3.76
+            },
+            "right_claw": {
+              "y": -6,
+              "angle": 1.5
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": 10,
+              "x": 0
+            },
+            "body": {
+              "angle": 0.4
+            },
+            "left_arm": {
+              "angle": -3.94
+            },
+            "left_claw": {
+              "y": -6,
+              "angle": -2.6
+            },
+            "right_arm": {
+              "angle": 3.94
+            },
+            "right_claw": {
+              "y": -6,
+              "angle": 2.6
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": -5.0,
+              "x": 0
+            },
+            "body": {
+              "angle": -0.2
+            },
+            "left_arm": {
+              "angle": -3.06
+            },
+            "left_claw": {
+              "y": -6,
+              "angle": -3.0
+            },
+            "right_arm": {
+              "angle": 3.06
+            },
+            "right_claw": {
+              "y": -6,
+              "angle": 3.0
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": -5.0,
+              "x": 0
+            },
+            "body": {
+              "angle": -0.2
+            },
+            "left_arm": {
+              "angle": -1.36
+            },
+            "left_claw": {
+              "y": -6,
+              "angle": -2.6
+            },
+            "right_arm": {
+              "angle": 1.36
+            },
+            "right_claw": {
+              "y": -6,
+              "angle": 2.6
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": 0,
+              "x": 0
+            },
+            "body": {
+              "angle": 0.0
+            },
+            "left_arm": {
+              "angle": 0.7
+            },
+            "left_claw": {
+              "y": -6,
+              "angle": -1.5
+            },
+            "right_arm": {
+              "angle": -0.7
+            },
+            "right_claw": {
+              "y": -6,
+              "angle": 1.5
+            }
+          }
+        }
+      ]
+    },
+    "LOOK_LEFT": {
+      "loop": false,
+      "frames": [
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": 0,
+              "x": -0.0
+            },
+            "body": {
+              "angle": 0.0
+            },
+            "left_arm": {
+              "angle": 2.58
+            },
+            "left_claw": {
+              "y": -6,
+              "angle": 0.0
+            },
+            "right_arm": {
+              "angle": -2.58
+            },
+            "right_claw": {
+              "y": -6,
+              "angle": -0.0
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": -3,
+              "x": -0.85
+            },
+            "body": {
+              "angle": -0.4
+            },
+            "left_arm": {
+              "angle": 3.76
+            },
+            "left_claw": {
+              "y": -6,
+              "angle": 1.5
+            },
+            "right_arm": {
+              "angle": -3.76
+            },
+            "right_claw": {
+              "y": -6,
+              "angle": -1.5
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": -3,
+              "x": -1.62
+            },
+            "body": {
+              "angle": -0.4
+            },
+            "left_arm": {
+              "angle": 3.94
+            },
+            "left_claw": {
+              "y": -6,
+              "angle": 2.6
+            },
+            "right_arm": {
+              "angle": -3.94
+            },
+            "right_claw": {
+              "y": -6,
+              "angle": -2.6
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": 1.7999999999999998,
+              "x": -2.27
+            },
+            "body": {
+              "angle": 0.24
+            },
+            "left_arm": {
+              "angle": 3.06
+            },
+            "left_claw": {
+              "y": -6,
+              "angle": 3.0
+            },
+            "right_arm": {
+              "angle": -3.06
+            },
+            "right_claw": {
+              "y": -6,
+              "angle": -3.0
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": 1.7999999999999998,
+              "x": -2.73
+            },
+            "body": {
+              "angle": 0.24
+            },
+            "left_arm": {
+              "angle": 1.36
+            },
+            "left_claw": {
+              "y": -6,
+              "angle": 2.6
+            },
+            "right_arm": {
+              "angle": -1.36
+            },
+            "right_claw": {
+              "y": -6,
+              "angle": -2.6
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": 0,
+              "x": -2.97
+            },
+            "body": {
+              "angle": 0.0
+            },
+            "left_arm": {
+              "angle": -0.7
+            },
+            "left_claw": {
+              "y": -6,
+              "angle": 1.5
+            },
+            "right_arm": {
+              "angle": 0.7
+            },
+            "right_claw": {
+              "y": -6,
+              "angle": -1.5
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": 0,
+              "x": -2.97
+            },
+            "body": {
+              "angle": 0.0
+            },
+            "left_arm": {
+              "angle": -2.58
+            },
+            "left_claw": {
+              "y": -6,
+              "angle": 0.0
+            },
+            "right_arm": {
+              "angle": 2.58
+            },
+            "right_claw": {
+              "y": -6,
+              "angle": -0.0
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": 3,
+              "x": -2.73
+            },
+            "body": {
+              "angle": 0.4
+            },
+            "left_arm": {
+              "angle": -3.76
+            },
+            "left_claw": {
+              "y": -6,
+              "angle": -1.5
+            },
+            "right_arm": {
+              "angle": 3.76
+            },
+            "right_claw": {
+              "y": -6,
+              "angle": 1.5
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": 3,
+              "x": -2.27
+            },
+            "body": {
+              "angle": 0.4
+            },
+            "left_arm": {
+              "angle": -3.94
+            },
+            "left_claw": {
+              "y": -6,
+              "angle": -2.6
+            },
+            "right_arm": {
+              "angle": 3.94
+            },
+            "right_claw": {
+              "y": -6,
+              "angle": 2.6
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": -1.5,
+              "x": -1.62
+            },
+            "body": {
+              "angle": -0.2
+            },
+            "left_arm": {
+              "angle": -3.06
+            },
+            "left_claw": {
+              "y": -6,
+              "angle": -3.0
+            },
+            "right_arm": {
+              "angle": 3.06
+            },
+            "right_claw": {
+              "y": -6,
+              "angle": 3.0
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": -1.5,
+              "x": -0.85
+            },
+            "body": {
+              "angle": -0.2
+            },
+            "left_arm": {
+              "angle": -1.36
+            },
+            "left_claw": {
+              "y": -6,
+              "angle": -2.6
+            },
+            "right_arm": {
+              "angle": 1.36
+            },
+            "right_claw": {
+              "y": -6,
+              "angle": 2.6
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": 0,
+              "x": -0.0
+            },
+            "body": {
+              "angle": 0.0
+            },
+            "left_arm": {
+              "angle": 0.7
+            },
+            "left_claw": {
+              "y": -6,
+              "angle": -1.5
+            },
+            "right_arm": {
+              "angle": -0.7
+            },
+            "right_claw": {
+              "y": -6,
+              "angle": 1.5
+            }
+          }
+        }
+      ]
+    },
+    "LOOK_RIGHT": {
+      "loop": false,
+      "frames": [
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": 0,
+              "x": 0.0
+            },
+            "body": {
+              "angle": 0.0
+            },
+            "left_arm": {
+              "angle": 2.58
+            },
+            "left_claw": {
+              "y": -6,
+              "angle": 0.0
+            },
+            "right_arm": {
+              "angle": -2.58
+            },
+            "right_claw": {
+              "y": -6,
+              "angle": -0.0
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": -3,
+              "x": 0.85
+            },
+            "body": {
+              "angle": -0.4
+            },
+            "left_arm": {
+              "angle": 3.76
+            },
+            "left_claw": {
+              "y": -6,
+              "angle": 1.5
+            },
+            "right_arm": {
+              "angle": -3.76
+            },
+            "right_claw": {
+              "y": -6,
+              "angle": -1.5
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": -3,
+              "x": 1.62
+            },
+            "body": {
+              "angle": -0.4
+            },
+            "left_arm": {
+              "angle": 3.94
+            },
+            "left_claw": {
+              "y": -6,
+              "angle": 2.6
+            },
+            "right_arm": {
+              "angle": -3.94
+            },
+            "right_claw": {
+              "y": -6,
+              "angle": -2.6
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": 1.7999999999999998,
+              "x": 2.27
+            },
+            "body": {
+              "angle": 0.24
+            },
+            "left_arm": {
+              "angle": 3.06
+            },
+            "left_claw": {
+              "y": -6,
+              "angle": 3.0
+            },
+            "right_arm": {
+              "angle": -3.06
+            },
+            "right_claw": {
+              "y": -6,
+              "angle": -3.0
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": 1.7999999999999998,
+              "x": 2.73
+            },
+            "body": {
+              "angle": 0.24
+            },
+            "left_arm": {
+              "angle": 1.36
+            },
+            "left_claw": {
+              "y": -6,
+              "angle": 2.6
+            },
+            "right_arm": {
+              "angle": -1.36
+            },
+            "right_claw": {
+              "y": -6,
+              "angle": -2.6
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": 0,
+              "x": 2.97
+            },
+            "body": {
+              "angle": 0.0
+            },
+            "left_arm": {
+              "angle": -0.7
+            },
+            "left_claw": {
+              "y": -6,
+              "angle": 1.5
+            },
+            "right_arm": {
+              "angle": 0.7
+            },
+            "right_claw": {
+              "y": -6,
+              "angle": -1.5
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": 0,
+              "x": 2.97
+            },
+            "body": {
+              "angle": 0.0
+            },
+            "left_arm": {
+              "angle": -2.58
+            },
+            "left_claw": {
+              "y": -6,
+              "angle": 0.0
+            },
+            "right_arm": {
+              "angle": 2.58
+            },
+            "right_claw": {
+              "y": -6,
+              "angle": -0.0
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": 3,
+              "x": 2.73
+            },
+            "body": {
+              "angle": 0.4
+            },
+            "left_arm": {
+              "angle": -3.76
+            },
+            "left_claw": {
+              "y": -6,
+              "angle": -1.5
+            },
+            "right_arm": {
+              "angle": 3.76
+            },
+            "right_claw": {
+              "y": -6,
+              "angle": 1.5
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": 3,
+              "x": 2.27
+            },
+            "body": {
+              "angle": 0.4
+            },
+            "left_arm": {
+              "angle": -3.94
+            },
+            "left_claw": {
+              "y": -6,
+              "angle": -2.6
+            },
+            "right_arm": {
+              "angle": 3.94
+            },
+            "right_claw": {
+              "y": -6,
+              "angle": 2.6
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": -1.5,
+              "x": 1.62
+            },
+            "body": {
+              "angle": -0.2
+            },
+            "left_arm": {
+              "angle": -3.06
+            },
+            "left_claw": {
+              "y": -6,
+              "angle": -3.0
+            },
+            "right_arm": {
+              "angle": 3.06
+            },
+            "right_claw": {
+              "y": -6,
+              "angle": 3.0
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": -1.5,
+              "x": 0.85
+            },
+            "body": {
+              "angle": -0.2
+            },
+            "left_arm": {
+              "angle": -1.36
+            },
+            "left_claw": {
+              "y": -6,
+              "angle": -2.6
+            },
+            "right_arm": {
+              "angle": 1.36
+            },
+            "right_claw": {
+              "y": -6,
+              "angle": 2.6
+            }
+          }
+        },
+        {
+          "duration_ms": 120,
+          "pose": {
+            "head": {
+              "angle": 0,
+              "x": 0.0
+            },
+            "body": {
+              "angle": 0.0
+            },
+            "left_arm": {
+              "angle": 0.7
+            },
+            "left_claw": {
+              "y": -6,
+              "angle": -1.5
+            },
+            "right_arm": {
+              "angle": -0.7
+            },
+            "right_claw": {
+              "y": -6,
+              "angle": 1.5
+            }
+          }
+        }
+      ]
+    }
+  }
+}

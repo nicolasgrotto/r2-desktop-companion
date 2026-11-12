@@ -204,7 +204,7 @@ def theme(name, dark=False, orange=False):
 def main():
     app = QGuiApplication.instance() or QGuiApplication([])
     for identifier, name, description, personality, movement, visual_theme in (
-        ("r2_default", "R2 · Original", "Seu companheiro branco e azul, com o atlas e as preferências anteriores preservados.", "custom", "astromech", theme("Estação azul")),
+        ("r2_default", "R2", "Seu companheiro branco e azul, com o atlas e as preferências anteriores preservados.", "custom", "astromech", theme("Estação azul")),
         ("dark_astromech", "Vesper", "Sentinela de manutenção em grafite e bronze. Observa em silêncio e responde com pulsos graves.", "calm", "astromech", theme("Oficina de bronze", dark=True)),
         ("spherical_droid", "Orbita", "Explorador de cerâmica clara e cobre laranja. Rola com energia e mantém a cabeça em equilíbrio.", "curious", "spherical", theme("Hangar solar", orange=True))):
         directory = ROOT / "droids" / identifier

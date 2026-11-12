@@ -78,7 +78,8 @@ def test_update_lifecycle_preserves_all_droids_and_rebuilds_working_navigation(q
         for identifier in previous.droids.profiles:
             assert previous.equip_droid(identifier)
             draft = deepcopy(store.settings)
-            draft.audio.volume = {"r2_default": 0.17, "dark_astromech": 0.29, "spherical_droid": 0.41}[identifier]
+            draft.audio.volume = {"r2_default": 0.17, "dark_astromech": 0.29, "spherical_droid": 0.41,
+                                  "lumo": 0.23, "vigia": 0.31, "pico": 0.37, "tranco": 0.43}[identifier]
             store.apply(draft)
         previous.productivity.add_task("Preservar durante atualização")
         note = previous.productivity.add_note()
