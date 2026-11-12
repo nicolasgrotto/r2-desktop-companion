@@ -49,3 +49,4 @@ class LocalTasks(QObject):
     def close(self):
         self.closed = True
         self.pool.clear()
+        self.pool.waitForDone()
