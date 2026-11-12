@@ -40,6 +40,22 @@ def test_repeated_pet_clicks_preserve_personality_without_vetoing_navigation(pet
     assert pet.controller.state.name == "CONFUSED"
 
 
+@pytest.mark.parametrize("deliver_release", [True, False])
+def test_single_click_after_double_click_is_not_discarded_by_the_previous_gesture(pet, deliver_release):
+    point = QPoint(80, 110)
+    QTest.mouseClick(pet.window, Qt.MouseButton.LeftButton, pos=point)
+    assert pet.radial.isVisible()
+    QTest.mouseDClick(pet.window, Qt.MouseButton.LeftButton, pos=point)
+    assert pet.window.double_click and not pet.radial.isVisible()
+    if deliver_release:
+        QTest.mouseRelease(pet.window, Qt.MouseButton.LeftButton, pos=point)
+        assert not pet.window.double_click
+    QTest.mouseClick(pet.window, Qt.MouseButton.LeftButton, pos=point)
+    assert pet.radial.isVisible() and not pet.window.double_click
+    QTest.mouseClick(pet.radial.buttons["minigames"], Qt.MouseButton.LeftButton)
+    assert pet.tools.isVisible() and pet.tools.tabs.currentWidget() is pet.tools.pages["minigames"]
+
+
 @pytest.mark.parametrize("phase", ["exiting", "entering"])
 @pytest.mark.parametrize("interrupt", ["stop", "pause", "destroy"])
 def test_interrupted_animation_restores_rendered_page_and_allows_real_action(pet, phase, interrupt):

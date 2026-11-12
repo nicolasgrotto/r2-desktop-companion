@@ -198,9 +198,9 @@ class Companion(QObject):
             pet_minimized=self.window.isMinimized(), pet_active=self.window.isActiveWindow(), **fields)
 
     def trace_pet_input(self, event, fields):
-        if event == "mouse_press_received":
+        if event in {"mouse_press_received", "mouse_double_click_received"}:
             self.navigation_trace.begin()
-            self._pet_press_pending = True
+            self._pet_press_pending = event == "mouse_press_received"
         elif event == "mouse_release_received" and (not fields["press_present"] or fields["dragging"]
                 or fields["double_click"] or fields["affection"]):
             self.radial.dismissed_by_trigger_press = False

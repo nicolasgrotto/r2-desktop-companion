@@ -145,6 +145,8 @@ class PetWindow(QWidget):
     def mouseDoubleClickEvent(self, event):
         if event.button() == Qt.MouseButton.LeftButton:
             self.double_click = True
+            self.interaction_event.emit("mouse_double_click_received", {
+                "press_present": self.press_global is not None, "spontaneous": event.spontaneous()})
             self.double_clicked.emit()
             event.accept()
 
@@ -233,6 +235,7 @@ class PetWindow(QWidget):
 
     def mousePressEvent(self, event: QMouseEvent):
         if event.button() == Qt.MouseButton.LeftButton:
+            self.double_click = False
             self.press_global = event.globalPosition()
             self.anchor = QPointF(event.position().x() / max(1, self.width()), event.position().y() / max(1, self.height()))
             self.affection = False
@@ -268,8 +271,9 @@ class PetWindow(QWidget):
                 self.drag_finished.emit()
             elif not self.double_click and not self.affection:
                 self.clicked.emit()
-            self.double_click = False
             event.accept()
+        if event.button() == Qt.MouseButton.LeftButton:
+            self.double_click = False
         self.interaction_event.emit("mouse_release_delivered", {"accepted": event.isAccepted()})
 
     def contextMenuEvent(self, event):
