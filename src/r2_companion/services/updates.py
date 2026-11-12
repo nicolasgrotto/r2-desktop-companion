@@ -9,6 +9,41 @@ from uuid import uuid4
 
 import psutil
 
+from .. import __version__
+
+
+def independent_environment():
+    environment = os.environ.copy()
+    environment["PYINSTALLER_RESET_ENVIRONMENT"] = "1"
+    if getattr(sys, "frozen", False):
+        bundle = Path(sys._MEIPASS).resolve()
+        for key in ("QT_PLUGIN_PATH", "QT_QPA_PLATFORM_PLUGIN_PATH", "QML2_IMPORT_PATH"):
+            environment.pop(key, None)
+        environment["PATH"] = os.pathsep.join(
+            entry for entry in environment.get("PATH", "").split(os.pathsep)
+            if entry and not Path(os.path.abspath(entry.strip('"'))).is_relative_to(bundle))
+    return environment
+
+
+def runtime_identity():
+    executable = Path(sys.executable).resolve()
+    bundle = Path(getattr(sys, "_MEIPASS", Path(__file__).resolve().parents[1])).resolve()
+    if getattr(sys, "frozen", False):
+        metadata = read_release(executable.parent / "release.json")
+        if metadata["version"] != __version__ or bundle != executable.parent / "_internal":
+            raise ValueError("A versão carregada não corresponde à instalação. Consulte o log de atualização.")
+    return {"pid": os.getpid(), "version": __version__, "executable": str(executable), "bundle": str(bundle)}
+
+
+def confirm_startup(path, directory):
+    from .storage import ConfigStore
+    path, directory = Path(path).absolute(), Path(directory).resolve()
+    if (path.parent.resolve() != directory / "updates" or path.parent != path.parent.resolve()
+            or not re.fullmatch(r"startup-[a-f0-9]{32}\.json", path.name) or path.exists() or path.is_symlink()):
+        raise ValueError("Caminho de confirmação de inicialização inválido.")
+    ConfigStore.atomic_write(path, json.dumps(runtime_identity() | {
+        "data_directory": str(directory), "initialized": True}).encode("utf-8"))
+
 
 def read_release(path: Path):
     if path.stat().st_size > 4096:
@@ -43,7 +78,8 @@ class UpdateService:
             command = [sys.executable, str(root / "run_companion.py"), "--update-center"]
         command += ["--data-dir", str(self.directory), "--owner-pid", str(os.getpid()),
                     "--owner-start", str(int(psutil.Process().create_time()))]
-        self.process = self.process_factory(command, cwd=str(self.directory), creationflags=subprocess.CREATE_NO_WINDOW)
+        self.process = self.process_factory(command, cwd=str(self.directory), env=independent_environment(),
+                                            creationflags=subprocess.CREATE_NO_WINDOW)
         return self.process
 
     def launch(self):
@@ -68,5 +104,5 @@ class UpdateService:
             "-File", str(copy), "-InstallDirectory", str(executable.parent),
             "-DataDirectory", str(self.directory), "-ExpectedProcessId", str(os.getpid()),
             "-ProcessStarted", str(int(psutil.Process().create_time()))],
-            cwd=str(directory), creationflags=subprocess.CREATE_NO_WINDOW)
+            cwd=str(directory), env=independent_environment(), creationflags=subprocess.CREATE_NO_WINDOW)
         return self.process
