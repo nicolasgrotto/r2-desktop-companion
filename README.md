@@ -204,15 +204,15 @@ em cópias locais; requer também o build anterior preservado em dist/1.1.1.
 
 ```powershell
 .\.venv\Scripts\python.exe tools\build_windows.py
-.\dist\1.1.4\R2Companion\R2Companion.exe
+.\dist\1.2.0\R2Companion\R2Companion.exe
 ```
 
 O build é Windows x64, one-folder, sem console e sem solicitação de elevação.
 O script mantém o cache do empacotador no projeto. Distribua **toda a pasta**
-`dist\1.1.4\R2Companion`, incluindo `_internal`, assets, `release.json` e licenças.
+`dist\1.2.0\R2Companion`, incluindo `_internal`, assets, `release.json` e licenças.
 O ZIP e SHA-256 são gerados em `dist\R2Companion-Windows-x64.zip` e `.zip.sha256`.
 Para validar uma candidata preservando esses artefatos, use
-`tools\build_windows.py --artifact-label release-114-rc1`; o rótulo separa
+`tools\build_windows.py --artifact-label garage-120-rc1`; o rótulo separa
 a pasta, o ZIP e o checksum. `verify_package.py --artifact-label` e os ensaios
 de atualização com `--archive` aceitam esses pacotes locais sem publicá-los.
 Ao testar a candidata com verify_post_update.py, use também
@@ -228,7 +228,7 @@ das bibliotecas incluídas em [THIRD_PARTY_NOTICES.md](packaging/docs/THIRD_PART
 Diagnóstico do executável, sem usar o diretório normal de dados:
 
 ```powershell
-.\dist\1.1.4\R2Companion\R2Companion.exe --data-dir .runtime-exe --smoke-test
+.\dist\1.2.0\R2Companion\R2Companion.exe --data-dir .runtime-exe --smoke-test
 ```
 
 Se não abrir, consulte `companion.log` no diretório escolhido. Configuração inválida
@@ -306,7 +306,7 @@ ser removidas com a central fechada. O instalador reconsulta a release e verific
 novamente o checksum publicado, além da validação feita no download pela interface.
 
 A versão 0.2.0 não incluía metadata nem atualizador. Para migrar dela, instale
-manualmente a pasta 1.1.4 completa uma vez; os dados normais serão reutilizados.
+manualmente a pasta 1.2.0 completa uma vez; os dados normais serão reutilizados.
 Mantenha `release.json` e o diretório `_internal` junto ao executável.
 
 Para iniciar com o Windows, copie a instalação para um local estável e marque
@@ -331,8 +331,8 @@ o build sem publicar release; a publicação depende de tag `v*`. A integração
 API pública sem credenciais e pressupõe releases e assets acessíveis publicamente.
 O checksum detecta corrupção; o pacote ainda não tem assinatura digital.
 
-O instalador já distribuído na versão 1.1.1 mantém seu protocolo anterior ao migrar
-para a 1.1.4. O novo executável verifica a correspondência entre código e bundle
+O instalador já distribuído na versão 1.1.1 usa seu protocolo anterior de migração.
+O executável atual verifica a correspondência entre código e bundle
 também nessa primeira migração; as atualizações iniciadas a partir da 1.1.2 usam
 a confirmação completa do reinício.
 
@@ -341,6 +341,6 @@ Windows, persistência e updates), features (ferramentas) e ui (menus e painéis
 A documentação interna e evidências ficam em `local_docs/`, ignorado pelo Git. Changelog, notas de versão e avisos de terceiros públicos ficam em `packaging/docs/`.
 
 Continuam pendentes validações físicas em Windows 11, monitores com DPI misto,
-suspensão real e teste prolongado. A versão 1.1.4 mantém a arte original provisória.
+suspensão real e teste prolongado. Os modelos anteriores mantêm seus recursos gráficos originais.
 
 As notas públicas descrevem funcionalidades, correções e instruções de uso. Resultados de testes, investigações e evidências permanecem na documentação interna.

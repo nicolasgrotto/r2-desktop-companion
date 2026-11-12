@@ -216,7 +216,7 @@ console.
 manifesto asInvoker e assets existentes. Empacota script de atualização, metadata,
 plugins Qt Multimedia e licenças. Gera ZIP e SHA-256; pastas por versão preservam
 builds anteriores. Testes incluem Qt, integração Windows, persistência e segurança
-do instalador. `tools/verify_navigation.py` captura os três temas e a navegação;
+do instalador. `tools/verify_navigation.py` captura os temas e a navegação;
 `tools/verify_update_center.py` testa a instalação real com transporte local.
 
 README e este documento são as referências principais da raiz. Changelog, notas
