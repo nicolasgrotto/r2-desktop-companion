@@ -1,6 +1,6 @@
 # Arquitetura do R2 Desktop Companion
 
-Versão 1.1.1. Aplicativo local Python/PySide6 para Windows 10/11, com uma
+Versão 1.1.2. Aplicativo local Python/PySide6 para Windows 10/11, com uma
 QApplication por processo, sem backend, modelos de IA ou telemetria.
 
 ## Composição
@@ -108,8 +108,28 @@ O instalador PowerShell preserva validações de origem, versão, tamanho, SHA-2
 ZIP, caminhos e links. Reconsulta a release, extrai para staging, encerra a instância
 identificada, cria backup e substitui a instalação com recuperação em caso de erro.
 status.json informa validação, instalação, reinício, conclusão, necessidade de
-reinício ou falha. A central acompanha o processo e confere a versão instalada
+reinício ou falha. A central exige um estado terminal explícito e a versão esperada
 antes de anunciar sucesso. O usuário pode consultar os logs e tentar novamente.
+
+Todos os lançamentos independentes usam PYINSTALLER_RESET_ENVIRONMENT=1. O ambiente
+dos filhos remove caminhos Qt e PATH pertencentes ao bundle proprietário, sem
+alterar o ambiente do processo atual. O instalador aplica o reset também ao
+reinício, incluindo recuperação. Cada processo normal verifica __version__,
+release.json e sys._MEIPASS contra o executável efetivamente carregado.
+
+Para pacotes a partir de 1.1.2, Start-R2Installation cria um destino startup com
+identificador único fora da instalação. Após construir Companion e conectar seus
+serviços, um callback do event loop escreve atomicamente PID, versão, executável,
+bundle e diretório de dados. O instalador aguarda até 30 segundos e confere todos
+os campos; ausência, divergência ou saída precoce acionam o rollback existente.
+Pacotes anteriores continuam aceitos na recuperação pelo protocolo legado de
+permanência do processo. A migração iniciada por um instalador 1.1.1 mantém esse
+protocolo legado; o executável 1.1.2 já rejeita um runtime incompatível.
+
+Stop-R2Installation reconsulta processos após o encerramento. A transação de
+substituição executa novamente essa barreira imediatamente antes de mover pastas,
+inclusive quando chamada diretamente. Nenhum processo é encerrado à força pelo
+instalador.
 
 ## Persistência e ciclo de vida
 
@@ -124,6 +144,11 @@ arraste, menu, roda, configurações, ocultação e sessão suspendem autonomia.
 Tela cheia respeita o modo salvo e o canto manual. ContextReactions solicita ações
 ao controlador e não captura tela nem registra teclas. Shutdown idempotente para
 movimentos, animações, efeitos, áudio, timers e notificações e libera o lock.
+LocalTasks aguarda o término das operações já iniciadas antes de liberar seus
+objetos e ignora entregas após o encerramento. Ao reabrir, a Central de Áudio lê
+master e preferências atuais; os painéis de favoritos restauram janelas minimizadas.
+Exceções não tratadas em callbacks são registradas no log, inclusive no EXE sem
+console.
 
 ## Build, testes e documentação
 
