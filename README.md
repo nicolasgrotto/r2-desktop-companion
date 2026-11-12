@@ -9,7 +9,7 @@ Os personagens usam arte original em pixels; os recursos dos modelos anteriores
 permanecem preservados.
 O Companion é independente do casemod e não executa nem altera seus scripts de som.
 
-**Versão 1.2.0:** a Droid Garage reúne sete companheiros. Lumo equilibra-se em
+**Versão 1.2.1:** o Temporizador ganha o botão **Encerrar** para cancelar uma contagem e iniciar outra. A Droid Garage reúne sete companheiros. Lumo equilibra-se em
 uma roda, Vigia flutua com sensores e manipuladores independentes, Pico caminha
 com pernas articuladas e cabeça binocular expressiva, e Tranco usa tração própria
 e braços retráteis. Sono, projeção do timer e ferramentas continuam disponíveis.
@@ -32,7 +32,7 @@ Consulte a [arquitetura](ARCHITECTURE.md).
 
 ## Executar pelo código
 
-Notas da release: [Changelog](packaging/docs/CHANGELOG.md) e [1.2.0](packaging/docs/release-notes/v1.2.0.md).
+Notas da release: [Changelog](packaging/docs/CHANGELOG.md) e [1.2.1](packaging/docs/release-notes/v1.2.1.md).
 
 Requer Python 3.12+ x64. Combinação exercitada: Python 3.13.12 e Qt/PySide6 6.10.2
 no Windows 10 22H2. Abra PowerShell na raiz deste repositório:
@@ -204,12 +204,12 @@ em cópias locais; requer também o build anterior preservado em dist/1.1.1.
 
 ```powershell
 .\.venv\Scripts\python.exe tools\build_windows.py
-.\dist\1.2.0\R2Companion\R2Companion.exe
+.\dist\1.2.1\R2Companion\R2Companion.exe
 ```
 
 O build é Windows x64, one-folder, sem console e sem solicitação de elevação.
 O script mantém o cache do empacotador no projeto. Distribua **toda a pasta**
-`dist\1.2.0\R2Companion`, incluindo `_internal`, assets, `release.json` e licenças.
+`dist\1.2.1\R2Companion`, incluindo `_internal`, assets, `release.json` e licenças.
 O ZIP e SHA-256 são gerados em `dist\R2Companion-Windows-x64.zip` e `.zip.sha256`.
 Para validar uma candidata preservando esses artefatos, use
 `tools\build_windows.py --artifact-label garage-120-rc1`; o rótulo separa
@@ -228,7 +228,7 @@ das bibliotecas incluídas em [THIRD_PARTY_NOTICES.md](packaging/docs/THIRD_PART
 Diagnóstico do executável, sem usar o diretório normal de dados:
 
 ```powershell
-.\dist\1.2.0\R2Companion\R2Companion.exe --data-dir .runtime-exe --smoke-test
+.\dist\1.2.1\R2Companion\R2Companion.exe --data-dir .runtime-exe --smoke-test
 ```
 
 Se não abrir, consulte `companion.log` no diretório escolhido. Configuração inválida
@@ -306,7 +306,7 @@ ser removidas com a central fechada. O instalador reconsulta a release e verific
 novamente o checksum publicado, além da validação feita no download pela interface.
 
 A versão 0.2.0 não incluía metadata nem atualizador. Para migrar dela, instale
-manualmente a pasta 1.2.0 completa uma vez; os dados normais serão reutilizados.
+manualmente a pasta 1.2.1 completa uma vez; os dados normais serão reutilizados.
 Mantenha `release.json` e o diretório `_internal` junto ao executável.
 
 Para iniciar com o Windows, copie a instalação para um local estável e marque

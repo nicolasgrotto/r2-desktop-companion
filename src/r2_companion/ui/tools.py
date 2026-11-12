@@ -216,6 +216,11 @@ class ToolsDialog(QDialog):
         row.addWidget(self.pause_button)
         row.addWidget(self.restart_button)
         controls.addLayout(row)
+        self.stop_button = QPushButton("Encerrar")
+        self.stop_button.setAccessibleName("Encerrar temporizador")
+        self.stop_button.setToolTip("Cancelar a contagem atual e liberar a escolha de outro intervalo.")
+        self.stop_button.clicked.connect(self.stop_countdown)
+        controls.addWidget(self.stop_button)
         controls.addStretch()
         body.addLayout(controls, 2)
         content.addLayout(body)
@@ -278,6 +283,10 @@ class ToolsDialog(QDialog):
         else:
             self.countdown.resume()
 
+    def stop_countdown(self):
+        self.countdown.stop()
+        self.completion.setText("Temporizador encerrado. Escolha outro intervalo para iniciar uma nova contagem.")
+
     def completed(self, run_id):
         self.completion.setText(f"✓ Temporizador #{run_id} concluído. Seu intervalo chegou ao fim.")
 
@@ -302,6 +311,7 @@ class ToolsDialog(QDialog):
         active = state in {TimerState.RUNNING, TimerState.PAUSED}
         self.start_button.setEnabled(not active)
         self.pause_button.setEnabled(active)
+        self.stop_button.setEnabled(active)
         self.pause_button.setText("Continuar" if state == TimerState.PAUSED else "Pausar")
         self.restart_button.setEnabled(state != TimerState.STOPPED)
         for control in (self.minutes, self.seconds, *self.presets):

@@ -7,7 +7,7 @@ hologramas. A preferência timer_projection é aditiva no schema 1 e começa
 desativada em configurações antigas. Pausa, retomada, reinício e conclusão usam
 os sinais existentes; ticks não substituem projeções escolhidas manualmente.
 
-Versão 1.2.0. Aplicativo local Python/PySide6 para Windows 10/11, com uma
+Versão 1.2.1. Aplicativo local Python/PySide6 para Windows 10/11, com uma
 QApplication por processo, sem backend, modelos de IA ou telemetria.
 
 ## Composição
@@ -199,8 +199,11 @@ preferências do modelo indisponível. Adicionar um modelo articulado exige perf
 PNG e manifesto; uma nova estrutura física pode registrar um controlador no mapa
 MOVEMENT_CONTROLLERS. Ferramentas continuam usando intenções e State.
 
-Contagem regressiva usa deadline e run ID; continua oculta ou em sono. Gates de
-arraste, menu, roda, configurações, ocultação e sessão suspendem autonomia.
+Contagem regressiva usa deadline e run ID; continua oculta ou em sono.
+Countdown.stop interrompe o
+timer, zera deadline/restante e emite changed sem completed. O botão Encerrar
+libera a edição e a projeção do timer é removida pelo fluxo já existente.
+Gates de arraste, menu, roda, configurações, ocultação e sessão suspendem autonomia.
 Tela cheia respeita o modo salvo e o canto manual. ContextReactions solicita ações
 ao controlador e não captura tela nem registra teclas. Shutdown idempotente para
 movimentos, animações, efeitos, áudio, timers e notificações e libera o lock.

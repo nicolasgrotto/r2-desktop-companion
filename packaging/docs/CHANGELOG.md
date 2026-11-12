@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.2.1
+
+- Novo botão **Encerrar** no Temporizador: cancela uma contagem em andamento ou pausada e libera imediatamente a escolha de outro intervalo.
+- Encerrar interrompe a projeção do timer e não emite aviso de conclusão. Uma projeção manual de relógio permanece disponível.
+- Pausar, continuar e reiniciar mantêm suas funções anteriores. Fechar Ferramentas continua mantendo a contagem ativa.
+
+[Notas da versão](release-notes/v1.2.1.md).
+
 ## 1.2.0
 
 - Quatro companheiros na Droid Garage existente: Lumo, Vigia, Pico e Tranco.

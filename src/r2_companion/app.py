@@ -1024,6 +1024,15 @@ def main(argv=None) -> int:
                 companion.countdown.pause()
                 navigation_checks["timer_projection_pause"] = "Pausado" in companion.window.projection_text
                 companion.window.projection_overlay.grab().save(str(directory / "projection-timer.png"))
+                companion.tools.stop_button.click()
+                navigation_checks["timer_stop"] = (companion.countdown.state == TimerState.STOPPED
+                    and not companion.countdown.timer.isActive() and companion.tools.start_button.isEnabled()
+                    and companion.tools.minutes.isEnabled() and companion.window.projection_kind is None)
+                companion.tools.set_duration(30)
+                companion.tools.start_button.click()
+                navigation_checks["timer_new_run"] = (companion.countdown.state == TimerState.RUNNING
+                    and companion.tools.stop_button.isEnabled() and companion.countdown.duration == 30)
+                companion.tools.stop_button.click()
                 companion.tools.project_timer.setChecked(False)
                 companion.countdown.close()
                 navigation_checks["timer_projection_off"] = companion.window.projection_kind is None

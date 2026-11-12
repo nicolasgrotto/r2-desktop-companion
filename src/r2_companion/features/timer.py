@@ -62,6 +62,14 @@ class Countdown(QObject):
     def restart(self) -> None:
         self.start(self.duration)
 
+    def stop(self) -> None:
+        """Cancel the current run without emitting a completion notification."""
+        self.timer.stop()
+        self.state = TimerState.STOPPED
+        self.deadline = 0.0
+        self.remaining_at_pause = 0.0
+        self.changed.emit()
+
     def tick(self) -> None:
         if self.state == TimerState.RUNNING:
             if self.remaining <= 0:
