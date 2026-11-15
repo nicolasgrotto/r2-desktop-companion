@@ -9,7 +9,7 @@ from ..pet.positioning import clamp
 class ProjectionOverlay(QWidget):
     def __init__(self, pet):
         super().__init__(pet, Qt.WindowType.Tool | Qt.WindowType.FramelessWindowHint
-                         | Qt.WindowType.WindowStaysOnTopHint | Qt.WindowType.WindowDoesNotAcceptFocus
+                         | Qt.WindowType.WindowDoesNotAcceptFocus
                          | Qt.WindowType.WindowTransparentForInput)
         self.pet = pet
         self.card = QRectF()
@@ -17,6 +17,7 @@ class ProjectionOverlay(QWidget):
         self.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground)
         self.setAttribute(Qt.WidgetAttribute.WA_ShowWithoutActivating)
         self.setFocusPolicy(Qt.FocusPolicy.NoFocus)
+        pet.window_layers.register(self)
         pet.geometry_changed.connect(self.reposition)
 
     def reposition(self):

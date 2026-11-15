@@ -10,7 +10,7 @@ from ..droids.themes import styled
 class Bubble(QFrame):
     def __init__(self):
         super().__init__()
-        self.setWindowFlags(Qt.WindowType.ToolTip | Qt.WindowType.FramelessWindowHint
+        self.setWindowFlags(Qt.WindowType.Tool | Qt.WindowType.FramelessWindowHint
                             | Qt.WindowType.WindowDoesNotAcceptFocus | Qt.WindowType.WindowTransparentForInput)
         self.setAttribute(Qt.WidgetAttribute.WA_ShowWithoutActivating)
         self.setObjectName("speech")

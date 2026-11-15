@@ -8,7 +8,7 @@ from PySide6.QtWidgets import QWidget
 class SteamOverlay(QWidget):
     def __init__(self, pet):
         super().__init__(pet, Qt.WindowType.Tool | Qt.WindowType.FramelessWindowHint
-                         | Qt.WindowType.WindowStaysOnTopHint | Qt.WindowType.WindowDoesNotAcceptFocus
+                         | Qt.WindowType.WindowDoesNotAcceptFocus
                          | Qt.WindowType.WindowTransparentForInput)
         self.pet = pet
         self.active = False
@@ -18,6 +18,7 @@ class SteamOverlay(QWidget):
         self.timer.timeout.connect(self.update)
         self.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground)
         self.setAttribute(Qt.WidgetAttribute.WA_ShowWithoutActivating)
+        pet.window_layers.register(self)
         pet.geometry_changed.connect(self.reposition)
 
     def set_active(self, active):

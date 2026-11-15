@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.2.2
+
+- A opção de sobrepor janelas passa a valer para o droide, os símbolos Z, a fumaça, as projeções, os balões e a roda de acesso rápido.
+- Entrar e sair do sono ou executar reações e animações preserva a preferência de sobreposição.
+- Alterar a opção também atualiza os efeitos já visíveis, mantendo suas animações e a passagem de cliques.
+
+[Notas da versão](release-notes/v1.2.2.md).
+
 ## 1.2.1
 
 - Novo botão **Encerrar** no Temporizador: cancela uma contagem em andamento ou pausada e libera imediatamente a escolha de outro intervalo.

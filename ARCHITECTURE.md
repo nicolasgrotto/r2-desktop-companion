@@ -7,7 +7,7 @@ hologramas. A preferência timer_projection é aditiva no schema 1 e começa
 desativada em configurações antigas. Pausa, retomada, reinício e conclusão usam
 os sinais existentes; ticks não substituem projeções escolhidas manualmente.
 
-Versão 1.2.1. Aplicativo local Python/PySide6 para Windows 10/11, com uma
+Versão 1.2.2. Aplicativo local Python/PySide6 para Windows 10/11, com uma
 QApplication por processo, sem backend, modelos de IA ou telemetria.
 
 ## Composição
@@ -229,6 +229,15 @@ pelo Git; não são incluídos no pacote.
 
 
 ## Refinamentos de convivência com janelas
+
+WindowLayerPolicy pertence a PetWindow e aplica window.topmost à janela principal,
+SleepOverlay, SteamOverlay, ProjectionOverlay, roda, balão do droide e aviso da
+bandeja. Novas superfícies do mascote devem se registrar nessa política. Estados
+e animações controlam apenas conteúdo e visibilidade, sem definir sobreposição.
+Ao mudar a preferência, todas as flags são atualizadas antes de restaurar as
+superfícies visíveis. Balões usam Tool, evitando o TopMost implícito de ToolTip
+no Windows. Painéis convencionais continuam como janelas comuns; a Central de
+Atualizações mantém sua política independente no processo de atualização.
 
 DiagnosticsPage usa QScrollArea e uma lista explícita de informações úteis para o
 usuário. O relatório técnico completo permanece disponível internamente. ToolsDialog
