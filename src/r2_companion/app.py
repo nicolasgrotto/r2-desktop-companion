@@ -132,6 +132,8 @@ class Companion(QObject):
         self.icon = QIcon(str(ASSETS / "icons/companion.png"))
         self.qt_app.setWindowIcon(self.icon)
         self.tray = Tray(self.icon)
+        for surface in (self.radial, self.bubble, self.tray.notice):
+            self.window.window_layers.register(surface)
         self.menu = None
         self.session_events = SessionEvents()
         self.qt_app.installNativeEventFilter(self.session_events)

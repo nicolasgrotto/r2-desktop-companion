@@ -22,7 +22,10 @@ class PetWindow(QWidget):
         super().__init__()
         self.setWindowTitle("R2 Companion — placeholder de desenvolvimento")
         self.setWindowFlags(Qt.WindowType.Tool | Qt.WindowType.FramelessWindowHint
-                            | Qt.WindowType.WindowStaysOnTopHint | Qt.WindowType.WindowDoesNotAcceptFocus)
+                            | Qt.WindowType.WindowDoesNotAcceptFocus)
+        from ..ui.window_layers import WindowLayerPolicy
+        self.window_layers = WindowLayerPolicy(self)
+        self.window_layers.register(self)
         self.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground)
         self.setAttribute(Qt.WidgetAttribute.WA_ShowWithoutActivating)
         self.setFocusPolicy(Qt.FocusPolicy.NoFocus)
@@ -235,11 +238,7 @@ class PetWindow(QWidget):
         self.geometry_changed.emit()
 
     def set_topmost(self, enabled: bool) -> None:
-        if bool(self.windowFlags() & Qt.WindowType.WindowStaysOnTopHint) != enabled:
-            was_visible = self.isVisible()
-            self.setWindowFlag(Qt.WindowType.WindowStaysOnTopHint, enabled)
-            if was_visible:
-                self.show()
+        self.window_layers.set_enabled(enabled)
 
     def set_pass_through(self, enabled: bool) -> None:
         was_visible = self.isVisible()

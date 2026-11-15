@@ -30,7 +30,7 @@ class RadialMenu(QWidget):
     def __init__(self):
         super().__init__()
         self.setWindowTitle("Acesso rápido · R2 Companion")
-        self.setWindowFlags(Qt.WindowType.Tool | Qt.WindowType.FramelessWindowHint | Qt.WindowType.WindowStaysOnTopHint)
+        self.setWindowFlags(Qt.WindowType.Tool | Qt.WindowType.FramelessWindowHint)
         self.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground)
         self.setFixedSize(368, 368)
         self.setFocusPolicy(Qt.FocusPolicy.StrongFocus)
