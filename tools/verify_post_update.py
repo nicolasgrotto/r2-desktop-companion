@@ -25,7 +25,7 @@ def quote(value):
     return "'" + str(value).replace("'", "''") + "'"
 
 
-def wait_until(predicate, seconds=30):
+def wait_until(predicate, seconds: float = 30.0):
     deadline = time.monotonic() + seconds
     while time.monotonic() < deadline:
         value = predicate()
