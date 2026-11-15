@@ -30,6 +30,15 @@ Tarefas, notas, favoritos e configurações anteriores continuam compatíveis.
 
 Consulte a [arquitetura](ARCHITECTURE.md).
 
+## Projeto relacionado: R2-D2 Casemod
+
+O R2 Desktop Companion foi desenvolvido como parte do projeto acadêmico **[R2-D2 Casemod](https://github.com/nicolasgrotto/R2-D2-Casemod)** (UniFECAF, EXPOTEC 2026): um computador montado dentro de um R2-D2 de papelão, que também hospeda o jogo Duel of Fates.
+
+- O Companion é **independente** do casemod: funciona em qualquer Windows 10/11 x64 e não depende dele.
+- Em Ferramentas → Minigames, o catálogo inclui o **[Duel of Fates](https://github.com/nicolasgrotto/duel-of-fates)**, que também é hospedado no casemod.
+
+Documentação do casemod: [docs](https://github.com/nicolasgrotto/R2-D2-Casemod/tree/main/docs)
+
 ## Executar pelo código
 
 Notas da release: [Changelog](packaging/docs/CHANGELOG.md) e [1.2.1](packaging/docs/release-notes/v1.2.1.md).
