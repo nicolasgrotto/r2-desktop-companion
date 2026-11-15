@@ -1,4 +1,4 @@
-from PySide6.QtGui import QAction
+from PySide6.QtGui import QAction, QActionGroup
 from PySide6.QtWidgets import QMenu
 from .theme import apply_theme
 from .navigation import NAVIGATION
@@ -21,6 +21,20 @@ def create_menu(parent, actions: dict, settings, screens, tray_available: bool) 
         submenus.append(child)
         return child
     add(menu, "interact", "Interagir")
+    if "presence_mode" in actions:
+        presence = submenu("Modo de presença")
+        group = QActionGroup(presence)
+        group.setExclusive(True)
+        menu.presence_actions = {}
+        for mode, title in (("free", "Livre"), ("focus", "Foco"), ("presentation", "Apresentação")):
+            action = add(presence, "presence_" + mode, title,
+                         lambda mode=mode: actions["presence_mode"](mode))
+            action.setCheckable(True)
+            group.addAction(action)
+            menu.presence_actions[mode] = action
+        menu.presence_status = presence.addAction("")
+        menu.presence_status.setEnabled(False)
+        menu.presence_group = group
     for key, title in (("garage", "Droid Garage"), ("audio", "Central de Áudio")):
         if key in actions:
             add(menu, key, title)

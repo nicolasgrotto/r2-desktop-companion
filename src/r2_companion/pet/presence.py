@@ -37,6 +37,7 @@ class PresenceContext:
     paused: bool = False
     sound_enabled: bool = False
     muted: bool = False
+    tray_available: bool = True
 
     def __post_init__(self):
         object.__setattr__(self, "manual_mode", PresenceMode(self.manual_mode))
@@ -118,11 +119,12 @@ class PresencePolicy:
     @staticmethod
     def evaluate(context: PresenceContext) -> PresenceDecision:
         mode = context.effective_mode
+        recovery = mode == PresenceMode.PRESENTATION and not context.tray_available
         fullscreen = context.fullscreen != FullscreenAction.NONE
         visible = not (context.suspended or context.hidden
-                       or mode == PresenceMode.PRESENTATION
-                       or context.fullscreen == FullscreenAction.HIDE)
-        interactive = visible and not fullscreen and not context.transient_gates
+                       or mode == PresenceMode.PRESENTATION and not recovery
+                       or context.fullscreen == FullscreenAction.HIDE and not recovery)
+        interactive = visible and not recovery and not fullscreen and not context.transient_gates
         initiative = (interactive and context.autonomy_enabled
                       and not context.paused and not context.quiet_hours)
         audio = interactive and context.sound_enabled and not context.muted and not context.quiet_hours
@@ -131,6 +133,7 @@ class PresencePolicy:
         reasons = (
             (context.suspended, "suspended", "Sessão suspensa ou bloqueada"),
             (context.hidden, "hidden", "Personagem oculto"),
+            (recovery, "presentation_recovery", "Apresentação: bandeja indisponível; mascote visível para acesso"),
             (mode == PresenceMode.PRESENTATION, "presentation", "Em apresentação"),
             (context.quiet_hours, "quiet_hours", "Horário de silêncio"),
             (fullscreen, "fullscreen", "Tela cheia"),

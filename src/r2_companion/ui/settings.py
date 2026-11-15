@@ -16,6 +16,7 @@ from .theme import apply_theme, card, header, icon, label, apply_character_name
 
 class SettingsDialog(QDialog):
     applied = Signal(object, object)
+    presence_applied = Signal(str)
 
     def __init__(self, settings: Settings, startup_available: bool, startup_enabled: bool, startup_status: str, droid_profile=None):
         super().__init__()
@@ -39,6 +40,14 @@ class SettingsDialog(QDialog):
         form.setFieldGrowthPolicy(QFormLayout.FieldGrowthPolicy.AllNonFixedFieldsGrow)
         panel_layout.addLayout(form)
         general_layout.addWidget(panel)
+        self.presence_mode = QComboBox()
+        for caption, value in (("Livre", "free"), ("Foco", "focus"), ("Apresentação", "presentation")):
+            self.presence_mode.addItem(caption, value)
+        form.addRow("Modo de presença", self.presence_mode)
+        self.presence_status = label("Livre", "muted")
+        self.presence_status.setWordWrap(True)
+        form.addRow(self.presence_status)
+        self.presence_original = "free"
         self.scale = QSpinBox()
         self.scale.setRange(64, 256)
         self.scale.setValue(settings.visual_scale)
@@ -329,6 +338,9 @@ class SettingsDialog(QDialog):
         self.applied.emit(checked, request)
         if self.error.text():
             return
+        if self.presence_mode.currentData() != self.presence_original:
+            self.presence_applied.emit(self.presence_mode.currentData())
+            self.presence_original = self.presence_mode.currentData()
         self.startup_original = self.startup.isChecked()
         if close:
             self.accept()

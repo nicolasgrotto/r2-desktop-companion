@@ -144,3 +144,14 @@ def test_combined_restrictions_never_reenable_a_permission():
         if context.suspended:
             assert not any(getattr(before, name) for name in permissions)
             assert before.reason == "suspended"
+
+
+@pytest.mark.parametrize("fullscreen", list(FullscreenAction))
+def test_presentation_without_tray_keeps_static_recovery_surface(fullscreen):
+    context = PresenceContext(manual_mode="presentation", tray_available=False, fullscreen=fullscreen)
+    result = PresencePolicy.evaluate(context)
+    assert result.character_visible and result.reason == "presentation_recovery"
+    assert not any((result.initiative, result.autonomous_movement, result.spontaneous_audio,
+                    result.explicit_audio, result.explicit_reactions, result.passive_surfaces,
+                    result.notifications, result.continuous_effects))
+    assert not PresencePolicy.evaluate(replace(context, suspended=True)).character_visible

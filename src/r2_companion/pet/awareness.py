@@ -56,11 +56,12 @@ class ContextReactions(QObject):
 
     def available(self):
         return (not self.controller.closed and not self.controller.gates and not self.controller.paused
+                and (self.controller.presence is None or self.controller.presence.initiative)
                 and not self.controller.inactive and self.controller.state == State.IDLE)
 
     def limited_reaction(self, key, state, cooldown=300):
         if self.available() and self.clock() - self.history.get(key, -1000000) >= cooldown:
-            if self.controller.react(state):
+            if self.controller.react(state, spontaneous=True):
                 self.history[key] = self.clock()
                 return True
         return False
@@ -74,7 +75,7 @@ class ContextReactions(QObject):
         if duration >= 7200:
             self.greet()
         else:
-            self.controller.react(State.WAKE)
+            self.controller.react(State.WAKE, spontaneous=True)
 
     def click(self):
         now = self.clock()
@@ -104,20 +105,21 @@ class ContextReactions(QObject):
                 return
         if settings.cursor_attention and now - self.last_attention >= 25 and distance < 450:
             self.last_attention = now
-            self.controller.react(State.CURIOUS if distance < 160 else State.LOOK_LEFT if delta.x() < 0 else State.LOOK_RIGHT)
+            self.controller.react(State.CURIOUS if distance < 160 else State.LOOK_LEFT if delta.x() < 0 else State.LOOK_RIGHT, spontaneous=True)
             return
-        if (settings.cursor_attention and settings.movement and now - self.cursor_since >= 15
+        movement = settings.movement and (self.controller.presence is None or self.controller.presence.autonomous_movement)
+        if (settings.cursor_attention and movement and now - self.cursor_since >= 15
                 and now - self.last_approach >= 180 and 200 < distance < 500
                 and self.positioning.screen is not None
                 and self.positioning.screen.availableGeometry().contains(cursor.toPoint())):
             self.last_approach = now
             destination = QPointF(window.pos()) + delta * (min(80, distance - 180) / distance)
             self.controller.next_destination = destination
-            if self.controller.request(State.WALK):
+            if self.controller.request(State.WALK, spontaneous=True):
                 self.controller.behavior.accepted(State.WALK)
             return
         home = self.store.settings.manual_position
-        if (settings.movement and home is not None and now - self.last_home >= 300
+        if (movement and home is not None and now - self.last_home >= 300
                 and self.positioning.screen is not None and home.screen == fingerprint(self.positioning.screen)):
             self.last_home = now
             destination = from_normalized(home.u, home.v,
@@ -125,12 +127,13 @@ class ContextReactions(QObject):
             if (destination - QPointF(window.pos())).manhattanLength() < 5:
                 return
             self.controller.next_destination = destination
-            if self.controller.request(State.WALK):
+            if self.controller.request(State.WALK, spontaneous=True):
                 self.controller.behavior.accepted(State.WALK)
 
     def avoid_window(self, obstacle):
         settings = self.store.settings.behavior
         if (obstacle is None or not self.available() or not settings.movement
+                or self.controller.presence is not None and not self.controller.presence.autonomous_movement
                 or settings.frequency == "off" or self.positioning.screen is None):
             return False
         destination = escape_destination(QRectF(self.positioning.window.geometry()), obstacle,
@@ -138,7 +141,7 @@ class ContextReactions(QObject):
         if destination is None:
             return False
         self.controller.next_destination = destination
-        if self.controller.request(State.WALK):
+        if self.controller.request(State.WALK, spontaneous=True):
             self.controller.behavior.accepted(State.WALK)
             return True
         return False

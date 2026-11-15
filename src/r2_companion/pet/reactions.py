@@ -22,7 +22,8 @@ class ReactionDirector:
         self.controller.state_changed.connect(self.changed)
 
     def start(self, scene):
-        if scene not in SCENES or self.controller.gates or self.controller.inactive or self.controller.closed:
+        if (scene not in SCENES or self.controller.gates or self.controller.inactive or self.controller.closed
+                or self.controller.presence is not None and not self.controller.presence.explicit_reactions):
             return False
         self.previous = self.controller.state if self.controller.state in AUTONOMOUS - {State.WALK} else State.IDLE
         self.scene = scene

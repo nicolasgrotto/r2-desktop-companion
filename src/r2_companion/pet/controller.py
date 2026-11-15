@@ -11,6 +11,7 @@ class PetController(QObject):
     state_changed = Signal(object)
     notification_presented = Signal(str)
     woke = Signal(float)
+    context_changed = Signal()
 
     def __init__(self, animation, positioning, behavior: BehaviorManager, clock=time.monotonic):
         super().__init__()
@@ -31,6 +32,8 @@ class PetController(QObject):
         self.sleep_started = None
         self.sleep_entered = None
         self.next_destination = None
+        self.presence = None
+        self.action_spontaneous = False
         self.animation.clip_finished.connect(self.finished)
         self.positioning.movement_finished.connect(self.finished)
         self.behavior.action_requested.connect(self.autonomous)
@@ -48,6 +51,7 @@ class PetController(QObject):
         self.sleep_entered = None
         self.pending_click = False
         self.behavior.defer_walk()
+        self.action_spontaneous = False
         self.enter(State.WAKE)
         return True
 
@@ -101,26 +105,45 @@ class PetController(QObject):
                     or self.positioning.walk(-distance, duration, self.token)):
                 self.enter(State.IDLE)
 
+    def set_presence(self, decision):
+        previous = self.presence
+        self.presence = decision
+        self.behavior.presence_initiative = decision.initiative
+        self.behavior.presence_movement = decision.autonomous_movement
+        if (self.state == State.WALK and self.action_spontaneous
+                and not decision.autonomous_movement):
+            self.enter(State.IDLE)
+        if previous is None or (previous.initiative, previous.autonomous_movement) != (decision.initiative, decision.autonomous_movement):
+            self.behavior.schedule(self.state == State.IDLE and not self.gates and not self.paused)
+
     def autonomous(self, state: State):
         if self.paused:
             return
         if state == State.IDLE:
             self.behavior.schedule(self.state == State.IDLE and not self.gates and not self.paused)
-        elif self.request(state):
+        elif self.request(state, spontaneous=True):
             self.behavior.accepted(state)
 
-    def react(self, state: State) -> bool:
+    def react(self, state: State, *, spontaneous=False) -> bool:
+        if self.presence and not (self.presence.initiative if spontaneous else self.presence.explicit_reactions):
+            return False
         if self.closed or self.gates or self.inactive or self.state == State.SLEEP or not self.supports(state):
             return False
         self.behavior.defer_walk()
+        self.action_spontaneous = spontaneous
         self.enter(state)
         return True
 
-    def request(self, state: State) -> bool:
+    def request(self, state: State, *, spontaneous=False) -> bool:
+        if self.presence and (not (self.presence.initiative if spontaneous else self.presence.explicit_reactions)
+                              or spontaneous and state == State.WALK and not self.presence.autonomous_movement):
+            self.next_destination = None
+            return False
         if self.closed or self.requires_wake_click or not self.supports(state) or not can_request(self.state, state, bool(self.gates)):
             if state == State.WALK:
                 self.next_destination = None
             return False
+        self.action_spontaneous = spontaneous
         self.enter(state)
         return True
 
@@ -149,8 +172,10 @@ class PetController(QObject):
         if self.pending_click and self.state in {State.IDLE, State.SLEEP}:
             self.pending_click = False
             self.enter(State.INTERACT)
-        elif self.pending_notifications and can_request(self.state, State.NOTIFICATION):
+        elif (self.pending_notifications and (self.presence is None or self.presence.notifications)
+              and can_request(self.state, State.NOTIFICATION)):
             message = self.pending_notifications.popleft()
+            self.action_spontaneous = False
             self.enter(State.NOTIFICATION)
             self.notification_presented.emit(message)
 
@@ -173,6 +198,7 @@ class PetController(QObject):
             self.behavior.defer_walk()
             if name == "radial" and self.state in {State.INTERACT, State.HAPPY}:
                 self.behavior.schedule(False)
+                self.context_changed.emit()
                 return
             self.pending_click = False
             self.enter(State.SLEEP if self.state == State.SLEEP else State.IDLE)
@@ -186,12 +212,14 @@ class PetController(QObject):
                     self.enter(State.SLEEP if self.inactive else State.IDLE)
                 self.behavior.schedule(self.state == State.IDLE and not self.paused, quiet=True)
                 self.drain()
+        self.context_changed.emit()
 
     def set_paused(self, paused: bool):
         self.paused = paused
         if not self.gates:
             self.enter(State.IDLE)
         self.behavior.schedule(not paused and not self.gates and self.state == State.IDLE, quiet=True)
+        self.context_changed.emit()
 
     def update_inactivity(self, seconds: float):
         self.inactive = (seconds >= self.behavior.settings.sleep_seconds
@@ -199,6 +227,7 @@ class PetController(QObject):
         if not self.gates and not self.closed:
             if self.inactive and self.state == State.IDLE:
                 self.sleep_started = self.clock() - seconds
+                self.action_spontaneous = True
                 self.enter(State.SLEEP)
             elif not self.inactive and self.state == State.SLEEP:
                 self.enter(State.IDLE)

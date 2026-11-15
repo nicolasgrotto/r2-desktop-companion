@@ -23,7 +23,7 @@ class ProjectionOverlay(QWidget):
 
     def reposition(self):
         pet = self.pet
-        if not pet.projection_kind or not pet.isVisible() or pet.hologram.isNull():
+        if pet.projection_suspended or not pet.projection_kind or not pet.isVisible() or pet.hologram.isNull():
             self.hide()
             return
         screen = QGuiApplication.screenAt(pet.geometry().center()) or QGuiApplication.primaryScreen()

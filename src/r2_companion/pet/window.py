@@ -51,6 +51,7 @@ class PetWindow(QWidget):
         self.hologram_timer.setSingleShot(True)
         self.hologram_timer.timeout.connect(self.clear_projection)
         self.projection_kind = None
+        self.projection_suspended = False
         self.projection_text = ""
         self.projection_timer = QTimer(self)
         self.projection_timer.setInterval(1000)
@@ -80,6 +81,8 @@ class PetWindow(QWidget):
             self.set_frame(self.original_frame)
 
     def project(self, pixmap):
+        if self.projection_suspended:
+            return
         self.clear_projection()
         self.hologram = pixmap
         self.hologram_timer.start(1800)
@@ -91,12 +94,12 @@ class PetWindow(QWidget):
         self.clear_projection()
         self.projection_kind = kind
         self.refresh_projection()
-        if self.isVisible():
+        if self.isVisible() and not self.projection_suspended:
             self.projection_timer.start()
         return True
 
     def refresh_projection(self, *_):
-        if self.projection_kind is None:
+        if self.projection_kind is None or self.projection_suspended:
             return
         time_text, date_text = local_clock().split("\n", 1)
         if self.projection_kind == "timer":
@@ -137,17 +140,31 @@ class PetWindow(QWidget):
         self.projection_overlay.hide()
         self.update()
 
-    def stop_effects(self):
+    def set_projection_suspended(self, suspended):
+        if self.projection_suspended == suspended:
+            return
+        self.projection_suspended = suspended
+        if suspended:
+            self.projection_timer.stop()
+            self.projection_overlay.hide()
+            if self.projection_kind is None:
+                self.clear_projection()
+        elif self.projection_kind and self.isVisible():
+            self.refresh_projection()
+            self.projection_timer.start()
+
+    def stop_effects(self, preserve_projection=False):
         self.sleep_effect.set_active(False)
         self.steam.set_active(False)
         self.affection_timer.stop()
         self.hologram_timer.stop()
-        self.clear_projection()
+        if not preserve_projection or self.projection_kind is None:
+            self.clear_projection()
 
     def showEvent(self, event):
         self.sleep_effect.reposition()
         self.steam.reposition()
-        if self.projection_kind:
+        if self.projection_kind and not self.projection_suspended:
             self.refresh_projection()
             self.projection_timer.start()
         super().showEvent(event)

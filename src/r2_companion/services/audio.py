@@ -30,6 +30,8 @@ class AudioService(QObject):
         self.suppressed = False
         self.sleeping = False
         self.closed = False
+        self.presence = None
+        self.spontaneous = False
         self.voices = {}
         self.voice_directory = None
         self.factory = factory
@@ -142,10 +144,10 @@ class AudioService(QObject):
         if kind == "voice":
             options = voices.get(name, [])
             options = options[variant:variant + 1] if variant >= 0 else options
-            return self.play_options("reactions", options, settings)
+            return self.play_options("reactions", options, settings, spontaneous=False)
         options = [(n, e) for values in effects.values() for n, e in values if n == name]
         category = next((key for key, values in effects.items() if any(n == name for n, _ in values)), "reactions")
-        return self.play_options(category, options, settings)
+        return self.play_options(category, options, settings, spontaneous=False)
 
     def check_status(self, effect, path):
         if effect.status() == QSoundEffect.Status.Error:
@@ -172,7 +174,10 @@ class AudioService(QObject):
         options = self.voices.get(emotion, [])
         return self.play_options(category, options) if options else self.play(category)
 
-    def play_options(self, category, options, settings=None):
+    def play_options(self, category, options, settings=None, *, spontaneous=None):
+        spontaneous = self.spontaneous if spontaneous is None else spontaneous
+        if self.presence and not (self.presence.spontaneous_audio if spontaneous else self.presence.explicit_audio):
+            return False
         settings = settings or self.settings
         if (self.closed or not self.enabled or self.settings.muted or settings.muted or self.suppressed
                 or self.sleeping and category != "sleep" or not settings.categories.get(category, False)):

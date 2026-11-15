@@ -23,16 +23,18 @@ class BehaviorManager(QObject):
         self.history: dict[State, float] = {}
         self.last = State.IDLE
         self.eligible = False
+        self.presence_initiative = True
+        self.presence_movement = True
         self.last_reaction = -1000000.0
         self.timer = QTimer(self)
         self.timer.setSingleShot(True)
         self.timer.timeout.connect(self.decide)
 
     def choose(self) -> State:
-        if self.settings.frequency == "off":
+        if self.settings.frequency == "off" or not self.presence_initiative:
             return State.IDLE
         now = self.clock()
-        if self.settings.movement and now >= self.next_walk_at:
+        if self.settings.movement and self.presence_movement and now >= self.next_walk_at:
             return State.WALK
         weights = {State(key): value for key, value in self.settings.weights.items()}
         options = [state for state in weights if state != State.WALK
@@ -58,12 +60,12 @@ class BehaviorManager(QObject):
     def schedule(self, eligible: bool, quiet: bool = False) -> None:
         self.eligible = eligible
         self.timer.stop()
-        if eligible and self.settings.frequency != "off":
+        if eligible and self.presence_initiative and self.settings.frequency != "off":
             factor = 2 if self.settings.frequency == "quiet" else 1
             delay = self.rng.uniform(10 if quiet else 8, 20) * factor
             if quiet:
                 self.defer_walk(delay)
-            if self.settings.movement:
+            if self.settings.movement and self.presence_movement:
                 delay = min(delay, max(0.1, self.next_walk_at - self.clock()))
             self.timer.start(max(100, round(delay * 1000)))
 

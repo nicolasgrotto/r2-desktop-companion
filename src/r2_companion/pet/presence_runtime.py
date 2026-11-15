@@ -1,0 +1,97 @@
+"""Qt adapter for presence; owns no animation, countdown or persistence timer."""
+from PySide6.QtGui import QGuiApplication
+from PySide6.QtWidgets import QSystemTrayIcon
+
+from .presence import FullscreenAction, PresenceContext, PresenceMode, PresencePolicy
+from .state import State
+
+class PresenceRuntime:
+    def __init__(self, companion):
+        self.companion = companion
+        self.policy = PresencePolicy()
+        self.context = PresenceContext(manual_mode=companion.companion_state.data["presence"]["mode"])
+        self.decision = self.policy.evaluate(self.context)
+        self.refreshing = False
+        companion.companion_state.changed.connect(self.saved_changed)
+        companion.controller.context_changed.connect(self.refresh)
+
+    def saved_changed(self, document):
+        if document["presence"]["mode"] != self.context.manual_mode:
+            self.context = self.context.select_mode(document["presence"]["mode"])
+        self.refresh()
+
+    def select_mode(self, mode):
+        self.context = self.context.select_mode(mode)
+        self.companion.companion_state.update("presence", {"mode": self.context.manual_mode.value})
+        self.refresh()
+
+    def refresh(self):
+        c = self.companion
+        if self.refreshing or c.closed:
+            return
+        self.refreshing = True
+        try:
+            tray = QSystemTrayIcon.isSystemTrayAvailable()
+            if not tray:
+                c.user_hidden = False
+                if c.pass_through:
+                    c.set_pass_through(False)
+            settings = c.store.settings
+            self.context = PresenceContext(
+                manual_mode=self.context.manual_mode, focus_session_id=self.context.focus_session_id,
+                quiet_hours=c.quiet_active, hidden=c.user_hidden or not QGuiApplication.screens(),
+                suspended=c.session_hidden, fullscreen=FullscreenAction(c.fullscreen_action or "none"),
+                transient_gates=frozenset(c.controller.gates - {"hidden", "session", "quiet_hours", "fullscreen"}),
+                autonomy_enabled=settings.behavior.frequency != "off", movement_enabled=settings.behavior.movement,
+                paused=c.controller.paused, sound_enabled=settings.sound_enabled, muted=settings.audio.muted,
+                tray_available=tray,
+            )
+            update = self.policy.update(self.context)
+            previous, self.decision = self.decision, update.decision
+            d = self.decision
+            c.controller.set_presence(d)
+            c.audio.presence = d
+            c.audio.spontaneous = c.controller.action_spontaneous
+            c.audio.set_context(bool(c.controller.gates - {"radial", "hidden"}) or c.fullscreen_active
+                                or not d.character_visible or d.mode == PresenceMode.PRESENTATION,
+                                c.controller.state == State.SLEEP or c.controller.inactive)
+            if not (d.spontaneous_audio if c.audio.spontaneous else d.explicit_audio):
+                c.audio.stop()
+            c.tray.notifications_enabled = d.notifications
+            if not d.notifications:
+                c.tray.notice.stop()
+            c.window.set_projection_suspended(not d.passive_surfaces)
+            c.controller.set_gate("hidden", not d.character_visible)
+            if not d.character_visible:
+                c.radial.hide()
+                c.bubble.stop()
+                c.window.hide()
+            elif not c.window.isVisible():
+                c.window.show()
+            if not d.continuous_effects:
+                c.window.sleep_effect.set_active(False)
+                c.window.steam.set_active(False)
+            if d.reason == "presentation_recovery":
+                c.animation.stop()
+                c.positioning.stop()
+            elif previous.reason == "presentation_recovery" and d.character_visible:
+                c.animation.play(c.controller.state, c.controller.token)
+            if update.decision_changed:
+                c.tray.setToolTip(f"{c.profile.name} · {d.reason_text}")
+                c.window.setToolTip(f"{c.profile.name} · {d.reason_text}\nBotão direito para opções")
+            self.update_controls()
+        finally:
+            self.refreshing = False
+
+    def update_controls(self):
+        c = self.companion
+        if c.menu is not None and hasattr(c.menu, "presence_actions"):
+            for mode, action in c.menu.presence_actions.items():
+                action.setChecked(mode == self.context.manual_mode)
+            c.menu.presence_status.setText(self.decision.reason_text)
+        if c.settings_dialog is not None:
+            dialog = c.settings_dialog
+            dialog.presence_status.setText(self.decision.reason_text)
+            if dialog.presence_mode.currentData() == dialog.presence_original:
+                dialog.presence_original = self.context.manual_mode.value
+                dialog.presence_mode.setCurrentIndex(dialog.presence_mode.findData(dialog.presence_original))

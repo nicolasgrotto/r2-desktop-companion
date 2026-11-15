@@ -32,6 +32,7 @@ from .pet.window import PetWindow
 from .services.audio import AudioService
 from .services.storage import ConfigStore
 from .services.companion_state import CompanionStateStore
+from .pet.presence_runtime import PresenceRuntime
 from .services.system_info import SystemInfo
 from .services.tasks import LocalTasks
 from .services.navigation_trace import NavigationTrace
@@ -180,6 +181,7 @@ class Companion(QObject):
         self.desktop_timer.setInterval(2000)
         self.desktop_timer.timeout.connect(self.check_desktop)
         self.qt_app.aboutToQuit.connect(self.shutdown)
+        self.presence = PresenceRuntime(self)
         initial_position = deepcopy(store.settings.window)
         self.apply_preferences(store.settings)
         self.positioning.restore(initial_position)
@@ -424,15 +426,18 @@ class Companion(QObject):
             self.window.refresh_projection()
 
     def state_changed(self, state):
-        self.window.sleep_effect.set_active(state == State.SLEEP)
-        self.window.steam.set_active(state == State.OVERHEAT)
-        self.audio.set_context(bool(self.controller.gates - {"radial"}) or self.fullscreen_active,
-                               state == State.SLEEP or self.controller.inactive)
+        self.presence.refresh()
+        self.audio.spontaneous = self.controller.action_spontaneous
+        self.audio.set_context(self.audio.suppressed, state == State.SLEEP or self.controller.inactive)
+        effects = self.presence.decision.continuous_effects
+        self.window.sleep_effect.set_active(state == State.SLEEP and effects)
+        self.window.steam.set_active(state == State.OVERHEAT and effects)
         if state == State.INTERACT:
             self.present_bubble("Bip! Pronto para acompanhar você.")
 
     def present_bubble(self, message):
-        if self.store.settings.bubbles and self.window.isVisible() and not self.controller.gates:
+        if (self.presence.decision.notifications and self.store.settings.bubbles
+                and self.window.isVisible() and not self.controller.gates):
             self.bubble.present(message, self.window)
 
     def warning(self, message):
@@ -591,22 +596,18 @@ class Companion(QObject):
         screen_name = "" if self.positioning.screen is None else fingerprint(self.positioning.screen)
         action = fullscreen_policy(self.store.settings.fullscreen_mode,
                                    self.store.settings.manual_position, screen_name) if active else ""
+        previous_action = self.fullscreen_action
         self.fullscreen_active = active
+        self.fullscreen_action = action
+        self.fullscreen_hidden = action == "hide"
         if active:
-            self.window.stop_effects()
+            self.window.stop_effects(preserve_projection=True)
             self.radial.hide()
             self.bubble.stop()
         self.controller.set_gate("fullscreen", active)
-        if action == "corner" and self.fullscreen_action != action and not self.window.dragging:
+        if action == "corner" and previous_action != action and not self.window.dragging:
             self.positioning.restore(self.store.settings.manual_position)
             self.positioning.settle()
-        self.fullscreen_action = action
-        self.fullscreen_hidden = action == "hide"
-        self.audio.set_context(active or bool(self.controller.gates - {"radial"}), self.controller.state == State.SLEEP)
-        if not QSystemTrayIcon.isSystemTrayAvailable() and self.user_hidden:
-            self.user_hidden = False
-        if not QSystemTrayIcon.isSystemTrayAvailable() and self.pass_through:
-            self.set_pass_through(False)
         self.update_visibility()
         if not active:
             foreground = QApplication.activeWindow()
@@ -632,17 +633,7 @@ class Companion(QObject):
         self.update_visibility()
 
     def update_visibility(self):
-        self.tray.notifications_enabled = not (self.fullscreen_active or self.session_hidden or self.quiet_active)
-        if not self.tray.notifications_enabled:
-            self.tray.notice.stop()
-        hidden = self.user_hidden or self.fullscreen_hidden or self.session_hidden or not QGuiApplication.screens()
-        self.controller.set_gate("hidden", hidden)
-        if hidden:
-            self.radial.hide()
-            self.window.hide()
-            self.bubble.stop()
-        elif not self.window.isVisible() and not self.closed:
-            self.window.show()
+        self.presence.refresh()
 
     def display_changed(self):
         if not self.closed:
@@ -655,6 +646,8 @@ class Companion(QObject):
 
     def show_pet(self):
         self.user_hidden = False
+        if self.presence.context.manual_mode == "presentation":
+            self.presence.select_mode("free")
         self.update_visibility()
 
     def hide_pet(self):
@@ -701,11 +694,13 @@ class Companion(QObject):
                    "passing": lambda: self.pass_through,
                    "screen": self.move_screen, "exit": self.shutdown, "target": self.open_target}
         actions.update(self.navigation_actions())
+        actions["presence_mode"] = self.presence.select_mode
         self.menu = create_menu(self.window, actions, self.store.settings, QGuiApplication.screens(),
                                 QSystemTrayIcon.isSystemTrayAvailable())
         self.menu.aboutToShow.connect(self.menu_opened)
         self.menu.aboutToHide.connect(lambda: self.controller.set_gate("menu", False))
         self.tray.setContextMenu(self.menu)
+        self.presence.update_controls()
         if old_menu is not None:
             old_menu.deleteLater()
 
@@ -795,7 +790,11 @@ class Companion(QObject):
         if not self.startup.available:
             status = "Para inicialização automática, copie a versão empacotada para um local estável fora de dist/build."
         dialog = SettingsDialog(self.store.settings, self.startup.available, enabled, status, self.profile)
+        dialog.presence_original = self.presence.context.manual_mode.value
+        dialog.presence_mode.setCurrentIndex(dialog.presence_mode.findData(dialog.presence_original))
+        dialog.presence_applied.connect(self.presence.select_mode)
         self.settings_dialog = dialog
+        self.presence.update_controls()
         self.controller.set_gate("settings", True)
         self.bubble.stop()
         dialog.applied.connect(self.save_settings)
