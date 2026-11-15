@@ -236,7 +236,12 @@ bandeja. Novas superfícies do mascote devem se registrar nessa política. Estad
 e animações controlam apenas conteúdo e visibilidade, sem definir sobreposição.
 Ao mudar a preferência, todas as flags são atualizadas antes de restaurar as
 superfícies visíveis. Balões usam Tool, evitando o TopMost implícito de ToolTip
-no Windows. Painéis convencionais continuam como janelas comuns; a Central de
+no Windows. A apresentação de efeitos passivos também preserva a posição do grupo
+na pilha Win32 quando topmost está desativado: uma janela Tool comum ainda pode
+trazer seu proprietário à frente ao aparecer. A política captura os predecessores
+visíveis e restaura o grupo sem ativação, ignorando auxiliares ocultos e sem herdar
+TopMost de outros aplicativos. A mesma proteção cobre a recriação por passagem de
+cliques. Painéis convencionais continuam como janelas comuns; a Central de
 Atualizações mantém sua política independente no processo de atualização.
 
 DiagnosticsPage usa QScrollArea e uma lista explícita de informações úteis para o

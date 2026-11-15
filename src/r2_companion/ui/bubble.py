@@ -5,6 +5,7 @@ from PySide6.QtWidgets import QFrame, QVBoxLayout
 from ..pet.positioning import clamp
 from .theme import label
 from ..droids.themes import styled
+from .window_layers import present_surface
 
 
 class Bubble(QFrame):
@@ -39,10 +40,11 @@ class Bubble(QFrame):
                 self.anchor.geometry_changed.disconnect(self.reposition)
             self.anchor = pet
             pet.geometry_changed.connect(self.reposition)
-        self.message.setText(message[:240])
-        self.adjustSize()
-        self.reposition(force=True)
-        self.show()
+        with present_surface(self):
+            self.message.setText(message[:240])
+            self.adjustSize()
+            self.reposition(force=True)
+            self.show()
         self.timer.start(4500)
 
     def reposition(self, force=False):
@@ -66,13 +68,14 @@ class Bubble(QFrame):
         screen = QGuiApplication.screenAt(tray_geometry.center()) or QGuiApplication.primaryScreen()
         if screen is None:
             return
-        self.message.setText(message[:240])
-        self.adjustSize()
-        area = QRectF(screen.availableGeometry())
-        point = clamp(QPointF(area.right() - self.width() - 12, area.bottom() - self.height() - 12),
-                      area, QSizeF(self.size()))
-        self.move(round(point.x()), round(point.y()))
-        self.show()
+        with present_surface(self):
+            self.message.setText(message[:240])
+            self.adjustSize()
+            area = QRectF(screen.availableGeometry())
+            point = clamp(QPointF(area.right() - self.width() - 12, area.bottom() - self.height() - 12),
+                          area, QSizeF(self.size()))
+            self.move(round(point.x()), round(point.y()))
+            self.show()
         self.timer.start(5000)
 
     def stop(self):

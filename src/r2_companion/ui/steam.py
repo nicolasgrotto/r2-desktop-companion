@@ -4,6 +4,7 @@ from PySide6.QtCore import QElapsedTimer, QPointF, QRectF, Qt, QTimer
 from PySide6.QtGui import QColor, QGuiApplication, QPainter, QRadialGradient
 from PySide6.QtWidgets import QWidget
 
+from .window_layers import present_surface
 
 class SteamOverlay(QWidget):
     def __init__(self, pet):
@@ -37,9 +38,10 @@ class SteamOverlay(QWidget):
         top = pet.y() - 70
         if screen is not None:
             top = max(top, screen.availableGeometry().top())
-        self.setGeometry(pet.x(), top, pet.width(), pet.y() + round(pet.height() * 0.28) - top)
-        self.timer.start()
-        self.show()
+        with present_surface(self):
+            self.setGeometry(pet.x(), top, pet.width(), pet.y() + round(pet.height() * 0.28) - top)
+            self.timer.start()
+            self.show()
         self.update()
 
     def paintEvent(self, event):

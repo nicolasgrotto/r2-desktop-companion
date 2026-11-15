@@ -161,7 +161,9 @@ def native_underlay(tmp_path):
 
 @pytest.mark.parametrize("enabled", [False, True])
 @pytest.mark.parametrize("state", [State.IDLE, State.SLEEP, State.OVERHEAT])
-def test_native_style_z_order_and_focus_with_external_window(pet, native_underlay, enabled, state):
+@pytest.mark.parametrize("raise_owner", [False, True])
+def test_native_style_z_order_and_focus_with_external_window(pet, native_underlay, enabled, state,
+                                                            raise_owner, monkeypatch):
     user32 = ctypes.WinDLL("user32", use_last_error=True)
     get_style = user32.GetWindowLongPtrW if ctypes.sizeof(ctypes.c_void_p) == 8 else user32.GetWindowLongW
     get_style.argtypes = [wintypes.HWND, ctypes.c_int]
@@ -171,6 +173,17 @@ def test_native_style_z_order_and_focus_with_external_window(pet, native_underla
     user32.GetForegroundWindow.restype = wintypes.HWND
     user32.SetWindowPos.argtypes = [wintypes.HWND, wintypes.HWND, ctypes.c_int, ctypes.c_int,
                                    ctypes.c_int, ctypes.c_int, wintypes.UINT]
+    if raise_owner:
+        # Reproduce the native owner-raising behavior independently of the
+        # Windows version/desktop used by the test runner.
+        for surface in (pet.window.sleep_effect, pet.window.steam,
+                        pet.window.projection_overlay, pet.bubble):
+            for method in ("show", "setGeometry", "adjustSize"):
+                def call_and_raise(*args, original=getattr(surface, method), window=surface):
+                    if not window.isVisible():
+                        assert user32.SetWindowPos(int(pet.window.winId()), 0, 0, 0, 0, 0, 0x213)
+                    return original(*args)
+                monkeypatch.setattr(surface, method, call_and_raise)
 
     def above(first, second):
         handle = user32.GetWindow(second, 3)  # GW_HWNDPREV

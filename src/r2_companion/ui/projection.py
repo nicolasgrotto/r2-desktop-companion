@@ -4,6 +4,7 @@ from PySide6.QtWidgets import QWidget
 
 from ..droids.themes import color
 from ..pet.positioning import clamp
+from .window_layers import present_surface
 
 
 class ProjectionOverlay(QWidget):
@@ -40,10 +41,11 @@ class ProjectionOverlay(QWidget):
         anchor_x, anchor_y = pet.projection_anchor()
         eye = QPointF(pet.x() + pet.width() * anchor_x, pet.y() + pet.height() * anchor_y)
         bounds = card.united(QRectF(eye.x() - 4, eye.y() - 4, 8, 8)).adjusted(-4, -4, 4, 4).toAlignedRect()
-        self.setGeometry(bounds)
-        self.card = card.translated(-bounds.x(), -bounds.y())
-        self.eye = eye - QPointF(bounds.topLeft())
-        self.show()
+        with present_surface(self):
+            self.setGeometry(bounds)
+            self.card = card.translated(-bounds.x(), -bounds.y())
+            self.eye = eye - QPointF(bounds.topLeft())
+            self.show()
         self.update()
 
     def paintEvent(self, event):

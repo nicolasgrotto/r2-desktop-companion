@@ -1,5 +1,6 @@
 import ctypes
 from ctypes import wintypes
+from contextlib import contextmanager
 import logging
 import os
 from pathlib import Path
@@ -38,9 +39,52 @@ if IS_WINDOWS:
     user32.GetClassNameW.argtypes = [wintypes.HWND, wintypes.LPWSTR, ctypes.c_int]
     user32.IsWindowVisible.argtypes = [wintypes.HWND]
     user32.ShowWindow.argtypes = [wintypes.HWND, ctypes.c_int]
+    user32.GetWindow.argtypes = [wintypes.HWND, wintypes.UINT]
+    user32.GetWindow.restype = wintypes.HWND
+    user32.IsWindow.argtypes = [wintypes.HWND]
+    user32.SetWindowPos.argtypes = [wintypes.HWND, wintypes.HWND, ctypes.c_int, ctypes.c_int,
+                                   ctypes.c_int, ctypes.c_int, wintypes.UINT]
+    get_window_style = user32.GetWindowLongPtrW if ctypes.sizeof(ctypes.c_void_p) == 8 else user32.GetWindowLongW
+    get_window_style.argtypes = [wintypes.HWND, ctypes.c_int]
+    get_window_style.restype = ctypes.c_ssize_t
     kernel32.GetStartupInfoW.argtypes = [ctypes.POINTER(StartupInfo)]
     wtsapi32.WTSRegisterSessionNotification.argtypes = [wintypes.HWND, wintypes.DWORD]
     wtsapi32.WTSUnRegisterSessionNotification.argtypes = [wintypes.HWND]
+
+
+@contextmanager
+def preserve_window_stack(windows):
+    """Keep passive effects at their owner's depth when Windows shows tools.
+
+    Showing a non-topmost owned tool can still raise its owner. Remember the
+    visible windows above the group and restore its depth without activation.
+    """
+    predecessors = None
+    if IS_WINDOWS:
+        owner = int(windows[0].effectiveWinId())
+        if owner and user32.IsWindowVisible(owner):
+            members = {int(window.effectiveWinId()) for window in windows}
+            predecessors = []
+            handle = user32.GetWindow(owner, 3)  # GW_HWNDPREV
+            while handle:
+                if handle not in members and user32.IsWindowVisible(handle):
+                    predecessors.append(handle)
+                handle = user32.GetWindow(handle, 3)
+    try:
+        yield
+    finally:
+        if predecessors is not None:
+            previous = next((handle for handle in predecessors
+                             if user32.IsWindow(handle) and user32.IsWindowVisible(handle)), 0)
+            if previous and get_window_style(previous, -20) & 8:  # WS_EX_TOPMOST
+                previous = 0  # HWND_TOP within the normal band; never inherit TopMost.
+            for window in windows:
+                handle = int(window.effectiveWinId())
+                if handle and window.isVisible():
+                    # NOMOVE | NOSIZE | NOACTIVATE | NOOWNERZORDER
+                    if not user32.SetWindowPos(handle, previous, 0, 0, 0, 0, 0x0213):
+                        log.warning("Não foi possível preservar a ordem da superfície do mascote: %s",
+                                    ctypes.get_last_error())
 
 
 def reveal_requested_window(widget):

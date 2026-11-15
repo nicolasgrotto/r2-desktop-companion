@@ -241,10 +241,11 @@ class PetWindow(QWidget):
         self.window_layers.set_enabled(enabled)
 
     def set_pass_through(self, enabled: bool) -> None:
-        was_visible = self.isVisible()
-        self.setWindowFlag(Qt.WindowType.WindowTransparentForInput, enabled)
-        if was_visible:
-            self.show()
+        with self.window_layers.preserve_stack():
+            was_visible = self.isVisible()
+            self.setWindowFlag(Qt.WindowType.WindowTransparentForInput, enabled)
+            if was_visible:
+                self.show()
 
     def paintEvent(self, event):
         painter = QPainter(self)
