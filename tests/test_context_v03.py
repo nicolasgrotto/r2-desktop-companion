@@ -16,7 +16,7 @@ from r2_companion.services.system_info import SystemInfo
 
 
 @pytest.fixture
-def pet(qapp, tmp_path, monkeypatch):
+def pet(qapp, native_desktop, tmp_path, monkeypatch):
     monkeypatch.setattr("r2_companion.app.foreground_fullscreen", lambda hwnd: False)
     store = ConfigStore(tmp_path)
     assert store.acquire()
@@ -208,6 +208,7 @@ def test_configured_weights_and_cooldowns_allow_single_expression(qapp, clock):
     behavior.close()
 
 
+@pytest.mark.windows_native
 def test_startup_fullscreen_restores_manual_corner_instead_of_last_walk(qapp, tmp_path, monkeypatch):
     from PySide6.QtGui import QGuiApplication
     monkeypatch.setattr("r2_companion.app.foreground_fullscreen", lambda hwnd: True)

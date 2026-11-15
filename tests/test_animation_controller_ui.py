@@ -171,12 +171,15 @@ def test_hidden_and_shutdown_stop_work(controller):
 
 
 @pytest.fixture
-def companion(qapp, tmp_path, monkeypatch):
+def companion(qapp, native_desktop, tmp_path, monkeypatch):
     monkeypatch.setattr("r2_companion.pet.awareness.QCursor.pos", lambda: QPoint(-100000, -100000))
     store = ConfigStore(tmp_path)
     assert store.acquire()
     store.load()
     result = Companion(qapp, store)
+    # A delayed startup greeting must not race tests of explicit interactions.
+    result.greeting_timer.stop()
+    result.controller.enter(State.IDLE)
     QTest.qWait(50)
     yield result
     result.shutdown()
@@ -248,6 +251,7 @@ def test_tools_settings_menu_and_persistence(companion, qapp):
     assert saved["visual_scale"] == 128
 
 
+@pytest.mark.windows_native
 def test_saved_position_survives_application_initialization(qapp, tmp_path):
     store = ConfigStore(tmp_path)
     assert store.acquire()

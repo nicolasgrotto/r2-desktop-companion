@@ -12,7 +12,11 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--data-dir", type=Path, default=Path(".runtime-package-verification"))
     parser.add_argument("--artifact-label")
+    parser.add_argument("--smoke-seconds", type=int, default=20,
+                        help="Time for all seven droids and navigation to finish (5-120 seconds)")
     args = parser.parse_args()
+    if not 5 <= args.smoke_seconds <= 120:
+        parser.error("--smoke-seconds must be between 5 and 120")
     root = Path(__file__).resolve().parents[1]
     version = tomllib.loads((root / "pyproject.toml").read_text(encoding="utf-8"))["project"]["version"]
     output = args.data_dir.resolve()
@@ -27,8 +31,10 @@ def main():
                    if not key.upper().startswith(("PYTHON", "QT_")) and key != "VIRTUAL_ENV"}
     environment["PATH"] = str(Path(os.environ["SystemRoot"]) / "System32")
     data = output / "dados isolados"
-    process = subprocess.run([str(executable), "--data-dir", str(data), "--smoke-test", "--smoke-seconds", "7", "--smoke-droids", "--smoke-navigation"],
-                             cwd=work, env=environment, creationflags=subprocess.CREATE_NO_WINDOW, timeout=45)
+    process = subprocess.run([str(executable), "--data-dir", str(data), "--smoke-test", "--smoke-seconds",
+                              str(args.smoke_seconds), "--smoke-droids", "--smoke-navigation"],
+                             cwd=work, env=environment, creationflags=subprocess.CREATE_NO_WINDOW,
+                             timeout=args.smoke_seconds + 45)
     if process.returncode:
         raise RuntimeError(f"Smoke exit: {process.returncode}")
     smoke = json.loads((data / "smoke.json").read_text(encoding="utf-8"))
@@ -68,7 +74,8 @@ def main():
         sounds = sum("/assets/sounds/" in name and name.endswith(".wav") for name in names)
         if sounds < 15 or not any("/licenses/PySide6-Addons/" in name for name in names):
             raise RuntimeError("Missing sounds or licenses")
-        report = {"exe_exit": process.returncode, "smoke": smoke, "zip_files": len(names),
+        report = {"exe_exit": process.returncode, "smoke": smoke, "smoke_seconds": args.smoke_seconds,
+                  "zip_files": len(names),
                   "zip_bytes": archive.stat().st_size, "uncompressed_bytes": sum(item.file_size for item in bundle.infolist()),
                   "sha256": digest, "integrity": "passed", "clean_path": environment["PATH"], "sounds": sounds,
                   "verified_resources": resources}

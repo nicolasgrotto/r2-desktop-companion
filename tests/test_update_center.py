@@ -121,6 +121,7 @@ def test_update_window_current_and_failed_installer_show_honest_states(qapp, tmp
         dialog.close()
 
 
+@pytest.mark.windows_native
 def test_prepared_package_is_rechecked_against_published_checksum(tmp_path):
     old = installation(tmp_path / "installed")
     prepared = tmp_path / "data/updates/download-test"

@@ -20,6 +20,7 @@ def test_unsafe_path_forms_rejected(path):
 
 @pytest.mark.parametrize("name", ["cmd.exe", "powershell.exe", "pwsh.exe", "python.exe", "pythonw.exe",
                                       "python3.13.exe", "wscript.exe", "mshta.exe", "run.bat", "app.lnk"])
+@pytest.mark.windows_native
 def test_interpreters_and_scripts_rejected(tmp_path, name):
     path = tmp_path / name
     path.touch()
@@ -27,6 +28,7 @@ def test_interpreters_and_scripts_rejected(tmp_path, name):
         validate_executable(str(path))
 
 
+@pytest.mark.windows_native
 def test_valid_application_uses_fields_and_no_shell(tmp_path):
     path = tmp_path / "Editor com espaço 漢.exe"
     path.touch()
@@ -45,6 +47,7 @@ def test_mapped_network_drive_rejected_before_filesystem_access(monkeypatch):
         local_path(r"Z:\application.exe")
 
 
+@pytest.mark.windows_native
 def test_locations_allow_files_and_folders_without_command_strings(qapp, tmp_path):
     assert validate_location(str(tmp_path), "folder") == tmp_path.resolve()
     path = tmp_path / "nota com espaço.txt"

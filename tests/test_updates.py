@@ -1,6 +1,5 @@
 import hashlib
 import json
-import os
 from pathlib import Path
 import subprocess
 import sys
@@ -57,7 +56,7 @@ def mock_release(tmp_path, value):
     return f"function Get-R2LatestRelease {{ Get-Content -LiteralPath {quote(fixture)} -Raw | ConvertFrom-Json }}"
 
 
-pytestmark = pytest.mark.skipif(os.name != "nt", reason="PowerShell 5.1 integration requires Windows")
+pytestmark = pytest.mark.windows_native
 
 
 @pytest.mark.parametrize("value", ["0.3.0", "1.10.0", "10.0.1"])

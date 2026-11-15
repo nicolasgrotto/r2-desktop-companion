@@ -15,6 +15,7 @@ from r2_companion.services.storage import ConfigStore
 
 
 @pytest.mark.skipif(os.name != "nt", reason="Requires a real Windows desktop")
+@pytest.mark.windows_native
 def test_native_transparency_passes_hit_test_to_another_process(qapp, tmp_path):
     ready = tmp_path / "underlay.json"
     helper = Path(__file__).parent / "helpers/native_underlay.py"

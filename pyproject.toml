@@ -21,3 +21,9 @@ r2_companion = ["assets/**/*.json", "assets/**/*.png", "assets/**/*.wav", "asset
 [tool.pytest.ini_options]
 pythonpath = ["src"]
 testpaths = ["tests"]
+addopts = "--strict-markers"
+markers = [
+    "logic: rules, parsing and doubles without a Qt application or live Windows integration",
+    "qt: Qt objects, event loop and rendering that can run with the offscreen platform",
+    "windows_native: live Windows APIs, PowerShell, desktop, focus or complete Companion lifecycle",
+]

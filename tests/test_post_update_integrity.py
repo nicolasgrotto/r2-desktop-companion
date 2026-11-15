@@ -68,6 +68,7 @@ def test_startup_confirmation_is_atomic_unique_and_identifies_running_code(qapp,
             confirm_startup(invalid, tmp_path)
 
 
+@pytest.mark.windows_native
 def test_update_lifecycle_preserves_all_droids_and_rebuilds_working_navigation(qapp, tmp_path, monkeypatch):
     monkeypatch.setattr("r2_companion.app.foreground_fullscreen", lambda hwnd: False)
     store = ConfigStore(tmp_path)

@@ -13,7 +13,7 @@ from test_update_center import response, wait_for_worker
 
 
 @pytest.fixture
-def center(qapp, tmp_path):
+def center(qapp, native_desktop, tmp_path):
     dialog = UpdateCenter(tmp_path)
     dialog.startup.stop()
     dialog.show()

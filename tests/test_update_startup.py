@@ -1,11 +1,10 @@
 import json
-import os
 
 import pytest
 
 from test_updates import installation, ps, quote, REPOSITORY
 
-pytestmark = pytest.mark.skipif(os.name != "nt", reason="PowerShell integration requires Windows")
+pytestmark = pytest.mark.windows_native
 
 
 @pytest.mark.parametrize("field", [None, "pid", "version", "bundle", "executable", "data_directory", "initialized"])
