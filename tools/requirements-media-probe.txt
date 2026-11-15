@@ -1,0 +1,7 @@
+# Investigation only. Do not add these bindings to the application environment.
+typing_extensions==4.16.0
+winrt-runtime==4.2.0
+winrt-Windows.Foundation==4!10.0.28000.2957
+winrt-Windows.Foundation.Collections==4!10.0.28000.2957
+winrt-Windows.Media.Control==4!10.0.28000.2957
+winrt-Windows.Storage.Streams==4!10.0.28000.2957
