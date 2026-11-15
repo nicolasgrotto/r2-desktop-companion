@@ -78,6 +78,7 @@ Para reduzir por subsistema, combine arquivos e marcas:
 
 | Subsistema | Arquivos principais / seleção |
 |---|---|
+| Política de presença | `test_presence.py` com `-m logic`: combinações, precedência, override de foco e atualização por mudança; contrato puro, sem integração ao Companion |
 | Configuração e persistência | `test_config_storage.py`, `test_audio_productivity.py`, `test_companion_state.py` com `-m 'logic or qt'`; `test_companion_state_native.py` para troca de droide, reinício e avisos no desktop |
 | Timer e comportamento | `test_timer_behavior.py`, `test_timer_stop_v121.py`, `test_context_v03.py`; use a marca para distinguir serviço de integração |
 | Personagens e recursos | `test_droids.py`, `test_garage_expansion.py`, `test_animation_refinement.py`; modelos/renderização em Qt, equipamento/Companion em nativo |

@@ -247,7 +247,7 @@ def test_debounce_checkpoint_and_close_flush_without_late_writes(make_store, mon
     store.update("accessibility", {"ui_scale": 125})
     store.update("accessibility", {"ui_scale": 150})
     assert not store.path.exists()
-    QTest.qWait(80)
+    assert saved.count() or saved.wait(2000)
     assert writes.count(store.path) == saved.count() == 1
     assert store.data["accessibility"]["ui_scale"] == 150
     assert store.update("focus", {"session": checkpoint()}, immediate=True)
