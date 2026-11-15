@@ -31,6 +31,7 @@ from .pet.state import State
 from .pet.window import PetWindow
 from .services.audio import AudioService
 from .services.storage import ConfigStore
+from .services.companion_state import CompanionStateStore
 from .services.system_info import SystemInfo
 from .services.tasks import LocalTasks
 from .services.navigation_trace import NavigationTrace
@@ -110,6 +111,7 @@ class Companion(QObject):
         self.monitor = SystemMonitor(SystemInfo())
         self.droid_controller = DroidController(self.droids, self.audio, self.window)
         self.productivity = ProductivityStore(store.directory, store.read_only)
+        self.companion_state = CompanionStateStore(store)
         self.awareness = ContextReactions(self.controller, self.positioning, store, self.audio)
         self.updates = UpdateService(store.directory)
         self.tasks = LocalTasks()
@@ -167,6 +169,7 @@ class Companion(QObject):
         self.store.changed.connect(self.apply_preferences)
         self.store.warning.connect(self.warning)
         self.productivity.warning.connect(self.warning)
+        self.companion_state.warning.connect(self.warning)
         self.productivity.warning.connect(self.tools.completion.setText)
         self.productivity.task_completed.connect(self.task_completed)
         self.tray.activated.connect(self.tray_activated)
@@ -196,7 +199,7 @@ class Companion(QObject):
         self.greeting_timer.setSingleShot(True)
         self.greeting_timer.timeout.connect(self.awareness.greet)
         self.greeting_timer.start(750)
-        for notice in store.notices + self.productivity.notices:
+        for notice in store.notices + self.productivity.notices + self.companion_state.notices:
             QTimer.singleShot(100, lambda message=notice: self.warning(message))
         self.radial.record("companion_ready")
 
@@ -868,6 +871,7 @@ class Companion(QObject):
         self.greeting_timer.stop()
         self.awareness.close()
         self.productivity.close()
+        self.companion_state.close()
         self.controller.close()
         self.positioning.close()
         self.radial.stop()
@@ -1079,7 +1083,8 @@ def main(argv=None) -> int:
                  companion.countdown.timer, companion.monitor.timer, companion.idle_timer,
                  companion.desktop_timer, companion.tools.clock_timer, companion.bubble.timer,
                  companion.radial.dismiss_timer, companion.radial.deactivate_timer, companion.greeting_timer, companion.awareness.timer,
-                 companion.productivity.timer, companion.tray.notice.timer, companion.window.affection_timer,
+                 companion.productivity.timer, companion.companion_state.timer,
+                 companion.tray.notice.timer, companion.window.affection_timer,
                  companion.window.hologram_timer, companion.window.projection_timer, companion.window.steam.timer,
                  companion.window.sleep_effect.timer, companion.tools.diagnostics_page.timer, store.timer])
             (directory / "smoke.json").write_text(json.dumps(report, indent=2), encoding="utf-8")
