@@ -161,6 +161,19 @@ class CompanionStateStore(QObject):
             raise OversizedStateError("Estado complementar excede o limite de leitura.")
         return validate_document(json.loads(contents.decode("utf-8"))), contents
 
+    @classmethod
+    def read_reduced_motion(cls, directory: Path) -> bool:
+        """Read the global preference in the independent update window."""
+        for name in ("companion_state.json", "companion_state.backup.json"):
+            try:
+                document, _ = cls._read(directory / name)
+                return document["accessibility"]["reduced_motion"]
+            except FutureSchemaError:
+                break
+            except (OSError, ValueError, RecursionError):
+                continue
+        return False
+
     def _load(self):
         for path in (self.path, self.backup):
             try:

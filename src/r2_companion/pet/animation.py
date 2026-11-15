@@ -113,6 +113,13 @@ class AnimationManager(QObject):
         self.token = 0
         self.started = 0.0
         self.last_frame = -1
+        self.reduced_motion = False
+
+    def set_reduced_motion(self, enabled: bool):
+        if self.reduced_motion != enabled:
+            self.reduced_motion = enabled
+            self.timer.stop()
+            self.tick()
 
     def play(self, state: State, token: int) -> None:
         self.stop()
@@ -131,6 +138,14 @@ class AnimationManager(QObject):
         if not clip.loop and elapsed >= clip.duration:
             self.stop()
             self.clip_finished.emit(token)
+            return
+        if self.reduced_motion:
+            if self.last_frame < 0:
+                self.last_frame = 0
+                frame = clip.frames[0]
+                self.frame_changed.emit(frame.visual if frame.visual is not None else frame.pixmap)
+            if not clip.loop and self.clip is clip and self.token == token:
+                self.timer.start(max(1, clip.duration - elapsed))
             return
         elapsed %= clip.duration
         boundary = 0

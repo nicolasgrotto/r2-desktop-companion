@@ -17,6 +17,7 @@ from .theme import apply_theme, card, header, icon, label, apply_character_name
 class SettingsDialog(QDialog):
     applied = Signal(object, object)
     presence_applied = Signal(str)
+    reduced_motion_applied = Signal(bool)
 
     def __init__(self, settings: Settings, startup_available: bool, startup_enabled: bool, startup_status: str, droid_profile=None):
         super().__init__()
@@ -48,6 +49,9 @@ class SettingsDialog(QDialog):
         self.presence_status.setWordWrap(True)
         form.addRow(self.presence_status)
         self.presence_original = "free"
+        self.reduced_motion = QCheckBox("Reduzir movimento")
+        self.reduced_motion.setToolTip("Usa poses estáticas e desativa passeios automáticos e transições da roda.")
+        form.addRow(self.reduced_motion)
         self.scale = QSpinBox()
         self.scale.setRange(64, 256)
         self.scale.setValue(settings.visual_scale)
@@ -338,6 +342,7 @@ class SettingsDialog(QDialog):
         self.applied.emit(checked, request)
         if self.error.text():
             return
+        self.reduced_motion_applied.emit(self.reduced_motion.isChecked())
         if self.presence_mode.currentData() != self.presence_original:
             self.presence_applied.emit(self.presence_mode.currentData())
             self.presence_original = self.presence_mode.currentData()

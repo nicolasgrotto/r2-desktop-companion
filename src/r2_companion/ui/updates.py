@@ -16,6 +16,7 @@ from ..pet.state import State
 from ..services.update_client import check_release, download_release, validate_release, version_tuple, REPOSITORY
 from ..services.updates import independent_environment, read_release
 from ..services.storage import ConfigStore
+from ..services.companion_state import CompanionStateStore
 from .theme import fit_dialog
 from ..droids.themes import PersistedThemeWatcher, styled
 from ..droids.profiles import DroidRegistry
@@ -133,7 +134,9 @@ class UpdateCenter(QDialog):
         self.animation = AnimationManager(load_profile_clips(profile))
         self.animation.frame_changed.connect(self.character.set_frame)
         self.theme_watcher.profile_changed.connect(self.use_profile)
-        self.animation.clip_finished.connect(lambda token: self.animation.play(State.WORK, 1) if self.state in BUSY_STATES else None)
+        self.animation.clip_finished.connect(self.repeat_busy_animation)
+        self.theme_watcher.timer.timeout.connect(self.refresh_motion)
+        self.refresh_motion()
         self.poll = QTimer(self)
         self.poll.setInterval(500)
         self.poll.timeout.connect(self.poll_install)
@@ -152,7 +155,29 @@ class UpdateCenter(QDialog):
             return
         self.animation.stop()
         self.animation.clips = clips
-        self.animation.play(State.WORK if self.state in BUSY_STATES else State.IDLE, 1)
+        self.play_character()
+
+    def refresh_motion(self):
+        enabled = CompanionStateStore.read_reduced_motion(self.directory)
+        if self.animation.reduced_motion != enabled:
+            self.animation.stop()
+            self.animation.set_reduced_motion(enabled)
+            self.play_character()
+            if self.progress.maximum() == 0:
+                self.progress.setVisible(self.state in BUSY_STATES and not enabled)
+
+    def repeat_busy_animation(self, _token):
+        if self.state in BUSY_STATES and not self.animation.reduced_motion:
+            self.play_character()
+
+    def play_character(self):
+        state = State.IDLE
+        if not self.animation.reduced_motion:
+            if self.state in BUSY_STATES:
+                state = State.WORK
+            elif self.state in {"current", "done"}:
+                state = State.HAPPY
+        self.animation.play(state, 1)
 
     def operation_active(self):
         return (self.state in BUSY_STATES
@@ -169,9 +194,9 @@ class UpdateCenter(QDialog):
                                and not (self.child is not None and self.child.poll() is None))
         self.later.setText("Aguarde a conclusão" if busy else "Fechar")
         self.later.setEnabled(not busy)
-        self.progress.setVisible(busy)
+        self.progress.setVisible(busy and not self.animation.reduced_motion)
         self.progress.setRange(0, 0)
-        self.animation.play(State.WORK if busy else State.HAPPY if state in {"current", "done"} else State.IDLE, 1)
+        self.play_character()
         self.action.setText("Atualizar agora" if state == "available" else "Tentar novamente" if state == "error" else "Verificar novamente")
 
     def start_worker(self, operation, callback):
@@ -226,12 +251,14 @@ class UpdateCenter(QDialog):
 
     def download_progress(self, received, total):
         if total > 0:
+            self.progress.show()
             self.progress.setRange(0, total)
             self.progress.setValue(received)
             self.progress.setFormat("%p%")
             self.detail.setText(f"{received / 1048576:.2f} de {total / 1048576:.2f} MiB baixados")
         else:
             self.progress.setRange(0, 0)
+            self.progress.setVisible(not self.animation.reduced_motion)
             self.detail.setText(f"{received / 1048576:.2f} MiB baixados · tamanho total indisponível")
 
     def download(self):

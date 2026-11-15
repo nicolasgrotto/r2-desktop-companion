@@ -67,6 +67,7 @@ class Positioner(QObject):
         self.token = 0
         self.screen = None
         self.movement = None
+        self.reduced_motion = False
         self.aspect = 1.0
         self.tracked_screens = []
         app = QGuiApplication.instance()
@@ -107,7 +108,7 @@ class Positioner(QObject):
         self.fit(screen)
         previous = self.window.pos()
         self.place(pointer - QPointF(anchor.x() * self.window.width(), anchor.y() * self.window.height()), screen)
-        if self.movement:
+        if self.movement and not self.reduced_motion:
             self.movement.displaced(self.window.x() - previous.x(), self.window.y() - previous.y(), manual=True)
 
     def restore(self, saved: WindowSettings) -> None:
@@ -167,7 +168,7 @@ class Positioner(QObject):
         eased = self.movement.progress(progress) if self.movement else progress
         previous = self.window.pos()
         self.place(self.origin + (self.destination - self.origin) * eased, self.screen)
-        if self.movement:
+        if self.movement and not self.reduced_motion:
             self.movement.displaced(self.window.x() - previous.x(), self.window.y() - previous.y())
         if progress >= 1:
             self.timer.stop()

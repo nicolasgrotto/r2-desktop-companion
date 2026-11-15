@@ -50,6 +50,7 @@ class RadialMenu(QWidget):
         self.level = "main"
         self.history = []
         self.transition = None
+        self.reduced_motion = False
         self.transitioning = False
         self.phase = "idle"
         self.paused = False
@@ -131,7 +132,15 @@ class RadialMenu(QWidget):
         self.close_button.raise_()
         self.update()
 
+    def set_reduced_motion(self, enabled):
+        self.reduced_motion = enabled
+        if enabled and self.transition is not None:
+            self.transition.setCurrentTime(self.transition.totalDuration())
+
     def animate_items(self, entering, finished):
+        if self.reduced_motion:
+            finished()
+            return
         group = QParallelAnimationGroup(self)
         self.transition = group
         for index, button in enumerate(self.buttons.values()):

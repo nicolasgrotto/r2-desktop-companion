@@ -127,6 +127,8 @@ class DroidStudio(QDialog):
         self.profile = None
         self.clips = {}
         self.animation = AnimationManager({})
+        self.animation.set_reduced_motion(companion.presence.context.reduced_motion)
+        companion.companion_state.changed.connect(self.motion_preferences_changed)
         self.setWindowTitle(title + " · R2 Companion")
         self.resize(830, 740)
         apply_theme(self)
@@ -270,13 +272,32 @@ class DroidStudio(QDialog):
         self.animation.clips = {state: replace(self.clips[state], loop=self.repeat.isChecked())}
         self.preview.state = state
         self.preview.effect_started = time.monotonic()
+        self.animation.play(state, 1)
+        self.start_preview_effects(state)
+
+    def start_preview_effects(self, state):
+        if self.animation.reduced_motion:
+            return
         if state in {State.SLEEP, State.OVERHEAT} and self.profile.renderer != "rigged":
             self.preview.effect_timer.start()
-        self.animation.play(state, 1)
         if state == State.WALK and self.profile.renderer in {"layered", "rigged"}:
             self.preview.started = time.monotonic()
             self.preview.previous_roll = 0
             self.preview.roll_timer.start()
+
+    def motion_preferences_changed(self, document):
+        enabled = document["accessibility"]["reduced_motion"]
+        if enabled == self.animation.reduced_motion:
+            return
+        self.animation.set_reduced_motion(enabled)
+        if enabled:
+            self.preview.roll_timer.stop()
+            self.preview.effect_timer.stop()
+            if self.preview.movement:
+                self.preview.movement.stop()
+            self.preview.update()
+        elif self.animation.clip is not None:
+            self.start_preview_effects(self.preview.state)
 
     def stop(self):
         self.animation.stop()

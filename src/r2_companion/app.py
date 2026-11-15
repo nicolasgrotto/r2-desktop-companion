@@ -578,7 +578,7 @@ class Companion(QObject):
             self.store.flush()
         self.controller.set_gate("drag", False)
         self.controller.react(State.RECOVER)
-        if movement and not self.controller.gates:
+        if movement and not self.positioning.reduced_motion and not self.controller.gates:
             movement.restore(captured_motion)
             movement.release()
 
@@ -793,6 +793,9 @@ class Companion(QObject):
         dialog.presence_original = self.presence.context.manual_mode.value
         dialog.presence_mode.setCurrentIndex(dialog.presence_mode.findData(dialog.presence_original))
         dialog.presence_applied.connect(self.presence.select_mode)
+        dialog.reduced_motion.setChecked(self.presence.context.reduced_motion)
+        dialog.reduced_motion_applied.connect(
+            lambda enabled: self.companion_state.update("accessibility", {"reduced_motion": enabled}))
         self.settings_dialog = dialog
         self.presence.update_controls()
         self.controller.set_gate("settings", True)
