@@ -17,6 +17,37 @@ COMMANDS = {
 }
 
 
+def windows_identity():
+    """Read token/package identity without registering or elevating the process."""
+    if sys.platform != "win32":
+        return {}
+    import ctypes
+    from ctypes import wintypes
+    kernel = ctypes.WinDLL("kernel32", use_last_error=True)
+    advapi = ctypes.WinDLL("advapi32", use_last_error=True)
+    kernel.GetCurrentProcess.restype = wintypes.HANDLE
+    kernel.CloseHandle.argtypes = [wintypes.HANDLE]
+    advapi.OpenProcessToken.argtypes = [wintypes.HANDLE, wintypes.DWORD, ctypes.POINTER(wintypes.HANDLE)]
+    advapi.GetTokenInformation.argtypes = [wintypes.HANDLE, ctypes.c_int, ctypes.c_void_p,
+                                          wintypes.DWORD, ctypes.POINTER(wintypes.DWORD)]
+    kernel.GetCurrentPackageFullName.argtypes = [ctypes.POINTER(wintypes.DWORD), wintypes.LPWSTR]
+    token = wintypes.HANDLE()
+    if not advapi.OpenProcessToken(kernel.GetCurrentProcess(), 0x0008, ctypes.byref(token)):
+        raise ctypes.WinError(ctypes.get_last_error())
+    try:
+        elevated, returned = wintypes.DWORD(), wintypes.DWORD()
+        if not advapi.GetTokenInformation(token, 20, ctypes.byref(elevated), ctypes.sizeof(elevated),
+                                          ctypes.byref(returned)):
+            raise ctypes.WinError(ctypes.get_last_error())
+    finally:
+        kernel.CloseHandle(token)
+    length = wintypes.DWORD()
+    package_status = kernel.GetCurrentPackageFullName(ctypes.byref(length), None)
+    if package_status not in (0, 122, 15700):  # success, buffer size, APPMODEL_ERROR_NO_PACKAGE
+        raise ctypes.WinError(package_status)
+    return {"elevated": bool(elevated.value), "has_package_identity": package_status != 15700}
+
+
 def error_fields(error):
     # Exception messages from providers can contain track metadata or paths.
     result = {"error_type": type(error).__name__}
@@ -256,11 +287,15 @@ def main(argv=None):
         versions = {d.metadata["Name"]: d.version for d in importlib.metadata.distributions()
                     if d.metadata["Name"].lower().startswith("winrt-") or d.metadata["Name"] == "typing_extensions"}
         evidence("environment", python=platform.python_version(), architecture=platform.machine(),
-                 windows=platform.platform(), packages=versions)
+                 windows=platform.platform(), packages=versions, frozen=bool(getattr(sys, "frozen", False)),
+                 windows_identity=windows_identity())
         return asyncio.run(execute(args, evidence))
     except KeyboardInterrupt:
         evidence("interrupted")
         return 130
+    except Exception as error:
+        evidence("error", operation="environment", **error_fields(error))
+        return 1
     finally:
         evidence.close()
 

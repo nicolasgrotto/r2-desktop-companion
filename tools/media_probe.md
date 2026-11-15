@@ -75,4 +75,44 @@ Testes locais da política de comandos, privacidade e cancelamento:
 Esses testes usam doubles e não certificam players reais. Registre separadamente
 ausência de player, comandos, troca/encerramento de sessões, eventos e
 cancelamento em uma sessão nativa. Resultados e matriz de aplicativos ficam em
-`local_docs/`. A prova no executável portátil é uma etapa posterior.
+`local_docs/`. O roteiro abaixo prepara a prova no executável portátil.
+
+## Executável portátil de investigação
+
+Use outro ambiente, com apenas as dependências mínimas e a ferramenta de build.
+O hook do [PyWinRT para PyInstaller](https://pywinrt.readthedocs.io/en/latest/freezing/)
+coleta os namespaces instalados e suas tabelas `_table.pywinrt`; por isso, não
+use o ambiente que contém os módulos adicionais dos players de teste.
+
+```powershell
+$packageRoot = Join-Path $PWD ('.runtime-v13-media-package-' + [guid]::NewGuid().ToString('N'))
+python -m venv "$packageRoot/build-env"
+& "$packageRoot/build-env/Scripts/python.exe" -m pip install -r tools/requirements-media-probe-build.txt
+& "$packageRoot/build-env/Scripts/python.exe" tools/build_media_probe.py --output-dir "$packageRoot/artifact"
+python tools/verify_media_probe_package.py --archive "$packageRoot/artifact/R2MediaProbe-Windows-x64.zip" --data-dir "$packageRoot/verification"
+```
+
+O build recusa versões divergentes e namespaces WinRT extras. Produz um ZIP
+onedir, checksum SHA-256, licenças, log e inventário dos arquivos. Cada saída
+precisa de um diretório novo; o `dist/` estável do Companion não é utilizado.
+
+Depois de extrair o ZIP, mantenha a pasta `_internal` ao lado do executável:
+
+```powershell
+.\R2MediaProbe.exe snapshot --data-dir '.\evidence-snapshot'
+.\R2MediaProbe.exe watch --seconds 30 --data-dir '.\evidence-watch'
+```
+
+Os comandos explícitos usam a mesma sintaxe `--source` da versão Python. O
+EXE não instala nem registra um aplicativo no Windows. O evento `environment`
+registra `frozen`, versões, elevação do token e presença de identidade de pacote,
+permitindo verificar as condições de cada ensaio.
+
+O verificador extrai em outro caminho, restringe PATH a System32 e remove
+variáveis Python/Qt do processo filho. Verifica enumeração, observação,
+cancelamento e um prazo mínimo para provocar timeout nativo. Se a operação
+concluir antes do prazo nas três tentativas, o timeout permanece não validado;
+isso não demonstra falha do produto. Nenhum comando de reprodução é enviado
+por esse verificador. A prova de comandos/eventos exige uma sessão controlada
+e resultados separados. Não declare compatibilidade com players ou versões
+do Windows que não tenham sido exercitados.
