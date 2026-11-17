@@ -64,6 +64,9 @@ def test_projection_option_is_opt_in_persistent_and_respects_manual_override(pet
     pet.countdown.tick()
     assert pet.window.projection_kind == "clock"
     pet.countdown.restart()
+    assert pet.window.projection_kind == "clock"
+    pet.window.clear_projection()
+    pet.countdown.restart()
     assert pet.window.projection_kind == "timer"
     pet.tools.project_timer.setChecked(False)
     assert pet.window.projection_kind is None
@@ -73,7 +76,11 @@ def test_projection_option_is_opt_in_persistent_and_respects_manual_override(pet
     draft = deepcopy(pet.store.settings)
     draft.holograms = False
     pet.store.apply(draft)
-    assert not pet.tools.project_timer.isEnabled() and pet.window.projection_kind is None
+    assert not pet.tools.project_timer.isEnabled() and pet.window.projection_kind == "timer"
+    assert not pet.window.projection_timer.isActive() and not pet.window.projection_overlay.isVisible()
+    draft.holograms = True
+    pet.store.apply(draft)
+    assert pet.window.projection_kind == "timer" and pet.window.projection_overlay.isVisible()
 
 
 def test_old_settings_default_to_no_timer_projection():

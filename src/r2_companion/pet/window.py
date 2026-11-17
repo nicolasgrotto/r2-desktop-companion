@@ -1,9 +1,9 @@
-from PySide6.QtCore import QEvent, QPointF, QRectF, Qt, QTimer, Signal
-from PySide6.QtGui import QColor, QFont, QMouseEvent, QPainter, QPen, QPixmap
+from PySide6.QtCore import QEvent, QPointF, Qt, QTimer, Signal
+from PySide6.QtGui import QColor, QMouseEvent, QPainter, QPixmap
 from PySide6.QtWidgets import QApplication, QWidget
 
-from ..droids.themes import color, theme_manager
-from ..features.clock import local_clock
+from ..droids.themes import theme_manager
+from ..features.projections import ProjectionController
 
 
 class PetWindow(QWidget):
@@ -49,14 +49,10 @@ class PetWindow(QWidget):
         self.hologram = QPixmap()
         self.hologram_timer = QTimer(self)
         self.hologram_timer.setSingleShot(True)
-        self.hologram_timer.timeout.connect(self.clear_projection)
-        self.projection_kind = None
-        self.projection_suspended = False
-        self.projection_text = ""
-        self.projection_timer = QTimer(self)
-        self.projection_timer.setInterval(1000)
-        self.projection_timer.timeout.connect(self.refresh_projection)
-        theme_manager().changed.connect(self.refresh_projection)
+        self.hologram_timer.timeout.connect(self.clear_ephemeral_projection)
+        self.projection = ProjectionController(self)
+        self.projection.changed.connect(self.present_projection)
+        theme_manager().changed.connect(self.restyle_projection)
         self.affection_timer = QTimer(self)
         self.affection_timer.setSingleShot(True)
         self.affection_timer.setInterval(650)
@@ -67,7 +63,6 @@ class PetWindow(QWidget):
         self.steam = SteamOverlay(self)
         from ..ui.sleep import SleepOverlay
         self.sleep_effect = SleepOverlay(self)
-        self.timer_projection_source = None
 
     def pet_head(self):
         if self.press_global is not None and not self.dragging:
@@ -88,92 +83,75 @@ class PetWindow(QWidget):
         self.hologram_timer.start(1800)
         self.update()
 
-    def show_projection(self, kind):
-        if kind not in {"clock", "date", "timer"}:
-            return False
-        self.clear_projection()
-        self.projection_kind = kind
-        self.refresh_projection()
-        if self.isVisible() and not self.projection_suspended:
-            self.projection_timer.start()
-        return True
+    @property
+    def projection_kind(self):
+        return self.projection.selected
 
-    def refresh_projection(self, *_):
-        if self.projection_kind is None or self.projection_suspended:
-            return
-        time_text, date_text = local_clock().split("\n", 1)
-        if self.projection_kind == "timer":
-            value = self.timer_projection_source() if self.timer_projection_source else None
-            if value is None:
-                self.clear_projection()
-                return
-            time_text, date_text = value
-        self.projection_text = time_text + ("\n" + date_text if self.projection_kind == "date" else "")
-        if self.projection_kind == "timer":
-            self.projection_text = time_text + "\n" + date_text
-        picture = QPixmap(320, 164 if self.projection_kind in {"date", "timer"} else 76)
-        picture.fill(Qt.GlobalColor.transparent)
-        painter = QPainter(picture)
-        painter.setRenderHint(QPainter.RenderHint.Antialiasing)
-        background = QColor(color("hero"))
-        background.setAlpha(200)
-        painter.setBrush(background)
-        painter.setPen(QPen(QColor(color("hologram")), 2))
-        painter.drawRoundedRect(QRectF(picture.rect()).adjusted(2, 2, -2, -2), 14, 14)
-        painter.setPen(QColor(color("hologram")))
-        painter.setFont(QFont("Consolas", 30, QFont.Weight.Bold))
-        painter.drawText(QRectF(8, 6, 304, 62), Qt.AlignmentFlag.AlignCenter, time_text)
-        if self.projection_kind in {"date", "timer"}:
-            painter.setFont(QFont("Segoe UI", 18))
-            painter.drawText(QRectF(12, 67, 296, 90), Qt.AlignmentFlag.AlignCenter | Qt.TextFlag.TextWordWrap, date_text)
-        painter.end()
-        self.hologram = picture
+    @property
+    def projection_suspended(self):
+        return self.projection.suspended
+
+    @property
+    def projection_text(self):
+        model = self.projection.model
+        return "\n".join(model.lines) if model else ""
+
+    @property
+    def projection_timer(self):
+        return self.projection.timer
+
+    def show_projection(self, kind, *, automatic=False):
+        selected = self.projection.select(kind, automatic=automatic)
+        if selected:
+            self.hologram_timer.stop()
+        return selected
+
+    def refresh_projection(self):
+        self.projection.refresh()
+
+    def restyle_projection(self, *_):
+        if self.projection.model is not None:
+            self.present_projection(self.projection.model)
+
+    def present_projection(self, model):
+        self.hologram = self.projection_overlay.render_card(model) if model else QPixmap()
         self.projection_overlay.reposition()
         self.update()
 
     def clear_projection(self):
+        self.projection.end()
+        self.clear_ephemeral_projection()
+
+    def clear_ephemeral_projection(self):
         self.hologram_timer.stop()
-        self.projection_timer.stop()
-        self.projection_kind = None
-        self.projection_text = ""
-        self.hologram = QPixmap()
-        self.projection_overlay.hide()
-        self.update()
+        if self.projection_kind is None and not self.hologram.isNull():
+            self.hologram = QPixmap()
+            self.update()
 
     def set_projection_suspended(self, suspended):
-        if self.projection_suspended == suspended:
-            return
-        self.projection_suspended = suspended
+        self.projection.set_blocked("presence", suspended)
         if suspended:
-            self.projection_timer.stop()
-            self.projection_overlay.hide()
-            if self.projection_kind is None:
-                self.clear_projection()
-        elif self.projection_kind and self.isVisible():
-            self.refresh_projection()
-            self.projection_timer.start()
+            self.clear_ephemeral_projection()
 
     def stop_effects(self, preserve_projection=False):
         self.sleep_effect.set_active(False)
         self.steam.set_active(False)
         self.affection_timer.stop()
-        self.hologram_timer.stop()
-        if not preserve_projection or self.projection_kind is None:
+        self.clear_ephemeral_projection()
+        if not preserve_projection:
             self.clear_projection()
 
     def showEvent(self, event):
         self.sleep_effect.reposition()
         self.steam.reposition()
-        if self.projection_kind and not self.projection_suspended:
-            self.refresh_projection()
-            self.projection_timer.start()
+        self.projection.set_blocked("hidden", False)
         super().showEvent(event)
 
     def hideEvent(self, event):
         self.sleep_effect.timer.stop()
         self.sleep_effect.hide()
-        self.projection_timer.stop()
-        self.projection_overlay.hide()
+        self.projection.set_blocked("hidden", True)
+        self.clear_ephemeral_projection()
         self.steam.timer.stop()
         self.steam.hide()
         super().hideEvent(event)
@@ -277,7 +255,7 @@ class PetWindow(QWidget):
         else:
             painter.drawPixmap(self.rect(), self.frame)
         if not self.hologram.isNull() and not self.projection_kind:
-            width = max(16, self.width() - 8) if self.projection_kind else max(16, self.width() // 5)
+            width = max(16, self.width() // 5)
             height = round(width * self.hologram.height() / self.hologram.width())
             painter.drawPixmap(self.width() - width - 4, 4, width, height, self.hologram)
 

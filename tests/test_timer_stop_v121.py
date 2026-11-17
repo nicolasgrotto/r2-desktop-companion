@@ -66,7 +66,7 @@ def test_stop_button_unlocks_duration_and_only_clears_timer_projection(pet, cloc
     tools.set_duration(30)
     QTest.mouseClick(tools.start_button, Qt.MouseButton.LeftButton)
     assert pet.countdown.remaining == 30 and pet.countdown.run_id == 2
-    assert pet.window.projection_kind == "timer"
+    assert pet.window.projection_kind == projection
     QTest.mouseClick(tools.stop_button, Qt.MouseButton.LeftButton)
 
 

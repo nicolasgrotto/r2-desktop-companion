@@ -1,5 +1,5 @@
 from PySide6.QtCore import QPointF, QRectF, QSizeF, Qt
-from PySide6.QtGui import QColor, QGuiApplication, QLinearGradient, QPainter, QPen, QPolygonF
+from PySide6.QtGui import QColor, QFont, QGuiApplication, QLinearGradient, QPainter, QPen, QPixmap, QPolygonF
 from PySide6.QtWidgets import QWidget
 
 from ..droids.themes import color
@@ -20,6 +20,27 @@ class ProjectionOverlay(QWidget):
         self.setFocusPolicy(Qt.FocusPolicy.NoFocus)
         pet.window_layers.register(self)
         pet.geometry_changed.connect(self.reposition)
+
+    @staticmethod
+    def render_card(model):
+        picture = QPixmap(320, 164 if len(model.lines) > 1 else 76)
+        picture.fill(Qt.GlobalColor.transparent)
+        painter = QPainter(picture)
+        painter.setRenderHint(QPainter.RenderHint.Antialiasing)
+        background = QColor(color("hero"))
+        background.setAlpha(200)
+        painter.setBrush(background)
+        painter.setPen(QPen(QColor(color("hologram")), 2))
+        painter.drawRoundedRect(QRectF(picture.rect()).adjusted(2, 2, -2, -2), 14, 14)
+        painter.setPen(QColor(color("hologram")))
+        painter.setFont(QFont("Consolas", 30, QFont.Weight.Bold))
+        painter.drawText(QRectF(8, 6, 304, 62), Qt.AlignmentFlag.AlignCenter, model.lines[0])
+        if len(model.lines) > 1:
+            painter.setFont(QFont("Segoe UI", 18))
+            painter.drawText(QRectF(12, 67, 296, 90), Qt.AlignmentFlag.AlignCenter | Qt.TextFlag.TextWordWrap,
+                             model.lines[1])
+        painter.end()
+        return picture
 
     def reposition(self):
         pet = self.pet

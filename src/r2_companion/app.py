@@ -124,7 +124,7 @@ class Companion(QObject):
         self.tools = ToolsDialog(self.countdown, self.monitor, store.settings.timer_seconds, self.productivity,
                                  project_timer=store.settings.timer_projection, data_transfer=self.data_transfer)
         self._timer_projection_run = 0
-        self.window.timer_projection_source = self.timer_projection_text
+        self.window.projection.providers["timer"] = self.timer_projection_text
         self.countdown.changed.connect(self.update_timer_projection)
         self.tools.project_timer.toggled.connect(self.timer_projection_toggled)
         self.navigation_trace = NavigationTrace(store.directory)
@@ -267,6 +267,9 @@ class Companion(QObject):
         self.tools.project_timer.setChecked(settings.timer_projection)
         self.tools.project_timer.blockSignals(blocked)
         self.tools.project_timer.setEnabled(settings.holograms)
+        self.window.projection.set_blocked("disabled", not settings.holograms)
+        if not settings.holograms:
+            self.window.clear_ephemeral_projection()
         self.update_timer_projection()
         self.behavior.settings = deepcopy(settings.behavior)
         self.positioning.display_size = settings.visual_scale
@@ -353,12 +356,13 @@ class Companion(QObject):
         old_bank = None
         position = self.positioning.snapshot()
         self._switching_droid = True
+        self.window.projection.set_blocked("droid_swap", True)
         self.controller.set_gate("droid_swap", True)
         self.reactions.close()
         try:
             self.animation.stop()
             self.positioning.stop()
-            self.window.stop_effects()
+            self.window.stop_effects(preserve_projection=True)
             old_bank = self.audio.activate_profile(prepared.audio_bank)
             self.profile = prepared.profile
             self.animation.clips = prepared.clips
@@ -416,6 +420,7 @@ class Companion(QObject):
             self.controller.set_gate("droid_swap", False)
             self.refresh_menu()
             self.check_desktop()
+            self.window.projection.set_blocked("droid_swap", False)
 
     def save_position(self, saved):
         if self.closed or self._switching_droid:
@@ -443,14 +448,13 @@ class Companion(QObject):
     def update_timer_projection(self, force=False):
         new_run = self._timer_projection_run != self.countdown.run_id
         self._timer_projection_run = self.countdown.run_id
-        active = (not self.closed and self.store.settings.holograms and self.tools.project_timer.isChecked()
+        active = (not self.closed and self.tools.project_timer.isChecked()
                   and self.countdown.state in {TimerState.RUNNING, TimerState.PAUSED})
         if not active:
-            if self.window.projection_kind == "timer":
-                self.window.clear_projection()
+            self.window.projection.end("timer")
             return
-        if force or new_run:
-            self.window.show_projection("timer")
+        if (force or new_run) and self.tools.project_timer.isEnabled():
+            self.window.show_projection("timer", automatic=True)
         elif self.window.projection_kind == "timer":
             self.window.refresh_projection()
 

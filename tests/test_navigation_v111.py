@@ -123,10 +123,10 @@ def test_wheel_submenus_and_live_projections_follow_equipped_theme(pet, identifi
 
 
 def test_projection_validates_availability_preserves_tools_and_refreshes_time(pet, monkeypatch):
-    monkeypatch.setattr("r2_companion.pet.window.local_clock", lambda: "12:34:56\nquinta-feira, 12 de novembro")
+    monkeypatch.setattr("r2_companion.features.projections.local_clock", lambda: "12:34:56\nquinta-feira, 12 de novembro")
     assert pet.project_tool("date")
     assert pet.window.projection_text == "12:34:56\nquinta-feira, 12 de novembro"
-    monkeypatch.setattr("r2_companion.pet.window.local_clock", lambda: "12:34:57\nquinta-feira, 12 de novembro")
+    monkeypatch.setattr("r2_companion.features.projections.local_clock", lambda: "12:34:57\nquinta-feira, 12 de novembro")
     pet.window.projection_timer.timeout.emit()
     assert pet.window.projection_text.startswith("12:34:57")
     pet.show_tools_page("minigames")
