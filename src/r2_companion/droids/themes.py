@@ -7,6 +7,8 @@ from PySide6.QtCore import QFileSystemWatcher, QObject, QTimer, Signal
 from PySide6.QtGui import QColor, QPalette
 from PySide6.QtWidgets import QApplication, QWidget
 
+from ..core.config import FutureSchemaError, Settings
+from ..services.companion_state import CompanionStateStore, default_document
 from .profiles import DroidRegistry
 
 COLOR_TOKENS = {}
@@ -68,10 +70,12 @@ class ThemeManager(QObject):
         self.widgets[widget] = template
         widget.setStyleSheet(self.render(template, theme_for(widget)))
 
-    def refresh(self, *, theme_changed=True):
+    def refresh(self, *, theme_changed=True, root=None):
         refreshed = set()
         for widget, template in list(self.widgets.items()):
             try:
+                if root is not None and widget is not root and not root.isAncestorOf(widget):
+                    continue
                 widget.setStyleSheet(self.render(template, theme_for(widget)))
                 from ..ui.theme import refresh_icons
                 for child in (widget, *widget.findChildren(QWidget)):
@@ -82,7 +86,7 @@ class ThemeManager(QObject):
                         child.update()
             except RuntimeError:
                 self.widgets.pop(widget, None)
-        if theme_changed:
+        if theme_changed and root is None:
             self.changed.emit(self.active)
 
     def set_ui_scale(self, percent):
@@ -142,14 +146,25 @@ def styled(widget, template):
     theme_manager().style(widget, template)
 
 
+def resolve_theme(registry, profile, provider_id):
+    if provider_id == profile.id:
+        return profile.theme
+    return registry.profiles.get(provider_id, profile).theme
+
+
 class PersistedThemeWatcher(QObject):
     profile_changed = Signal(object)
+    accessibility_changed = Signal(object)
 
     def __init__(self, directory, assets, parent=None):
         super().__init__(parent)
-        self.directory, self.assets = Path(directory).resolve(), assets
+        self.directory = Path(directory).resolve()
+        self.registry = DroidRegistry(assets)
+        self.profile = self.registry.active
+        self.accessibility = default_document()["accessibility"]
         self.last_id = None
         self.last_stamp = None
+        self.state_cache = {}
         self.closed = False
         self.watcher = QFileSystemWatcher(self)
         self.watcher.fileChanged.connect(self.queue_refresh)
@@ -175,28 +190,63 @@ class PersistedThemeWatcher(QObject):
         if desired - current:
             self.watcher.addPaths(sorted(desired - current))
 
+    def read_profile(self):
+        path = self.directory / "config.json"
+        try:
+            stat = path.stat()
+            stamp = (stat.st_ino, stat.st_mtime_ns, stat.st_size)
+            if stamp != self.last_stamp:
+                self.last_stamp = stamp
+                if stat.st_size <= 1024 * 1024:
+                    settings = Settings.parse(json.loads(path.read_text(encoding="utf-8")))
+                    return self.registry.profiles.get(settings.active_droid, self.registry.active)
+        except FileNotFoundError:
+            self.last_stamp = None
+        except (OSError, ValueError, KeyError, TypeError, RecursionError):
+            pass
+        return self.profile
+
+    def read_state_file(self, name):
+        path = self.directory / name
+        try:
+            stat = path.stat()
+        except OSError:
+            self.state_cache.pop(name, None)
+            return None
+        stamp = (stat.st_ino, stat.st_mtime_ns, stat.st_size)
+        cached_stamp, document = self.state_cache.get(name, (None, None))
+        if stamp != cached_stamp:
+            try:
+                document = CompanionStateStore.read_document_file(path)
+            except FutureSchemaError:
+                document = default_document()
+            except (OSError, ValueError, RecursionError):
+                document = None
+            self.state_cache[name] = stamp, document
+        return document
+
     def refresh(self):
         if self.closed:
             return
-        from ..core.config import Settings
-        from .profiles import DroidRegistry
         try:
             self.sync_paths()
-            path = self.directory / "config.json"
-            stat = path.stat()
-            stamp = (stat.st_ino, stat.st_mtime_ns, stat.st_size)
-            if stat.st_size > 1024 * 1024 or stamp == self.last_stamp:
-                return
-            settings = Settings.parse(json.loads(path.read_text(encoding="utf-8")))
-            self.last_stamp = stamp
-            if settings.active_droid != self.last_id:
-                registry = DroidRegistry(self.assets)
-                profile = registry.get(settings.active_droid)
-                theme_manager().apply(profile.theme)
-                self.last_id = settings.active_droid
-                self.profile_changed.emit(profile)
-        except (OSError, ValueError, KeyError, TypeError):
-            pass
+        except OSError:
+            return
+        profile = self.read_profile()
+        document = (self.read_state_file("companion_state.json")
+                    or self.read_state_file("companion_state.backup.json") or default_document())
+        provider = document["appearance"]["theme_overrides"].get(profile.id)
+        manager = theme_manager()
+        theme = resolve_theme(self.registry, profile, provider)
+        if manager.active != theme:
+            manager.apply(theme)
+        if profile.id != self.last_id:
+            self.profile, self.last_id = profile, profile.id
+            self.profile_changed.emit(profile)
+        accessibility = document["accessibility"]
+        if accessibility != self.accessibility:
+            self.accessibility = accessibility
+            self.accessibility_changed.emit(accessibility)
 
     def close(self):
         self.closed = True

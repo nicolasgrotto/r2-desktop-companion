@@ -148,6 +148,9 @@ class CompanionStateStore(QObject):
     def data(self):
         return deepcopy(self._data)
 
+    def theme_override_for(self, droid_id):
+        return self._data["appearance"]["theme_overrides"].get(droid_id)
+
     @property
     def read_only(self):
         owner = self.config_store
@@ -162,17 +165,9 @@ class CompanionStateStore(QObject):
         return validate_document(json.loads(contents.decode("utf-8"))), contents
 
     @classmethod
-    def read_accessibility(cls, directory: Path) -> dict:
-        """Read global accessibility preferences in the independent update window."""
-        for name in ("companion_state.json", "companion_state.backup.json"):
-            try:
-                document, _ = cls._read(directory / name)
-                return document["accessibility"]
-            except FutureSchemaError:
-                break
-            except (OSError, ValueError, RecursionError):
-                continue
-        return default_document()["accessibility"]
+    def read_document_file(cls, path: Path) -> dict:
+        """Read one validated state file without acquiring the writer's lock."""
+        return cls._read(path)[0]
 
     def _load(self):
         for path in (self.path, self.backup):
@@ -217,10 +212,36 @@ class CompanionStateStore(QObject):
         data[group].update(deepcopy(values))
         return self.apply(data, immediate=immediate)
 
+    def save_theme_override(self, droid_id, provider_id):
+        candidate = self.data
+        overrides = candidate["appearance"]["theme_overrides"]
+        if provider_id is None:
+            overrides.pop(droid_id, None)
+        else:
+            overrides[droid_id] = provider_id
+        if candidate == self._data:
+            return True
+        candidate = validate_document(candidate)
+        if not self._write(candidate):
+            return False
+        self._data = candidate
+        self.timer.stop()
+        self.dirty = False
+        self.changed.emit(self.data)
+        self.saved.emit()
+        return True
+
     def flush(self):
         self.timer.stop()
         if not self.dirty:
             return True
+        if not self._write(self._data):
+            return False
+        self.dirty = False
+        self.saved.emit()
+        return True
+
+    def _write(self, data):
         if self._closed or self.read_only:
             self.warning.emit("Estado complementar somente nesta sessão; arquivos originais preservados.")
             return False
@@ -241,12 +262,10 @@ class CompanionStateStore(QObject):
                     return False
                 except (ValueError, RecursionError):
                     continue  # Keep a valid recovery backup instead of rotating corrupt data.
-            contents = _encode(self._data)
+            contents = _encode(data)
             if previous is not None:
                 ConfigStore.atomic_write(self.backup, previous)
             ConfigStore.atomic_write(self.path, contents)
-            self.dirty = False
-            self.saved.emit()
             return True
         except (OSError, ValueError) as error:
             log.warning("Falha ao salvar estado complementar (%s)", type(error).__name__)

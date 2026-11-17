@@ -83,6 +83,7 @@ Para reduzir por subsistema, combine arquivos e marcas:
 | Timer e comportamento | `test_timer_behavior.py`, `test_timer_stop_v121.py`, `test_context_v03.py`; use a marca para distinguir serviço de integração |
 | Personagens e recursos | `test_droids.py`, `test_garage_expansion.py`, `test_animation_refinement.py`; modelos/renderização em Qt, equipamento/Companion em nativo |
 | Temas e tarefas assíncronas | `test_theme_events.py`, `test_task_lifecycle.py` com `-m qt` |
+| Tema por droide | `test_interface_theme.py` com `-m 'logic or qt'` para resolução e persistência e `-m windows_native` para a Garage, troca de personagem e reinício |
 | Navegação e camadas | `test_navigation_v111.py`, `test_radial_reliability.py`, `test_window_layers.py`, `test_windows_native.py` com `-m windows_native` |
 | Acessibilidade da interface | `test_ui_accessibility.py` com `-m qt` para semântica Qt e `-m windows_native` para percurso por teclado, escala e layouts no Windows |
 | Atualização | `test_update*.py`, `test_post_update_integrity.py`; cliente/doubles em lógica, widgets em Qt, PowerShell/apresentação em nativo |

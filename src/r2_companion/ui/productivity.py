@@ -131,7 +131,7 @@ class NotesPage(QWidget):
         self.body.setAccessibleName("Conteúdo da nota")
         self.body.setTabChangesFocus(True)
         self.body.setPlaceholderText("Escreva sua anotação…")
-        styled(self.body, "QPlainTextEdit { padding: 10px; }")
+        styled(self.body, "QPlainTextEdit { background: @panel; color: @text; padding: 10px; }")
         self.title.textEdited.connect(self.save)
         self.body.textChanged.connect(self.save)
         layout.addWidget(self.title)

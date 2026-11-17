@@ -46,7 +46,10 @@ class DiagnosticsPage(QScrollArea):
         if self.provider is None:
             return
         report = self.provider()
-        for key in ("Personagem", "Versão", "Sistema", "CPU", "Memória RAM", "Bateria", "Carregamento", "Áudio", "Som do R2"):
+        if "Tema" in report and "Tema original" in report:
+            report = report | {"Tema da interface": f"{report['Tema']} · Original: {report['Tema original']}"}
+        for key in ("Personagem", "Tema da interface", "Versão", "Sistema", "CPU", "Memória RAM", "Bateria",
+                    "Carregamento", "Áudio", "Som do R2"):
             if key not in report:
                 continue
             value = report[key].split(" (")[0] if key == "Personagem" else report[key]

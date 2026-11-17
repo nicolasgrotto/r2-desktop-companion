@@ -3,13 +3,13 @@ from dataclasses import replace
 import math
 import time
 
-from PySide6.QtCore import QRectF, Qt, QTimer, Signal
+from PySide6.QtCore import QRectF, QSignalBlocker, Qt, QTimer, Signal
 from PySide6.QtGui import QColor, QPainter, QPen, QPixmap
 from PySide6.QtWidgets import (QCheckBox, QComboBox, QDialog, QFormLayout, QListWidget,
                               QPushButton, QScrollArea, QSlider, QSpinBox, QVBoxLayout, QWidget)
 
 from ..droids.preferences import defaults_for, preferences_for
-from ..droids.themes import color, theme_manager
+from ..droids.themes import color, resolve_theme, theme_manager
 from ..droids.visuals import VISUAL_TYPES, load_profile_clips, paint_visual
 from ..droids.movement import create_movement
 from ..droids.expressions import paint_expression
@@ -221,8 +221,8 @@ class DroidStudio(QDialog):
             self.category.addItem(category, category)
         self.category.blockSignals(False)
         self.filter_animations()
-        theme_manager().refresh()
         self.profile_loaded()
+        theme_manager().refresh(root=self)
         for field in (self.name, self.description, self.equipped, self.status):
             field.setProperty("characterLiteral", True)
         apply_character_name(self, profile.name)
@@ -363,6 +363,26 @@ class DroidGarage(DroidStudio):
         form_row(self.form, "Personalidade individual", self.personality)
         self.personality.currentIndexChanged.connect(self.personality_changed)
         self.layout_main.addWidget(self.form_widget)
+        theme_form = QFormLayout()
+        configure_form(theme_form)
+        self.theme_choice = QComboBox()
+        self.theme_choice.setSizeAdjustPolicy(QComboBox.SizeAdjustPolicy.AdjustToMinimumContentsLengthWithIcon)
+        self.theme_choice.setMinimumContentsLength(15)
+        self.theme_choice.addItem("Usar tema original", None)
+        for profile in self.registry.profiles.values():
+            self.theme_choice.addItem(f"{profile.theme.name} · {profile.name}", profile.id)
+        self.theme_choice.setAccessibleDescription(
+            "Vale para o personagem selecionado na Garage. Confirme com Salvar tema.")
+        form_row(theme_form, "Tema da interface", self.theme_choice)
+        self.save_theme_button = QPushButton("Salvar tema")
+        self.save_theme_button.clicked.connect(self.save_theme)
+        theme_form.addRow(self.save_theme_button)
+        self.theme_status = label("", "muted")
+        self.theme_status.setProperty("characterLiteral", True)
+        theme_form.addRow(self.theme_status)
+        self.layout_main.addLayout(theme_form)
+        self.theme_choice.currentIndexChanged.connect(self.preview_theme)
+        self.unavailable_theme_index = None
         row = ActionRow()
         self.reset_button = QPushButton("Restaurar padrão individual")
         self.reset_button.clicked.connect(self.restore_defaults)
@@ -381,6 +401,60 @@ class DroidGarage(DroidStudio):
     def profile_loaded(self):
         self.preferences = preferences_for(self.companion.store.settings, self.profile)
         self.render_preferences()
+        self.load_theme_choice()
+
+    def load_theme_choice(self):
+        store = self.companion.companion_state
+        saved = store.theme_override_for(self.profile.id)
+        with QSignalBlocker(self.theme_choice):
+            if self.unavailable_theme_index is not None:
+                self.theme_choice.removeItem(self.unavailable_theme_index)
+                self.unavailable_theme_index = None
+            index = self.theme_choice.findData(saved) if saved is not None else 0
+            if index < 0:
+                index = self.theme_choice.count()
+                self.theme_choice.addItem(f"Tema indisponível · {saved}", saved)
+                self.theme_choice.model().item(index).setEnabled(False)
+                self.unavailable_theme_index = index
+            self.theme_choice.setCurrentIndex(index)
+        self.theme_choice.setEnabled(not store.read_only)
+        self.preview_theme()
+
+    def preview_theme(self, *_):
+        store = self.companion.companion_state
+        saved = store.theme_override_for(self.profile.id)
+        selected = self.theme_choice.currentData()
+        effective = resolve_theme(self.registry, self.profile, saved)
+        preview = resolve_theme(self.registry, self.profile, selected)
+        status = f"Tema em uso para {self.profile.name}: {effective.name}."
+        if saved is not None and saved not in self.registry.profiles:
+            status += " A escolha salva está indisponível. O tema original está em uso."
+        if store.read_only:
+            status += " Preferência somente leitura."
+        elif selected != saved:
+            status += f" Prévia: {preview.name}."
+        self.theme_status.setText(status)
+        self.save_theme_button.setEnabled(not store.read_only and selected != saved)
+        if self.droid_preview_theme != preview:
+            self.droid_preview_theme = preview
+            theme_manager().refresh(root=self)
+
+    def save_theme(self):
+        if not self.save_theme_button.isEnabled():
+            return
+        store = self.companion.companion_state
+        try:
+            saved = store.save_theme_override(self.profile.id, self.theme_choice.currentData())
+        except ValueError as error:
+            self.preview_theme()
+            self.theme_status.setText(self.theme_status.text() + f" {error}")
+            return
+        if saved:
+            self.load_theme_choice()
+            self.theme_status.setText(f"Tema salvo para {self.profile.name}: {self.droid_preview_theme.name}.")
+        else:
+            self.preview_theme()
+            self.theme_status.setText(self.theme_status.text() + " Não foi possível salvar a escolha.")
 
     def render_preferences(self):
         self.personality.blockSignals(True)
@@ -399,7 +473,8 @@ class DroidGarage(DroidStudio):
             form_row(self.form, spec["label"], control)
             self.custom_controls[key] = control
             control.currentIndexChanged.connect(self.customization_changed)
-        order = (self.personality, *self.custom_controls.values(), self.reset_button, self.voice_button,
+        order = (self.personality, *self.custom_controls.values(), self.theme_choice, self.save_theme_button,
+                 self.reset_button, self.voice_button,
                  self.equip_button)
         for current, following in zip(order, order[1:]):
             QWidget.setTabOrder(current, following)

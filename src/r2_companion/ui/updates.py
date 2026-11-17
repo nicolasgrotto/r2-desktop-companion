@@ -17,10 +17,8 @@ from ..pet.state import State
 from ..services.update_client import check_release, download_release, validate_release, version_tuple, REPOSITORY
 from ..services.updates import independent_environment, read_release
 from ..services.storage import ConfigStore
-from ..services.companion_state import CompanionStateStore
 from .theme import ActionRow, fit_dialog, scrollable
 from ..droids.themes import PersistedThemeWatcher, styled, theme_manager
-from ..droids.profiles import DroidRegistry
 from ..droids.visuals import load_profile_clips
 from .droids import PreviewCanvas
 
@@ -137,15 +135,12 @@ class UpdateCenter(QDialog):
         self.later.clicked.connect(self.close)
         buttons.addWidget(self.later)
         layout.addWidget(buttons)
-        assets = Path(__file__).resolve().parents[1] / "assets"
-        registry = DroidRegistry(assets)
-        profile = registry.profiles.get(self.theme_watcher.last_id, registry.active)
-        self.animation = AnimationManager(load_profile_clips(profile))
+        self.animation = AnimationManager(load_profile_clips(self.theme_watcher.profile))
         self.animation.frame_changed.connect(self.character.set_frame)
         self.theme_watcher.profile_changed.connect(self.use_profile)
         self.animation.clip_finished.connect(self.repeat_busy_animation)
-        self.theme_watcher.timer.timeout.connect(self.refresh_accessibility)
-        self.refresh_accessibility()
+        self.theme_watcher.accessibility_changed.connect(self.refresh_accessibility)
+        self.refresh_accessibility(self.theme_watcher.accessibility)
         self.poll = QTimer(self)
         self.poll.setInterval(500)
         self.poll.timeout.connect(self.poll_install)
@@ -166,8 +161,7 @@ class UpdateCenter(QDialog):
         self.animation.clips = clips
         self.play_character()
 
-    def refresh_accessibility(self):
-        accessibility = CompanionStateStore.read_accessibility(self.directory)
+    def refresh_accessibility(self, accessibility):
         theme_manager().set_ui_scale(accessibility["ui_scale"])
         enabled = accessibility["reduced_motion"]
         if self.animation.reduced_motion != enabled:

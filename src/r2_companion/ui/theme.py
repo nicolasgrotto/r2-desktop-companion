@@ -196,9 +196,9 @@ def fit_dialog(widget, anchor):
 ICON_SPECS = {}
 
 
-def icon(name: str, color=None) -> QIcon:
+def icon(name: str, color=None, *, widget=None) -> QIcon:
     original = color
-    color = theme_color(COLOR_TOKENS.get(color, "primary")) if color is None or color in COLOR_TOKENS else color
+    color = theme_color(COLOR_TOKENS.get(color, "primary"), widget) if color is None or color in COLOR_TOKENS else color
     result = _colored_icon(name, color)
     ICON_SPECS[result.cacheKey()] = (name, original)
     if len(ICON_SPECS) > 512:
@@ -211,16 +211,16 @@ def refresh_icons(widget):
     if isinstance(widget, QAbstractButton):
         spec = ICON_SPECS.get(widget.icon().cacheKey())
         if spec:
-            widget.setIcon(icon(*spec))
+            widget.setIcon(icon(*spec, widget=widget))
     if isinstance(widget, QTabWidget):
         for i in range(widget.count()):
             spec = ICON_SPECS.get(widget.tabIcon(i).cacheKey())
             if spec:
-                widget.setTabIcon(i, icon(*spec))
+                widget.setTabIcon(i, icon(*spec, widget=widget))
     for action in widget.actions():
         spec = ICON_SPECS.get(action.icon().cacheKey())
         if spec:
-            action.setIcon(icon(*spec))
+            action.setIcon(icon(*spec, widget=widget))
 
 
 @lru_cache(maxsize=64)

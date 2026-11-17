@@ -17,7 +17,7 @@ def test_diagnosis_stays_scrollable_and_never_enlarges_other_tools(pet):
     assert max(page.verticalScrollBar().maximum(), pet.tools.scroll_area.verticalScrollBar().maximum()) > 0
     assert 'Locomoção' not in page.fields and 'Renderizador' not in page.fields
     assert 'Efeitos carregados' not in page.fields and 'CPU' in page.fields
-    assert len(page.fields) <= 9
+    assert 'Tema da interface' in page.fields and len(page.fields) <= 10
     for name in ('clock', 'timer', 'notes', 'minigames', 'diagnostics'):
         pet.show_tools_page(name)
         QTest.qWait(10)

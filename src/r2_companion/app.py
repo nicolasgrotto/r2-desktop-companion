@@ -53,7 +53,7 @@ from .droids.preferences import preferences_for, select_droid
 from .droids.controller import DroidController
 from .droids.movement import create_movement
 from .droids.visuals import load_profile_clips
-from .droids.themes import theme_manager
+from .droids.themes import resolve_theme, theme_manager
 
 ASSETS = Path(__file__).resolve().parent / "assets"
 log = logging.getLogger(__name__)
@@ -99,8 +99,8 @@ class Companion(QObject):
             raise ValueError("Nenhum personagem possui recursos válidos para iniciar.")
         store.apply(select_droid(store.settings, self.profile), notify=False)
         self.companion_state = CompanionStateStore(store)
-        self.apply_ui_scale(self.companion_state.data)
-        self.companion_state.changed.connect(self.apply_ui_scale)
+        self.apply_interface_preferences(self.companion_state.data)
+        self.companion_state.changed.connect(self.apply_interface_preferences)
         self.window = PetWindow()
         self.positioning = Positioner(self.window)
         self.positioning.movement = create_movement(self.profile, self.window)
@@ -249,9 +249,16 @@ class Companion(QObject):
                     break
         return False
 
-    @staticmethod
-    def apply_ui_scale(document):
+    def apply_interface_preferences(self, document):
         theme_manager().set_ui_scale(document["accessibility"]["ui_scale"])
+        self.apply_droid_theme()
+
+    def apply_droid_theme(self):
+        provider = self.companion_state.theme_override_for(self.profile.id)
+        theme = resolve_theme(self.droids, self.profile, provider)
+        manager = theme_manager()
+        if manager.active != theme:
+            manager.apply(theme)
 
     def apply_preferences(self, settings):
         blocked = self.tools.project_timer.blockSignals(True)
@@ -263,8 +270,7 @@ class Companion(QObject):
         self.positioning.display_size = settings.visual_scale
         self.positioning.aspect = self.profile.canvas[0] / self.profile.canvas[1]
         self.window.configure_droid(self.profile, preferences_for(settings, self.profile))
-        if theme_manager().active != self.profile.theme:
-            theme_manager().apply(self.profile.theme)
+        self.apply_droid_theme()
         self.radial.center_text = self.profile.name.split()[0][:2].upper()
         if self.radial.level == "main":
             self.radial.center.setText(self.radial.center_text)
@@ -289,7 +295,8 @@ class Companion(QObject):
         result.update({"Personagem": f"{self.profile.name} ({self.profile.id})",
                        "Locomoção": type(self.positioning.movement).__name__,
                        "Renderizador": self.profile.renderer, "Animações registradas": str(len(self.profile.animations)),
-                       "Perfil vocal": self.audio.profile_id, "Tema": self.profile.theme.name,
+                       "Perfil vocal": self.audio.profile_id, "Tema": theme_manager().active.name,
+                       "Tema original": self.profile.theme.name,
                        "Arte": self.profile.art_status, "Perfis rejeitados": str(len(self.droids.errors))})
         return result
 
