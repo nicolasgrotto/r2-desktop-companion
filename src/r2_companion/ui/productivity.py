@@ -2,7 +2,7 @@ from PySide6.QtCore import Qt
 from PySide6.QtWidgets import (QApplication, QCheckBox, QHBoxLayout, QLineEdit,
                               QListWidget, QListWidgetItem, QPlainTextEdit, QPushButton, QVBoxLayout, QWidget)
 
-from .theme import label
+from .theme import ActionRow, label
 from ..droids.themes import styled
 
 
@@ -14,7 +14,7 @@ class NoteEditor(QPlainTextEdit):
 
     def keyPressEvent(self, event):
         if event.text() and len(self.toPlainText()) - len(self.textCursor().selectedText()) >= 50000:
-            if event.text().isprintable() or event.text() in ("\r", "\n", "\t"):
+            if event.text().isprintable() or event.text() in ("\r", "\n"):
                 return
         super().keyPressEvent(event)
 
@@ -22,7 +22,8 @@ class NoteEditor(QPlainTextEdit):
 def style_list(widget):
     styled(widget, "QListWidget { background: white; color: #193b57; border: 1px solid #caddea; border-radius: 9px; }"
                         "QListWidget::item { padding: 11px; border-bottom: 1px solid #edf3f9; }"
-                        "QListWidget::item:selected { background: #e4effa; color: #193b57; }")
+                        "QListWidget::item:selected { background: #e4effa; color: #193b57; }"
+                        "QListWidget:focus { border: 2px solid @focus; }")
 
 
 class TasksPage(QWidget):
@@ -33,6 +34,7 @@ class TasksPage(QWidget):
         row = QHBoxLayout()
         self.input = QLineEdit()
         self.input.setMaxLength(240)
+        self.input.setAccessibleName("Nova tarefa")
         self.input.setPlaceholderText("Uma coisa para fazer…")
         self.input.returnPressed.connect(self.add)
         row.addWidget(self.input, 1)
@@ -44,6 +46,8 @@ class TasksPage(QWidget):
         self.pending.toggled.connect(self.render)
         layout.addWidget(self.pending)
         self.list = QListWidget()
+        self.list.setAccessibleName("Lista de tarefas")
+        self.list.setWordWrap(True)
         style_list(self.list)
         self.list.itemChanged.connect(self.toggle)
         layout.addWidget(self.list, 1)
@@ -55,6 +59,9 @@ class TasksPage(QWidget):
         self.render()
 
     def render(self, *_):
+        current = self.list.currentItem()
+        current_id = None if current is None else current.data(Qt.ItemDataRole.UserRole)
+        current_row = self.list.currentRow()
         self.list.blockSignals(True)
         self.list.clear()
         for task in self.store.data["tasks"]:
@@ -65,7 +72,14 @@ class TasksPage(QWidget):
             item.setFlags(item.flags() | Qt.ItemFlag.ItemIsUserCheckable)
             item.setCheckState(Qt.CheckState.Checked if task["done"] else Qt.CheckState.Unchecked)
             self.list.addItem(item)
+            if task["id"] == current_id:
+                self.list.setCurrentItem(item)
+        if self.list.currentItem() is None and current_row >= 0:
+            self.list.setCurrentRow(min(current_row, self.list.count() - 1))
         self.list.blockSignals(False)
+        self.update_status()
+
+    def update_status(self):
         remaining = sum(not task["done"] for task in self.store.data["tasks"])
         self.status.setText(f"{remaining} pendentes · Marque para concluir; desmarque para reabrir.")
 
@@ -79,7 +93,10 @@ class TasksPage(QWidget):
 
     def toggle(self, item):
         self.store.set_done(item.data(Qt.ItemDataRole.UserRole), item.checkState() == Qt.CheckState.Checked)
-        self.render()
+        if self.pending.isChecked():
+            self.render()
+        else:
+            self.update_status()
 
     def remove(self):
         item = self.list.currentItem()
@@ -95,22 +112,26 @@ class NotesPage(QWidget):
         self.current_id = None
         layout = QVBoxLayout(self)
         self.list = QListWidget()
+        self.list.setAccessibleName("Lista de notas")
         style_list(self.list)
         self.list.setMaximumHeight(145)
         self.list.currentItemChanged.connect(self.select)
         layout.addWidget(self.list)
-        row = QHBoxLayout()
+        row = ActionRow()
         for title, callback in (("Nova", self.add), ("Excluir", self.remove), ("Copiar conteúdo", self.copy)):
             button = QPushButton(title)
             button.clicked.connect(callback)
             row.addWidget(button)
-        layout.addLayout(row)
+        layout.addWidget(row)
         self.title = QLineEdit()
         self.title.setMaxLength(120)
+        self.title.setAccessibleName("Título da nota")
         self.title.setPlaceholderText("Título")
         self.body = NoteEditor()
+        self.body.setAccessibleName("Conteúdo da nota")
+        self.body.setTabChangesFocus(True)
         self.body.setPlaceholderText("Escreva sua anotação…")
-        styled(self.body, "background: white; color: #14314c; padding: 10px; border: 1px solid #caddea;")
+        styled(self.body, "QPlainTextEdit { padding: 10px; }")
         self.title.textEdited.connect(self.save)
         self.body.textChanged.connect(self.save)
         layout.addWidget(self.title)

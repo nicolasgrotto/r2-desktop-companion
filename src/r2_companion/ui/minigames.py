@@ -1,16 +1,19 @@
-from PySide6.QtCore import QSize, Signal
-from PySide6.QtWidgets import QHBoxLayout, QPushButton, QVBoxLayout, QWidget
+from PySide6.QtCore import QSize, Qt, Signal
+from PySide6.QtWidgets import QHBoxLayout, QPushButton, QScrollArea, QVBoxLayout, QWidget
 
 from ..features.minigames import GAMES
 from .theme import card, icon, label
 
 
-class MinigamesPage(QWidget):
+class MinigamesPage(QScrollArea):
     game_requested = Signal(str)
 
     def __init__(self, games=GAMES):
         super().__init__()
-        layout = QVBoxLayout(self)
+        self.setWidgetResizable(True)
+        body = QWidget()
+        self.setWidget(body)
+        layout = QVBoxLayout(body)
         layout.setContentsMargins(0, 16, 0, 0)
         layout.addWidget(label("Escolha sua próxima aventura", "eyebrow"))
         for game in games:
@@ -21,6 +24,7 @@ class MinigamesPage(QWidget):
             art.setIconSize(QSize(42, 42))
             art.setFixedSize(70, 70)
             art.setAccessibleName("Abrir " + game.name)
+            art.setFocusPolicy(Qt.FocusPolicy.ClickFocus)
             art.clicked.connect(lambda checked=False, key=game.id: self.game_requested.emit(key))
             row.addWidget(art)
             text = QVBoxLayout()
@@ -31,6 +35,7 @@ class MinigamesPage(QWidget):
             row.addLayout(text, 1)
             content.addLayout(row)
             button = QPushButton("Jogar no navegador  ↗")
+            button.setAccessibleName("Jogar " + game.name + " no navegador")
             button.setProperty("role", "primary")
             button.clicked.connect(lambda checked=False, key=game.id: self.game_requested.emit(key))
             content.addWidget(button)

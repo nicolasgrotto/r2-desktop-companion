@@ -5,7 +5,7 @@ import time
 
 from PySide6.QtCore import QRectF, Qt, QTimer, Signal
 from PySide6.QtGui import QColor, QPainter, QPen, QPixmap
-from PySide6.QtWidgets import (QCheckBox, QComboBox, QDialog, QFormLayout, QHBoxLayout, QListWidget,
+from PySide6.QtWidgets import (QCheckBox, QComboBox, QDialog, QFormLayout, QListWidget,
                               QPushButton, QScrollArea, QSlider, QSpinBox, QVBoxLayout, QWidget)
 
 from ..droids.preferences import defaults_for, preferences_for
@@ -17,7 +17,7 @@ from ..droids.rig import ArticulatedVisual
 from ..pet.animation import AnimationManager
 from ..pet.personality import apply_profile
 from ..pet.state import State
-from .theme import apply_theme, card, header, label, apply_character_name
+from .theme import ActionRow, apply_character_name, apply_theme, configure_form, form_row, header, label
 
 ANIMATION_NAMES = {"IDLE": "Repouso", "BLINK": "Piscar", "LOOK_AROUND": "Observar", "WALK": "Locomoção",
                    "HAPPY": "Felicidade", "CURIOUS": "Curiosidade", "SLEEP": "Sono", "INTERACT": "Interação",
@@ -140,10 +140,10 @@ class DroidStudio(QDialog):
         content = QWidget()
         self.scroll_area.setWidget(content)
         self.layout_main = QVBoxLayout(content)
-        self.layout_main.setContentsMargins(24, 20, 24, 20)
+        self.layout_main.setContentsMargins(14, 20, 14, 20)
         self.layout_main.addWidget(header(title, "Explore a identidade e as animações de cada companheiro."))
         self.selector = QComboBox()
-        self.selector.setAccessibleName("Personagem da Droid Garage")
+        self.selector.setAccessibleName("Personagem para visualizar")
         self.selector.setMaxVisibleItems(7)
         for profile in self.registry.profiles.values():
             self.selector.addItem(profile.name, profile.id)
@@ -155,20 +155,24 @@ class DroidStudio(QDialog):
         self.description.setWordWrap(True)
         self.layout_main.addWidget(self.name)
         self.layout_main.addWidget(self.description)
-        row = QHBoxLayout()
+        row = ActionRow()
         self.preview = PreviewCanvas()
         row.addWidget(self.preview, 3)
-        column = QVBoxLayout()
+        animation_controls = QWidget()
+        column = QVBoxLayout(animation_controls)
+        column.setContentsMargins(0, 0, 0, 0)
         self.category = QComboBox()
+        self.category.setAccessibleName("Categoria das animações")
         column.addWidget(self.category)
         self.animations = QListWidget()
+        self.animations.setAccessibleName("Animações do personagem")
         column.addWidget(self.animations, 1)
         self.frame_variant = QComboBox()
         self.frame_variant.setAccessibleName("Frame ou variação da animação")
         column.addWidget(self.frame_variant)
-        row.addLayout(column, 2)
-        self.layout_main.addLayout(row, 1)
-        controls = QHBoxLayout()
+        row.addWidget(animation_controls, 2)
+        self.layout_main.addWidget(row, 1)
+        controls = ActionRow()
         self.repeat = QCheckBox("Repetir sequência")
         self.repeat.setChecked(True)
         controls.addWidget(self.repeat)
@@ -177,7 +181,7 @@ class DroidStudio(QDialog):
             button = QPushButton(title)
             button.clicked.connect(callback)
             controls.addWidget(button)
-        self.layout_main.addLayout(controls)
+        self.layout_main.addWidget(controls)
         self.status = label("", "muted")
         self.status.setWordWrap(True)
         self.layout_main.addWidget(self.status)
@@ -352,24 +356,26 @@ class DroidGarage(DroidStudio):
         self.custom_controls = {}
         self.form_widget = QWidget()
         self.form = QFormLayout(self.form_widget)
+        configure_form(self.form)
         self.personality = QComboBox()
         for name, key in (("Personalizado", "custom"), ("Calmo", "calm"), ("Curioso", "curious"), ("Comunicativo", "talkative")):
             self.personality.addItem(name, key)
-        self.form.addRow("Personalidade individual", self.personality)
+        form_row(self.form, "Personalidade individual", self.personality)
         self.personality.currentIndexChanged.connect(self.personality_changed)
         self.layout_main.addWidget(self.form_widget)
-        row = QHBoxLayout()
-        reset = QPushButton("Restaurar padrão individual")
-        reset.clicked.connect(self.restore_defaults)
-        row.addWidget(reset)
-        voice = QPushButton("Testar vocalização")
-        voice.clicked.connect(self.test_voice)
-        row.addWidget(voice)
-        self.equip_button = QPushButton("Equipar / salvar personalização")
+        row = ActionRow()
+        self.reset_button = QPushButton("Restaurar padrão individual")
+        self.reset_button.clicked.connect(self.restore_defaults)
+        row.addWidget(self.reset_button)
+        self.voice_button = QPushButton("Testar vocalização")
+        self.voice_button.clicked.connect(self.test_voice)
+        row.addWidget(self.voice_button)
+        self.equip_button = QPushButton("Equipar e salvar")
+        self.equip_button.setAccessibleDescription("Equipe este personagem e salve sua personalização.")
         self.equip_button.setProperty("role", "primary")
         self.equip_button.clicked.connect(self.equip)
         row.addWidget(self.equip_button)
-        self.layout_main.addLayout(row)
+        self.layout_main.addWidget(row)
         self.initialize()
 
     def profile_loaded(self):
@@ -390,9 +396,13 @@ class DroidGarage(DroidStudio):
                 control.addItem(option["label"], value)
             selected = self.preferences.appearance if key == "appearance" else values[key]
             control.setCurrentIndex(control.findData(selected))
-            self.form.addRow(spec["label"], control)
+            form_row(self.form, spec["label"], control)
             self.custom_controls[key] = control
             control.currentIndexChanged.connect(self.customization_changed)
+        order = (self.personality, *self.custom_controls.values(), self.reset_button, self.voice_button,
+                 self.equip_button)
+        for current, following in zip(order, order[1:]):
+            QWidget.setTabOrder(current, following)
         self.customization_changed()
 
     def personality_changed(self, *_):
@@ -450,6 +460,7 @@ class AudioCenter(QDialog):
         self.resize(700, 660)
         apply_theme(self)
         outer = QVBoxLayout(self)
+        outer.setContentsMargins(0, 0, 0, 0)
         self.scroll_area = QScrollArea()
         self.scroll_area.setWidgetResizable(True)
         outer.addWidget(self.scroll_area)
@@ -458,41 +469,50 @@ class AudioCenter(QDialog):
         layout = QVBoxLayout(content)
         layout.addWidget(header("Central de Áudio", "Compare vozes e salve preferências individuais."))
         self.selector = QComboBox()
+        self.selector.setAccessibleName("Personagem para testar e editar o áudio")
         for profile in companion.droids.profiles.values():
             self.selector.addItem(profile.name, profile.id)
         layout.addWidget(self.selector)
-        self.master = QCheckBox("Habilitar áudio do Companion (controle global)")
+        self.master = QCheckBox("Habilitar áudio")
+        self.master.setAccessibleDescription("Esta opção vale para todos os personagens.")
         self.master.setChecked(companion.store.settings.sound_enabled)
         layout.addWidget(self.master)
         self.mute = QCheckBox("Silenciar este personagem")
         layout.addWidget(self.mute)
         form = QFormLayout()
+        configure_form(form)
         self.volume = QSpinBox()
         self.volume.setRange(0, 100)
         self.volume.setSuffix(" %")
-        form.addRow("Volume individual", self.volume)
-        self.variant = QComboBox()
-        self.variant.addItem("Todas as variantes", -1)
-        form.addRow("Variante da frase", self.variant)
+        form_row(form, "Volume individual", self.volume)
         layout.addLayout(form)
         self.catalog = QListWidget()
+        self.catalog.setAccessibleName("Frases e efeitos sonoros")
         layout.addWidget(self.catalog, 1)
+        variant_form = QFormLayout()
+        configure_form(variant_form)
+        self.variant = QComboBox()
+        self.variant.setSizeAdjustPolicy(QComboBox.SizeAdjustPolicy.AdjustToMinimumContentsLengthWithIcon)
+        self.variant.setMinimumContentsLength(12)
+        self.variant.addItem("Todas as variantes", -1)
+        form_row(variant_form, "Variante da frase", self.variant)
+        layout.addLayout(variant_form)
         self.categories = {}
-        row = QHBoxLayout()
+        row = ActionRow()
         for category, title in (("idle", "Espontâneo"), ("movement", "Movimento"), ("reactions", "Reações"), ("sleep", "Sono"), ("notifications", "Avisos")):
             control = QCheckBox(title)
             self.categories[category] = control
             row.addWidget(control)
-        layout.addLayout(row)
+        layout.addWidget(row)
         self.status = label("As prévias respeitam master, mute ativo, tela cheia, silêncio e cooldowns.", "muted")
         self.status.setWordWrap(True)
         layout.addWidget(self.status)
-        row = QHBoxLayout()
+        row = ActionRow()
         for title, callback in (("Testar selecionado", self.test_selected), ("Parar áudio", companion.audio.stop), ("Salvar preferências", self.save)):
             button = QPushButton(title)
             button.clicked.connect(callback)
             row.addWidget(button)
-        layout.addLayout(row)
+        layout.addWidget(row)
         self.selector.currentIndexChanged.connect(self.load_selected)
         self.catalog.currentRowChanged.connect(self.update_variants)
         self.selector.setCurrentIndex(self.selector.findData(companion.droids.active_id))

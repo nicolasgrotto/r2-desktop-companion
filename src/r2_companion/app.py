@@ -98,6 +98,9 @@ class Companion(QObject):
         else:
             raise ValueError("Nenhum personagem possui recursos válidos para iniciar.")
         store.apply(select_droid(store.settings, self.profile), notify=False)
+        self.companion_state = CompanionStateStore(store)
+        self.apply_ui_scale(self.companion_state.data)
+        self.companion_state.changed.connect(self.apply_ui_scale)
         self.window = PetWindow()
         self.positioning = Positioner(self.window)
         self.positioning.movement = create_movement(self.profile, self.window)
@@ -112,7 +115,6 @@ class Companion(QObject):
         self.monitor = SystemMonitor(SystemInfo())
         self.droid_controller = DroidController(self.droids, self.audio, self.window)
         self.productivity = ProductivityStore(store.directory, store.read_only)
-        self.companion_state = CompanionStateStore(store)
         self.awareness = ContextReactions(self.controller, self.positioning, store, self.audio)
         self.updates = UpdateService(store.directory)
         self.tasks = LocalTasks()
@@ -152,6 +154,7 @@ class Companion(QObject):
         self.radial.opened.connect(lambda: self.controller.set_gate("radial", True))
         self.radial.dismissed.connect(self.radial_dismissed)
         self.radial.action_selected.connect(self.radial_action)
+        self.radial.compact_menu_requested.connect(self.show_menu)
         for panel in (self.apps_panel, self.locations_panel):
             panel.target_requested.connect(self.open_target)
             panel.configure_requested.connect(self.configure_targets)
@@ -245,6 +248,10 @@ class Companion(QObject):
                             widget.windowHandle() and widget.windowHandle().isExposed()), **context)
                     break
         return False
+
+    @staticmethod
+    def apply_ui_scale(document):
+        theme_manager().set_ui_scale(document["accessibility"]["ui_scale"])
 
     def apply_preferences(self, settings):
         blocked = self.tools.project_timer.blockSignals(True)
@@ -789,13 +796,13 @@ class Companion(QObject):
             status = "Registro indisponível ou conflitante; outros registros serão preservados."
         if not self.startup.available:
             status = "Para inicialização automática, copie a versão empacotada para um local estável fora de dist/build."
-        dialog = SettingsDialog(self.store.settings, self.startup.available, enabled, status, self.profile)
+        dialog = SettingsDialog(self.store.settings, self.startup.available, enabled, status, self.profile,
+                                ui_scale=theme_manager().ui_scale)
         dialog.presence_original = self.presence.context.manual_mode.value
         dialog.presence_mode.setCurrentIndex(dialog.presence_mode.findData(dialog.presence_original))
         dialog.presence_applied.connect(self.presence.select_mode)
         dialog.reduced_motion.setChecked(self.presence.context.reduced_motion)
-        dialog.reduced_motion_applied.connect(
-            lambda enabled: self.companion_state.update("accessibility", {"reduced_motion": enabled}))
+        dialog.accessibility_applied.connect(self.save_accessibility)
         self.settings_dialog = dialog
         self.presence.update_controls()
         self.controller.set_gate("settings", True)
@@ -814,6 +821,11 @@ class Companion(QObject):
             theme_manager().unregister_tree(dialog)
             dialog.deleteLater()
         self.controller.set_gate("settings", False)
+
+    def save_accessibility(self, ui_scale, reduced_motion):
+        if not self.companion_state.update("accessibility", {"ui_scale": ui_scale, "reduced_motion": reduced_motion},
+                                           immediate=True):
+            self.settings_dialog.error.setText("Acessibilidade aplicada nesta sessão; não foi possível gravar o arquivo.")
 
     def save_settings(self, settings, startup_request):
         try:

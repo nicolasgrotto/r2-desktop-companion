@@ -80,12 +80,14 @@ def test_invalid_profile_is_isolated_from_other_characters(tmp_path, mutation):
     assert "dark_astromech" in registry.errors
 
 
-@pytest.mark.parametrize("identifier", ["r2_default", "dark_astromech", "spherical_droid"])
+@pytest.mark.parametrize("identifier", ["r2_default", "dark_astromech", "spherical_droid", "lumo", "vigia", "pico", "tranco"])
 def test_theme_contrast_and_complete_identity(registry, identifier):
     colors = registry.get(identifier).theme.colors
     for fg, bg in (("text", "background"), ("text", "panel"), ("muted", "panel"),
                    ("hero_text", "hero"), ("button_text", "primary"), ("text", "selected")):
         assert contrast(colors[fg], colors[bg]) >= 4.5
+    for surface in ("background", "panel", "selected"):
+        assert contrast(colors["focus"], colors[surface]) >= 3
     assert len(colors) >= 19
 
 

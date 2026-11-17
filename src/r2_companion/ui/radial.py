@@ -7,11 +7,19 @@ from PySide6.QtWidgets import QApplication, QGraphicsOpacityEffect, QPushButton,
 
 from ..pet.positioning import clamp
 from .theme import icon
-from .navigation import LEVEL_TITLES, NAVIGATION
-from ..droids.themes import color, styled
+from .navigation import NAVIGATION
+from ..droids.themes import color, styled, theme_manager
 
 
 class RadialButton(QPushButton):
+    def keyPressEvent(self, event):
+        if event.key() in (Qt.Key.Key_Return, Qt.Key.Key_Enter):
+            if not event.isAutoRepeat():
+                self.click()
+            event.accept()
+            return
+        super().keyPressEvent(event)
+
     def event(self, event):
         result = super().event(event)
         if event.type() in {QEvent.Type.MouseButtonPress, QEvent.Type.MouseButtonRelease, QEvent.Type.KeyPress,
@@ -26,21 +34,24 @@ class RadialMenu(QWidget):
     opened = Signal()
     dismissed = Signal()
     page_ready = Signal(str)
+    compact_menu_requested = Signal(object)
 
     def __init__(self):
         super().__init__()
         self.setWindowTitle("Acesso rápido · R2 Companion")
+        self.setAccessibleName("Roda de acesso rápido")
         self.setWindowFlags(Qt.WindowType.Tool | Qt.WindowType.FramelessWindowHint)
         self.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground)
-        self.setFixedSize(368, 368)
         self.setFocusPolicy(Qt.FocusPolicy.StrongFocus)
         styled(self, """
             QPushButton { color: #eaf7ff; background: #153751; border: 1px solid #38647f;
               border-radius: 15px; font: 600 11px 'Segoe UI'; padding: 7px; }
             QPushButton:hover, QPushButton:focus { background: #216eea; border: 2px solid #67d8ff; }
+            QPushButton:hover, QPushButton:focus { color: @button_text; }
             QPushButton:pressed { background: #1652b4; }
             QPushButton#center { color: #71d6fb; background: #0b2138; border: 1px solid #398cb8;
               border-radius: 42px; font: 700 24px 'Segoe UI'; }
+            QPushButton#center:focus { border: 2px solid @hero_text; }
         """)
         self.buttons = {}
         self.trace = None
@@ -57,14 +68,14 @@ class RadialMenu(QWidget):
         self.center_text = "R2"
         self.center = RadialButton("R2", self)
         self.center.setObjectName("center")
-        self.center.setGeometry(142, 142, 84, 84)
         self.center.clicked.connect(self.back)
         self.close_button = RadialButton("×", self)
-        self.close_button.setGeometry(316, 12, 36, 36)
         self.close_button.setAccessibleName("Fechar acesso rápido")
         self.close_button.setToolTip("Fechar acesso rápido · Esc")
         self.close_button.clicked.connect(lambda: self.dismiss("close_button"))
         self.render_level()
+        self.resize_wheel()
+        theme_manager().scale_changed.connect(self.resize_wheel)
         self.escape = QShortcut(QKeySequence(Qt.Key.Key_Escape), self)
         self.escape.activated.connect(lambda: self.dismiss("escape"))
         self.dismiss_timer = QTimer(self)
@@ -100,8 +111,23 @@ class RadialMenu(QWidget):
         angle = math.radians(-90 + index * 360 / count)
         radius = 118 if expanded else 60
         width, height = (114, 60) if expanded else (76, 40)
-        return QRect(round(184 + math.cos(angle) * radius - width / 2),
-                     round(184 + math.sin(angle) * radius - height / 2), width, height)
+        return self.scaled_rect(184 + math.cos(angle) * radius - width / 2,
+                                184 + math.sin(angle) * radius - height / 2, width, height)
+
+    @staticmethod
+    def scaled_rect(x, y, width, height):
+        return QRect(*(theme_manager().dip(value) for value in (x, y, width, height)))
+
+    def resize_wheel(self, *_):
+        if self.isVisible():
+            self.hide()
+        dip = theme_manager().dip
+        self.setFixedSize(dip(368), dip(368))
+        self.center.setGeometry(self.scaled_rect(142, 142, 84, 84))
+        self.close_button.setGeometry(self.scaled_rect(316, 12, 36, 36))
+        for index, button in enumerate(self.buttons.values()):
+            button.setGeometry(self.button_rect(index, len(self.buttons)))
+            button.setIconSize(QSize(dip(20), dip(20)))
 
     def render_level(self):
         for button in self.buttons.values():
@@ -115,7 +141,8 @@ class RadialMenu(QWidget):
             button = RadialButton(title, self)
             button.setObjectName(item.id)
             button.setIcon(icon(glyph, "#a9e6ff"))
-            button.setIconSize(QSize(20, 20))
+            side = theme_manager().dip(20)
+            button.setIconSize(QSize(side, side))
             button.setGeometry(self.button_rect(index, len(items)))
             button.setToolTip(title.replace("\n", " "))
             button.setAccessibleName(title.replace("\n", " "))
@@ -128,6 +155,9 @@ class RadialMenu(QWidget):
         self.center.setText(self.center_text if self.level == "main" else "↶")
         self.center.setToolTip("Fechar acesso rápido · Esc" if self.level == "main" else "Voltar à camada anterior · Esc para fechar")
         self.center.setAccessibleName("Fechar acesso rápido" if self.level == "main" else "Voltar à camada anterior")
+        order = (*self.buttons.values(), self.center, self.close_button)
+        for current, following in zip(order, order[1:]):
+            QWidget.setTabOrder(current, following)
         self.center.raise_()
         self.close_button.raise_()
         self.update()
@@ -256,6 +286,8 @@ class RadialMenu(QWidget):
     def paintEvent(self, event):
         p = QPainter(self)
         p.setRenderHint(QPainter.RenderHint.Antialiasing)
+        scale = self.width() / 368
+        p.scale(scale, scale)
         p.setBrush(QColor(color("hero", self)))
         p.setPen(QPen(QColor(color("border", self)), 1))
         p.drawEllipse(QRectF(8, 8, 352, 352))
@@ -270,7 +302,10 @@ class RadialMenu(QWidget):
             p.drawLine(QPointF(184 + inner * math.cos(angle), 184 + inner * math.sin(angle)),
                        QPointF(184 + 164 * math.cos(angle), 184 + 164 * math.sin(angle)))
         p.setPen(QColor(color("hero_text", self)))
-        p.setFont(QFont("Segoe UI", 7, QFont.Weight.DemiBold))
+        font = QFont("Segoe UI")
+        font.setPixelSize(10)
+        font.setWeight(QFont.Weight.DemiBold)
+        p.setFont(font)
         p.drawText(QRectF(122, 229, 124, 22), Qt.AlignmentFlag.AlignCenter, "ACESSO RÁPIDO")
         p.setPen(QColor(color("hero_muted", self)))
         p.drawText(QRectF(122, 248, 124, 18), Qt.AlignmentFlag.AlignCenter, "ESC · FECHAR")
@@ -286,6 +321,10 @@ class RadialMenu(QWidget):
             self.record("open_rejected", reason="no_screen")
             return
         area = QRectF(screen.availableGeometry())
+        if self.width() > area.width() or self.height() > area.height():
+            self.record("open_redirected", reason="small_work_area")
+            self.compact_menu_requested.emit(pet.geometry().center())
+            return
         x = pet.x() - self.width() - 16
         if x < area.left():
             x = pet.x() + pet.width() + 16
@@ -333,6 +372,9 @@ class RadialMenu(QWidget):
                             accepted_before=event.isAccepted(), spontaneous=event.spontaneous(),
                             enabled=obj.isEnabled())
         if self.isVisible():
+            if kind == QEvent.Type.KeyPress and isinstance(obj, QWidget) and (obj is self or self.isAncestorOf(obj)):
+                if not self.transitioning:
+                    self.dismiss_timer.start(12000)
             if event.type() == QEvent.Type.MouseButtonPress:
                 if isinstance(obj, QWidget) and obj is not self and not self.isAncestorOf(obj):
                     self.record("dismiss_requested", reason="trigger_press" if obj is self.trigger_widget else "outside_press")

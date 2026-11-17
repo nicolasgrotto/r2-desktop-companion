@@ -1,10 +1,10 @@
 from PySide6.QtCore import QRect, QSize, Qt, Signal
 from PySide6.QtGui import QColor, QFont, QPainter
-from PySide6.QtWidgets import (QDialog, QHBoxLayout, QLineEdit, QListWidget, QListWidgetItem,
-                              QPushButton, QStyle, QStyledItemDelegate, QVBoxLayout)
+from PySide6.QtWidgets import (QDialog, QLineEdit, QListWidget, QListWidgetItem, QPushButton,
+                               QStyle, QStyledItemDelegate, QVBoxLayout, QWidget)
 
-from .theme import apply_theme, header, icon, label
-from ..droids.themes import color, styled
+from .theme import ActionRow, apply_theme, header, icon, label, scrollable
+from ..droids.themes import color, styled, theme_manager
 
 KINDS = {"app": ("Aplicativo", "apps"), "folder": ("Pasta", "folder"),
          "file": ("Arquivo", "file"), "alias": ("Atalho", "apps")}
@@ -12,11 +12,12 @@ KINDS = {"app": ("Aplicativo", "apps"), "folder": ("Pasta", "folder"),
 
 class TargetDelegate(QStyledItemDelegate):
     def sizeHint(self, option, index):
-        return QSize(240, 78)
+        return QSize(240, theme_manager().dip(78))
 
     def paint(self, painter: QPainter, option, index):
         painter.save()
         painter.setRenderHint(QPainter.RenderHint.Antialiasing)
+        dip = theme_manager().dip
         selected = bool(option.state & QStyle.StateFlag.State_Selected)
         rect = option.rect.adjusted(1, 2, -1, -3)
         painter.setBrush(QColor(color("selected" if selected else "panel")))
@@ -24,26 +25,27 @@ class TargetDelegate(QStyledItemDelegate):
         painter.drawRoundedRect(rect, 11, 11)
         details = index.data(Qt.ItemDataRole.UserRole + 1) or {}
         kind, glyph = KINDS.get(details.get("kind"), ("Destino", "file"))
-        avatar = QRect(rect.x() + 13, rect.y() + 15, 40, 40)
+        avatar = QRect(rect.x() + dip(13), rect.y() + dip(15), dip(40), dip(40))
         painter.setPen(Qt.PenStyle.NoPen)
         painter.setBrush(QColor(color("selected")))
         painter.drawRoundedRect(avatar, 10, 10)
-        icon(glyph).paint(painter, avatar.adjusted(8, 8, -8, -8))
-        x, width = rect.x() + 66, max(20, rect.width() - 84)
+        inset = dip(8)
+        icon(glyph).paint(painter, avatar.adjusted(inset, inset, -inset, -inset))
+        x, width = rect.x() + dip(66), max(20, rect.width() - dip(84))
         font = QFont("Segoe UI")
-        font.setPixelSize(14)
+        font.setPixelSize(dip(14))
         font.setWeight(QFont.Weight.DemiBold)
         painter.setFont(font)
         painter.setPen(QColor(color("text")))
         title = details.get("label", index.data(Qt.ItemDataRole.DisplayRole) or "")
-        painter.drawText(QRect(x, rect.y() + 12, width, 24), Qt.AlignmentFlag.AlignVCenter,
+        painter.drawText(QRect(x, rect.y() + dip(12), width, dip(24)), Qt.AlignmentFlag.AlignVCenter,
                          painter.fontMetrics().elidedText(title, Qt.TextElideMode.ElideRight, width))
-        font.setPixelSize(11)
+        font.setPixelSize(dip(11))
         font.setWeight(QFont.Weight.Normal)
         painter.setFont(font)
         painter.setPen(QColor(color("muted")))
         description = kind + " · " + details.get("path", "")
-        painter.drawText(QRect(x, rect.y() + 37, width, 22), Qt.AlignmentFlag.AlignVCenter,
+        painter.drawText(QRect(x, rect.y() + dip(37), width, dip(22)), Qt.AlignmentFlag.AlignVCenter,
                          painter.fontMetrics().elidedText(description, Qt.TextElideMode.ElideMiddle, width))
         painter.restore()
 
@@ -80,17 +82,23 @@ class LaunchpadDialog(QDialog):
         self.resize(620, 570)
         self.setWindowTitle(("Aplicativos" if mode == "apps" else "Meus locais") + " · R2 Companion")
         apply_theme(self)
-        layout = QVBoxLayout(self)
+        outer = QVBoxLayout(self)
+        outer.setContentsMargins(0, 0, 0, 0)
+        body = QWidget()
+        outer.addWidget(scrollable(body))
+        layout = QVBoxLayout(body)
         layout.setContentsMargins(26, 24, 26, 22)
         layout.setSpacing(16)
         layout.addWidget(header("Seus aplicativos" if mode == "apps" else "Seus lugares favoritos",
                                 "Um clique para abrir o que faz parte do seu dia."))
         self.search = QLineEdit()
+        self.search.setAccessibleName("Buscar por nome ou caminho")
         self.search.setPlaceholderText("Buscar por nome ou caminho…")
         self.search.addAction(icon("search"), QLineEdit.ActionPosition.LeadingPosition)
         self.search.textChanged.connect(self.filter)
         layout.addWidget(self.search)
         self.list = QListWidget()
+        self.list.setAccessibleName("Aplicativos favoritos" if mode == "apps" else "Locais e atalhos favoritos")
         self.list.setItemDelegate(TargetDelegate(self.list))
         self.list.itemActivated.connect(lambda item: self.open_selected())
         self.list.itemSelectionChanged.connect(self.update_selection)
@@ -100,17 +108,16 @@ class LaunchpadDialog(QDialog):
         self.empty.setAlignment(Qt.AlignmentFlag.AlignCenter)
         styled(self.empty, "color: #718ba1; padding: 28px; font-size: 15px;")
         layout.addWidget(self.empty, 1)
-        row = QHBoxLayout()
+        row = ActionRow()
         add = QPushButton("Gerenciar favoritos")
         add.setIcon(icon("settings"))
         add.clicked.connect(self.configure)
         row.addWidget(add)
-        row.addStretch()
         self.open_button = QPushButton("Abrir selecionado")
         self.open_button.setProperty("role", "primary")
         self.open_button.clicked.connect(self.open_selected)
         row.addWidget(self.open_button)
-        layout.addLayout(row)
+        layout.addWidget(row)
 
     def set_settings(self, settings):
         self.list.clear()

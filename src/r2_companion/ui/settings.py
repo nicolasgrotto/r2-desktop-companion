@@ -2,49 +2,58 @@ from copy import deepcopy
 from uuid import uuid4
 
 from PySide6.QtCore import Qt, QTime, Signal
-from PySide6.QtWidgets import (QAbstractSpinBox, QCheckBox, QComboBox, QDialog, QDialogButtonBox, QDoubleSpinBox, QFileDialog,
-                              QFormLayout, QHBoxLayout, QInputDialog, QLineEdit, QListWidget,
-                              QPushButton, QScrollArea, QSpinBox, QTabWidget, QTimeEdit, QVBoxLayout, QWidget)
+from PySide6.QtWidgets import (QAbstractSpinBox, QCheckBox, QComboBox, QDialog, QDoubleSpinBox, QFileDialog,
+                              QFormLayout, QInputDialog, QLineEdit, QListWidget, QPushButton,
+                              QSpinBox, QTabWidget, QTimeEdit, QVBoxLayout, QWidget)
 
 from ..core.config import Settings, Shortcut, Target
 from ..features.launcher import validate_executable
 from ..features.locations import validate_location
 from ..pet.personality import apply_profile
 from .targets import TargetDelegate, filter_targets, target_item
-from .theme import apply_theme, card, header, icon, label, apply_character_name
+from .theme import (ActionRow, apply_character_name, apply_theme, card, configure_form, form_row,
+                    header, icon, label, scrollable)
 
 
 class SettingsDialog(QDialog):
     applied = Signal(object, object)
     presence_applied = Signal(str)
-    reduced_motion_applied = Signal(bool)
+    accessibility_applied = Signal(int, bool)
 
-    def __init__(self, settings: Settings, startup_available: bool, startup_enabled: bool, startup_status: str, droid_profile=None):
+    def __init__(self, settings: Settings, startup_available: bool, startup_enabled: bool, startup_status: str,
+                 droid_profile=None, *, ui_scale=100):
         super().__init__()
         self.setWindowTitle("Configurações · R2 Companion")
         self.resize(720, 740)
         apply_theme(self)
         self.draft = deepcopy(settings)
         self.startup_original = startup_enabled
-        layout = QVBoxLayout(self)
-        layout.setContentsMargins(26, 24, 26, 20)
+        outer = QVBoxLayout(self)
+        outer.setContentsMargins(0, 0, 0, 0)
+        body = QWidget()
+        outer.addWidget(scrollable(body))
+        layout = QVBoxLayout(body)
+        layout.setContentsMargins(16, 16, 16, 16)
         layout.setSpacing(14)
         layout.addWidget(header("Do seu jeito", "Ajuste a personalidade do R2 e organize seus favoritos."))
         self.tabs = QTabWidget()
+        self.tabs.tabBar().setAccessibleName("Páginas de configurações")
+        self.tabs.setUsesScrollButtons(True)
         general = QWidget()
         general_layout = QVBoxLayout(general)
         general_layout.setContentsMargins(0, 16, 0, 0)
         panel, panel_layout = card()
+        panel_layout.setContentsMargins(12, 16, 12, 16)
         panel_layout.addWidget(label("PERSONALIDADE E PRESENÇA", "eyebrow"))
         form = QFormLayout()
         form.setSpacing(12)
-        form.setFieldGrowthPolicy(QFormLayout.FieldGrowthPolicy.AllNonFixedFieldsGrow)
+        configure_form(form)
         panel_layout.addLayout(form)
         general_layout.addWidget(panel)
         self.presence_mode = QComboBox()
         for caption, value in (("Livre", "free"), ("Foco", "focus"), ("Apresentação", "presentation")):
             self.presence_mode.addItem(caption, value)
-        form.addRow("Modo de presença", self.presence_mode)
+        form_row(form, "Modo de presença", self.presence_mode)
         self.presence_status = label("Livre", "muted")
         self.presence_status.setWordWrap(True)
         form.addRow(self.presence_status)
@@ -52,22 +61,28 @@ class SettingsDialog(QDialog):
         self.reduced_motion = QCheckBox("Reduzir movimento")
         self.reduced_motion.setToolTip("Usa poses estáticas e desativa passeios automáticos e transições da roda.")
         form.addRow(self.reduced_motion)
+        self.ui_scale = QComboBox()
+        for percent in (100, 125, 150):
+            self.ui_scale.addItem(f"{percent}%", percent)
+        self.ui_scale.setCurrentIndex(self.ui_scale.findData(ui_scale))
+        self.ui_scale.setAccessibleDescription("Ajusta textos e controles da interface. O tamanho do mascote tem seu próprio ajuste.")
+        form_row(form, "Escala da interface", self.ui_scale)
         self.scale = QSpinBox()
         self.scale.setRange(64, 256)
         self.scale.setValue(settings.visual_scale)
         self.scale.setSuffix(" DIP")
         self.scale.setButtonSymbols(QAbstractSpinBox.ButtonSymbols.NoButtons)
-        form.addRow("Tamanho do mascote", self.scale)
+        form_row(form, "Tamanho do mascote", self.scale)
         self.personality = QComboBox()
         for title, value in (("Personalizado", "custom"), ("Calmo", "calm"), ("Curioso", "curious"), ("Comunicativo", "talkative")):
             self.personality.addItem(title, value)
         self.personality.setCurrentIndex(self.personality.findData(settings.personality))
-        form.addRow("Personalidade", self.personality)
+        form_row(form, "Personalidade", self.personality)
         self.appearance = QComboBox()
         for title, value in (("Azul original", "blue"), ("Verde oceano", "teal"), ("Violeta", "violet"), ("Âmbar", "amber")):
             self.appearance.addItem(title, value)
         self.appearance.setCurrentIndex(self.appearance.findData(settings.appearance))
-        form.addRow("Detalhes do robô", self.appearance)
+        form_row(form, "Detalhes do robô", self.appearance)
         if droid_profile is not None and "appearance" not in droid_profile.customization:
             self.appearance.setEnabled(False)
             self.appearance.setToolTip("As personalizações deste personagem estão no Droid Garage.")
@@ -75,7 +90,7 @@ class SettingsDialog(QDialog):
         for caption, value in (("Desativado", "off"), ("Discreto", "quiet"), ("Normal", "normal")):
             self.frequency.addItem(caption, value)
         self.frequency.setCurrentIndex(self.frequency.findData(settings.behavior.frequency))
-        form.addRow("Comportamento autônomo", self.frequency)
+        form_row(form, "Comportamento autônomo", self.frequency)
         self.sleep = QDoubleSpinBox()
         self.sleep.setRange(0.5, 120)
         self.sleep.setSingleStep(0.5)
@@ -83,27 +98,25 @@ class SettingsDialog(QDialog):
         self.sleep.setButtonSymbols(QAbstractSpinBox.ButtonSymbols.NoButtons)
         self.sleep.setSuffix(" min sem atividade")
         self.sleep.setValue(settings.behavior.sleep_seconds / 60)
-        form.addRow("Entrar em repouso após", self.sleep)
+        form_row(form, "Entrar em repouso após", self.sleep)
         self.controls = {}
         for caption, key, value in (("Caminhar sozinho", "movement", settings.behavior.movement),
-                                  ("Sempre acima de janelas normais", "topmost", settings.window.topmost),
+                                  ("Sempre visível à frente", "topmost", settings.window.topmost),
                                   ("Balões de diálogo", "bubbles", settings.bubbles),
                                   ("Efeitos sonoros do R2", "sound_enabled", settings.sound_enabled),
                                   ("Observar o cursor", "cursor_attention", settings.behavior.cursor_attention),
                                   ("Reagir a bateria e CPU", "system_reactions", settings.behavior.system_reactions),
-                                  ("Comemorar uma hora de atividade", "hourly_reaction", settings.behavior.hourly_reaction)):
+                                  ("Comemorar a cada hora", "hourly_reaction", settings.behavior.hourly_reaction)):
             control = QCheckBox(caption)
             control.setChecked(value)
             self.controls[key] = control
             form.addRow(control)
         self.fullscreen = QComboBox()
-        for title, value in (("Automático: canto escolhido ou ocultar", "auto"),
-                             ("Sempre ocultar temporariamente", "hide"),
-                             ("Permanecer no canto escolhido", "corner"),
-                             ("Ficar na posição atual, em silêncio", "quiet")):
+        for title, value in (("Automático", "auto"), ("Ocultar mascote", "hide"),
+                             ("Ficar no canto", "corner"), ("Ficar em silêncio", "quiet")):
             self.fullscreen.addItem(title, value)
         self.fullscreen.setCurrentIndex(self.fullscreen.findData(settings.fullscreen_mode))
-        form.addRow("Durante tela cheia", self.fullscreen)
+        form_row(form, "Durante tela cheia", self.fullscreen)
         corner_info = label("Arraste o R2 até um canto para guardar sua preferência. Sem canto escolhido, o modo Automático oculta o mascote durante jogos.", "muted")
         corner_info.setWordWrap(True)
         form.addRow(corner_info)
@@ -112,7 +125,7 @@ class SettingsDialog(QDialog):
         self.reaction_interval.setRange(10, 600)
         self.reaction_interval.setSuffix(" s")
         self.reaction_interval.setValue(settings.behavior.reaction_interval)
-        form.addRow("Pausa entre reações", self.reaction_interval)
+        form_row(form, "Pausa entre reações", self.reaction_interval)
         self.personality.currentIndexChanged.connect(self.select_profile)
         self.quiet = QCheckBox("Horário de silêncio")
         self.quiet.setChecked(settings.quiet_enabled)
@@ -121,12 +134,14 @@ class SettingsDialog(QDialog):
         for widget, minutes in ((self.quiet_start, settings.quiet_start), (self.quiet_end, settings.quiet_end)):
             widget.setDisplayFormat("HH:mm")
             widget.setTime(QTime(minutes // 60, minutes % 60))
-        form.addRow("Silêncio a partir de", self.quiet_start)
-        form.addRow("Retomar às", self.quiet_end)
-        self.holograms = QCheckBox("Permitir projeções holográficas pelo menu Projetar")
+        form_row(form, "Silêncio a partir de", self.quiet_start)
+        form_row(form, "Retomar às", self.quiet_end)
+        self.holograms = QCheckBox("Permitir projeções")
+        self.holograms.setAccessibleDescription("Disponíveis pelo menu Projetar.")
         self.holograms.setChecked(settings.holograms)
         form.addRow(self.holograms)
-        self.startup = QCheckBox("Iniciar com o Windows (somente este usuário)")
+        self.startup = QCheckBox("Iniciar com o Windows")
+        self.startup.setAccessibleDescription("Vale somente para este usuário.")
         self.startup.setEnabled(startup_available)
         self.startup.setChecked(startup_enabled)
         form.addRow(self.startup)
@@ -137,10 +152,7 @@ class SettingsDialog(QDialog):
         tip.setWordWrap(True)
         general_layout.addWidget(tip)
         general_layout.addStretch()
-        general_scroll = QScrollArea()
-        general_scroll.setWidgetResizable(True)
-        general_scroll.setWidget(general)
-        self.tabs.addTab(general_scroll, icon("settings"), "Preferências")
+        self.tabs.addTab(scrollable(general), icon("settings"), "Preferências")
         targets = QWidget()
         target_layout = QVBoxLayout(targets)
         target_layout.setContentsMargins(0, 16, 0, 0)
@@ -149,11 +161,13 @@ class SettingsDialog(QDialog):
         note.setWordWrap(True)
         target_layout.addWidget(note)
         self.search = QLineEdit()
+        self.search.setAccessibleName("Buscar favoritos")
         self.search.setPlaceholderText("Buscar nos seus favoritos…")
         self.search.addAction(icon("search"), QLineEdit.ActionPosition.LeadingPosition)
         self.search.textChanged.connect(self.filter)
         target_layout.addWidget(self.search)
         self.targets = QListWidget()
+        self.targets.setAccessibleName("Aplicativos, locais e atalhos")
         self.targets.setItemDelegate(TargetDelegate(self.targets))
         self.targets.itemSelectionChanged.connect(self.selection_changed)
         target_layout.addWidget(self.targets, 1)
@@ -161,24 +175,25 @@ class SettingsDialog(QDialog):
         self.empty.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.empty.setWordWrap(True)
         target_layout.addWidget(self.empty)
-        first = QHBoxLayout()
+        first = ActionRow()
         for title, kind in (("Aplicativo", "app"), ("Pasta", "folder"), ("Arquivo", "file")):
             button = QPushButton("+ " + title)
             button.setIcon(icon("apps" if kind == "app" else "folder" if kind == "folder" else "file"))
             button.clicked.connect(lambda checked=False, k=kind: self.add_target(k))
             first.addWidget(button)
-        target_layout.addLayout(first)
-        second = QHBoxLayout()
+        target_layout.addWidget(first)
+        second = ActionRow()
         self.selection_buttons = []
         for title, callback in (("Criar atalho", self.add_alias), ("Renomear", self.rename), ("Remover", self.remove)):
             button = QPushButton(title)
             button.clicked.connect(callback)
             second.addWidget(button)
             self.selection_buttons.append(button)
-        target_layout.addLayout(second)
-        self.tabs.addTab(targets, icon("apps"), "Aplicativos e atalhos")
+        target_layout.addWidget(second)
+        self.tabs.addTab(scrollable(targets), icon("apps"), "Aplicativos e atalhos")
         audio_page = QWidget()
         audio_form = QFormLayout(audio_page)
+        configure_form(audio_form)
         self.muted = QCheckBox("Modo silencioso")
         self.muted.setChecked(settings.audio.muted)
         audio_form.addRow(self.muted)
@@ -187,13 +202,13 @@ class SettingsDialog(QDialog):
         self.volume.setRange(0, 100)
         self.volume.setSuffix(" %")
         self.volume.setValue(round(settings.audio.volume * 100))
-        audio_form.addRow("Volume dos efeitos", self.volume)
+        form_row(audio_form, "Volume dos efeitos", self.volume)
         self.audio_interval = QDoubleSpinBox()
         self.audio_interval.setButtonSymbols(QAbstractSpinBox.ButtonSymbols.NoButtons)
         self.audio_interval.setRange(0.1, 60)
         self.audio_interval.setSuffix(" s")
         self.audio_interval.setValue(settings.audio.min_interval)
-        audio_form.addRow("Intervalo mínimo entre sons", self.audio_interval)
+        form_row(audio_form, "Intervalo mínimo entre sons", self.audio_interval)
         self.audio_categories = {}
         for key, title in (("idle", "Reações espontâneas"), ("movement", "Movimentos"),
                            ("reactions", "Interações"), ("sleep", "Dormir e despertar"),
@@ -205,20 +220,25 @@ class SettingsDialog(QDialog):
         info = label("O volume é exclusivo do R2. Tela cheia e repouso suspendem sons; o sono permite apenas seu efeito de entrada ou saída.", "muted")
         info.setWordWrap(True)
         audio_form.addRow(info)
-        self.tabs.addTab(audio_page, "Áudio")
+        self.tabs.addTab(scrollable(audio_page), "Áudio")
         layout.addWidget(self.tabs, 1)
         self.error = label("", "error")
         self.error.setWordWrap(True)
         layout.addWidget(self.error)
-        buttons = QDialogButtonBox(QDialogButtonBox.StandardButton.Apply | QDialogButtonBox.StandardButton.Cancel
-                                  | QDialogButtonBox.StandardButton.Ok)
-        buttons.button(QDialogButtonBox.StandardButton.Apply).clicked.connect(lambda: self.apply(False))
-        buttons.button(QDialogButtonBox.StandardButton.Apply).setText("Aplicar")
-        buttons.button(QDialogButtonBox.StandardButton.Cancel).setText("Cancelar")
-        buttons.button(QDialogButtonBox.StandardButton.Ok).setText("Salvar e fechar")
-        buttons.button(QDialogButtonBox.StandardButton.Ok).setProperty("role", "primary")
-        buttons.accepted.connect(lambda: self.apply(True))
-        buttons.rejected.connect(self.reject)
+        buttons = ActionRow()
+        apply = QPushButton("Aplicar")
+        apply.clicked.connect(lambda: self.apply(False))
+        buttons.addWidget(apply)
+        cancel = QPushButton("Cancelar")
+        cancel.clicked.connect(self.reject)
+        buttons.addWidget(cancel)
+        save = QPushButton("Salvar e fechar")
+        save.setProperty("role", "primary")
+        save.setDefault(True)
+        save.clicked.connect(lambda: self.apply(True))
+        buttons.addWidget(save)
+        for button in (apply, cancel, save):
+            button.setProperty("compact", True)
         layout.addWidget(buttons)
         self.render_targets()
 
@@ -342,7 +362,9 @@ class SettingsDialog(QDialog):
         self.applied.emit(checked, request)
         if self.error.text():
             return
-        self.reduced_motion_applied.emit(self.reduced_motion.isChecked())
+        self.accessibility_applied.emit(self.ui_scale.currentData(), self.reduced_motion.isChecked())
+        if self.error.text():
+            return
         if self.presence_mode.currentData() != self.presence_original:
             self.presence_applied.emit(self.presence_mode.currentData())
             self.presence_original = self.presence_mode.currentData()

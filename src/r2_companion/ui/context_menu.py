@@ -6,6 +6,7 @@ from .navigation import NAVIGATION
 
 def create_menu(parent, actions: dict, settings, screens, tray_available: bool) -> QMenu:
     menu = QMenu(parent)
+    menu.setAccessibleName("Menu do R2 Companion")
     apply_theme(menu)
     references = []
     submenus = []
@@ -39,11 +40,15 @@ def create_menu(parent, actions: dict, settings, screens, tray_available: bool) 
         if key in actions:
             add(menu, key, title)
     applications = submenu("Aplicativos")
+    if "apps" in actions:
+        add(applications, "apps", "Abrir painel de aplicativos")
     for entry in settings.applications:
         add(applications, entry.id, entry.label, lambda entry=entry: actions["target"](entry))
     if not settings.applications:
         add(applications, "settings", "Configure em Configurações…")
     shortcuts = submenu("Atalhos")
+    if "locations" in actions:
+        add(shortcuts, "locations", "Abrir painel de locais")
     for entry in settings.locations:
         add(shortcuts, entry.id, entry.label, lambda entry=entry: actions["target"](entry))
     targets = {t.id: t for t in settings.applications + settings.locations}
@@ -86,6 +91,8 @@ def create_menu(parent, actions: dict, settings, screens, tray_available: bool) 
     pause.setCheckable(True)
     pause.setChecked(actions["paused"]())
     add(menu, "restore", "Restaurar posição")
+    if "explore" in actions:
+        add(menu, "explore", "Explorar")
     monitor_menu = submenu("Mover para monitor")
     for index, screen in enumerate(screens):
         add(monitor_menu, f"screen_{index}", f"{index + 1} · {screen.name()}", lambda screen=screen: actions["screen"](screen))

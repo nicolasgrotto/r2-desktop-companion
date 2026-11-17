@@ -8,7 +8,8 @@ import time
 from uuid import uuid4
 
 from PySide6.QtCore import QThread, QTimer, Qt, Signal
-from PySide6.QtWidgets import QApplication, QDialog, QHBoxLayout, QLabel, QPlainTextEdit, QProgressBar, QPushButton, QVBoxLayout
+from PySide6.QtWidgets import (QApplication, QDialog, QHBoxLayout, QLabel, QPlainTextEdit,
+                               QProgressBar, QPushButton, QVBoxLayout, QWidget)
 
 from .. import __version__
 from ..pet.animation import AnimationManager
@@ -17,15 +18,16 @@ from ..services.update_client import check_release, download_release, validate_r
 from ..services.updates import independent_environment, read_release
 from ..services.storage import ConfigStore
 from ..services.companion_state import CompanionStateStore
-from .theme import fit_dialog
-from ..droids.themes import PersistedThemeWatcher, styled
+from .theme import ActionRow, fit_dialog, scrollable
+from ..droids.themes import PersistedThemeWatcher, styled, theme_manager
 from ..droids.profiles import DroidRegistry
 from ..droids.visuals import load_profile_clips
 from .droids import PreviewCanvas
 
 STYLE = """
 QDialog { background: #091c30; color: #e6f7ff; }
-QLabel { color: #d5edfa; font: 13px 'Segoe UI'; }
+QWidget { font: 13px 'Segoe UI'; }
+QLabel { color: #d5edfa; }
 QLabel#title { color: #f4fcff; font-size: 22px; font-weight: 700; }
 QLabel#state { color: #62d5ff; font-size: 16px; font-weight: 600; }
 QPlainTextEdit { background: #102b43; color: #d5edfa; border: 1px solid #245675; border-radius: 9px; padding: 8px; }
@@ -33,6 +35,7 @@ QProgressBar { border: 1px solid #245675; border-radius: 6px; background: #102b4
 QProgressBar::chunk { background: #26b5ed; border-radius: 5px; }
 QPushButton { color: #e6f7ff; background: #173c58; border: 1px solid #34769c; border-radius: 8px; padding: 10px 15px; }
 QPushButton:hover { background: #216a94; }
+QPushButton:focus, QPlainTextEdit:focus { border: 2px solid @hero_text; }
 QPushButton:disabled { color: #7893a4; background: #102b43; }
 """
 
@@ -88,7 +91,11 @@ class UpdateCenter(QDialog):
         self.status_path = None
         self.status_message = ""
         self.installer_state = None
-        layout = QVBoxLayout(self)
+        outer = QVBoxLayout(self)
+        outer.setContentsMargins(0, 0, 0, 0)
+        body = QWidget()
+        outer.addWidget(scrollable(body))
+        layout = QVBoxLayout(body)
         layout.setContentsMargins(24, 20, 24, 20)
         heading = QHBoxLayout()
         self.character = PreviewCanvas()
@@ -97,6 +104,7 @@ class UpdateCenter(QDialog):
         labels = QVBoxLayout()
         title = QLabel("Central de atualizações")
         title.setObjectName("title")
+        title.setWordWrap(True)
         labels.addWidget(title)
         self.installed_label = QLabel(f"R2 Companion · v{self.metadata['version']}")
         labels.addWidget(self.installed_label)
@@ -116,18 +124,19 @@ class UpdateCenter(QDialog):
         self.progress.hide()
         layout.addWidget(self.progress)
         self.notes = QPlainTextEdit()
+        self.notes.setAccessibleName("Notas da atualização")
         self.notes.setReadOnly(True)
         self.notes.setMaximumHeight(150)
         self.notes.hide()
         layout.addWidget(self.notes)
-        buttons = QHBoxLayout()
+        buttons = ActionRow()
         self.action = QPushButton("Verificar novamente")
         self.action.clicked.connect(self.act)
         buttons.addWidget(self.action)
         self.later = QPushButton("Depois")
         self.later.clicked.connect(self.close)
         buttons.addWidget(self.later)
-        layout.addLayout(buttons)
+        layout.addWidget(buttons)
         assets = Path(__file__).resolve().parents[1] / "assets"
         registry = DroidRegistry(assets)
         profile = registry.profiles.get(self.theme_watcher.last_id, registry.active)
@@ -135,8 +144,8 @@ class UpdateCenter(QDialog):
         self.animation.frame_changed.connect(self.character.set_frame)
         self.theme_watcher.profile_changed.connect(self.use_profile)
         self.animation.clip_finished.connect(self.repeat_busy_animation)
-        self.theme_watcher.timer.timeout.connect(self.refresh_motion)
-        self.refresh_motion()
+        self.theme_watcher.timer.timeout.connect(self.refresh_accessibility)
+        self.refresh_accessibility()
         self.poll = QTimer(self)
         self.poll.setInterval(500)
         self.poll.timeout.connect(self.poll_install)
@@ -157,8 +166,10 @@ class UpdateCenter(QDialog):
         self.animation.clips = clips
         self.play_character()
 
-    def refresh_motion(self):
-        enabled = CompanionStateStore.read_reduced_motion(self.directory)
+    def refresh_accessibility(self):
+        accessibility = CompanionStateStore.read_accessibility(self.directory)
+        theme_manager().set_ui_scale(accessibility["ui_scale"])
+        enabled = accessibility["reduced_motion"]
         if self.animation.reduced_motion != enabled:
             self.animation.stop()
             self.animation.set_reduced_motion(enabled)

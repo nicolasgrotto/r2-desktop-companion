@@ -33,12 +33,17 @@ for token, colors in {
 
 class ThemeManager(QObject):
     changed = Signal(object)
+    scale_changed = Signal(int)
 
     def __init__(self):
         super().__init__()
         assets = Path(__file__).resolve().parents[1] / "assets"
         self.active = DroidRegistry(assets).active.theme
+        self.ui_scale = 100
         self.widgets = WeakKeyDictionary()
+
+    def dip(self, value):
+        return round(value * self.ui_scale / 100)
 
     def render(self, template, theme=None):
         theme = theme or self.active
@@ -49,13 +54,21 @@ class ThemeManager(QObject):
         result = re.sub(r"#[0-9a-fA-F]{6}", replace_color, template)
         result = re.sub(r"\bwhite\b", colors["panel"], result)
         result = re.sub(r"border-radius:\s*(\d+)px", lambda m: f"border-radius: {theme.radius}px" if 8 <= int(m[1]) <= 20 else m[0], result)
-        return re.sub(r"@([a-z_]+)", lambda m: colors[m[1]], result)
+        result = re.sub(r"@([a-z_]+)", lambda m: colors[m[1]], result)
+        if self.ui_scale != 100:
+            # Qt applies monitor DPI to these logical pixels separately.
+            result = re.sub(
+                r"(?<![\w-])(?:font(?:-size)?|padding(?:-[a-z]+)?|spacing|(?:min-)?(?:width|height)|icon-size)\s*:[^;}]+",
+                lambda declaration: re.sub(r"(\d+)px", lambda px: f"{self.dip(int(px[1]))}px", declaration[0]),
+                result,
+            )
+        return result
 
     def style(self, widget, template):
         self.widgets[widget] = template
         widget.setStyleSheet(self.render(template, theme_for(widget)))
 
-    def refresh(self):
+    def refresh(self, *, theme_changed=True):
         refreshed = set()
         for widget, template in list(self.widgets.items()):
             try:
@@ -64,11 +77,21 @@ class ThemeManager(QObject):
                 for child in (widget, *widget.findChildren(QWidget)):
                     if child not in refreshed:
                         refreshed.add(child)
-                        refresh_icons(child)
+                        if theme_changed:
+                            refresh_icons(child)
                         child.update()
             except RuntimeError:
                 self.widgets.pop(widget, None)
-        self.changed.emit(self.active)
+        if theme_changed:
+            self.changed.emit(self.active)
+
+    def set_ui_scale(self, percent):
+        if percent not in (100, 125, 150):
+            raise ValueError("Escala da interface inválida.")
+        if percent != self.ui_scale:
+            self.ui_scale = percent
+            self.refresh(theme_changed=False)
+            self.scale_changed.emit(percent)
 
     def unregister_tree(self, root):
         for widget in list(self.widgets):

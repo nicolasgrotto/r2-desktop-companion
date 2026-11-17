@@ -162,17 +162,17 @@ class CompanionStateStore(QObject):
         return validate_document(json.loads(contents.decode("utf-8"))), contents
 
     @classmethod
-    def read_reduced_motion(cls, directory: Path) -> bool:
-        """Read the global preference in the independent update window."""
+    def read_accessibility(cls, directory: Path) -> dict:
+        """Read global accessibility preferences in the independent update window."""
         for name in ("companion_state.json", "companion_state.backup.json"):
             try:
                 document, _ = cls._read(directory / name)
-                return document["accessibility"]["reduced_motion"]
+                return document["accessibility"]
             except FutureSchemaError:
                 break
             except (OSError, ValueError, RecursionError):
                 continue
-        return False
+        return default_document()["accessibility"]
 
     def _load(self):
         for path in (self.path, self.backup):

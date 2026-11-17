@@ -1,17 +1,17 @@
 import math
 
-from PySide6.QtCore import QRectF, Qt, QTimer, Signal
+from PySide6.QtCore import QRectF, QSize, Qt, QTimer, Signal
 from PySide6.QtGui import QColor, QFont, QPainter, QPen
 from PySide6.QtWidgets import (QAbstractSpinBox, QCheckBox, QDialog, QHBoxLayout, QProgressBar,
                               QPushButton, QScrollArea, QSpinBox, QTabWidget, QVBoxLayout, QWidget)
 
 from ..features.clock import local_clock
 from ..features.timer import TimerState
-from .theme import BLUE, MUTED, apply_theme, card, header, icon, label
+from .theme import ActionRow, apply_theme, card, header, icon, label, scrollable
 from .productivity import NotesPage, TasksPage
 from .minigames import MinigamesPage
 from .diagnostics import DiagnosticsPage
-from ..droids.themes import color, styled
+from ..droids.themes import color, styled, theme_manager
 
 
 def timer_text(seconds: float) -> str:
@@ -23,15 +23,27 @@ def timer_text(seconds: float) -> str:
 class TimerDial(QWidget):
     def __init__(self):
         super().__init__()
-        self.setMinimumSize(190, 220)
+        theme_manager().scale_changed.connect(self.resize_dial)
+        self.resize_dial()
         self.value = 300
         self.total = 300
         self.status = "PRONTO"
 
+    def resize_dial(self, *_):
+        dip = theme_manager().dip
+        self.setMinimumSize(dip(144), dip(190))
+        self.updateGeometry()
+        self.update()
+
+    def sizeHint(self):
+        dip = theme_manager().dip
+        return QSize(dip(190), dip(220))
+
     def paintEvent(self, event):
         p = QPainter(self)
         p.setRenderHint(QPainter.RenderHint.Antialiasing)
-        side = min(self.width() - 20, self.height() - 24)
+        dip = theme_manager().dip
+        side = min(self.width() - dip(20), self.height() - dip(24))
         rect = QRectF((self.width() - side) / 2, (self.height() - side) / 2, side, side)
         p.setPen(QPen(QColor(color("border", self)), 9))
         p.drawEllipse(rect)
@@ -39,11 +51,17 @@ class TimerDial(QWidget):
         progress = max(0, min(1, self.value / max(1, self.total)))
         p.drawArc(rect, 90 * 16, -round(progress * 360 * 16))
         p.setPen(QColor(color("text", self)))
-        p.setFont(QFont("Consolas", 25 if self.value < 3600 else 19, QFont.Weight.Bold))
-        p.drawText(rect.adjusted(0, -8, 0, -8), Qt.AlignmentFlag.AlignCenter, timer_text(self.value))
+        timer_font = QFont("Consolas")
+        timer_font.setPixelSize(dip(34 if self.value < 3600 else 25))
+        timer_font.setWeight(QFont.Weight.Bold)
+        p.setFont(timer_font)
+        p.drawText(rect.translated(0, -dip(8)), Qt.AlignmentFlag.AlignCenter, timer_text(self.value))
         p.setPen(QColor(color("muted", self)))
-        p.setFont(QFont("Segoe UI", 8, QFont.Weight.DemiBold))
-        p.drawText(rect.adjusted(0, 55, 0, 0), Qt.AlignmentFlag.AlignCenter, self.status)
+        status_font = QFont("Segoe UI")
+        status_font.setPixelSize(dip(11))
+        status_font.setWeight(QFont.Weight.DemiBold)
+        p.setFont(status_font)
+        p.drawText(rect.adjusted(0, dip(55), 0, 0), Qt.AlignmentFlag.AlignCenter, self.status)
 
 
 class ToolsDialog(QDialog):
@@ -58,6 +76,7 @@ class ToolsDialog(QDialog):
         self.project_timer = QCheckBox("Projetar timer")
         self.project_timer.setChecked(project_timer)
         self.project_timer.setToolTip("Exibir a contagem no holograma do droide até terminar.")
+        self.project_timer.setAccessibleDescription(self.project_timer.toolTip())
         self.battery = None
         outer = QVBoxLayout(self)
         outer.setContentsMargins(0, 0, 0, 0)
@@ -67,10 +86,11 @@ class ToolsDialog(QDialog):
         body = QWidget()
         self.scroll_area.setWidget(body)
         layout = QVBoxLayout(body)
-        layout.setContentsMargins(28, 24, 28, 22)
+        layout.setContentsMargins(14, 18, 14, 18)
         layout.setSpacing(14)
         layout.addWidget(header("Central de ferramentas", "Seu tempo e seu computador, em sintonia."))
         self.tabs = QTabWidget()
+        self.tabs.tabBar().setAccessibleName("Páginas da central de ferramentas")
         self.tabs.addTab(self.overview(), icon("clock"), "Relógio")
         self.tabs.addTab(self.timer_page(), icon("play"), "Temporizador")
         self.tabs.addTab(self.system_page(), icon("system"), "Sistema")
@@ -79,8 +99,8 @@ class ToolsDialog(QDialog):
             self.notes_page = NotesPage(productivity)
             self.tasks_page.setProperty("characterLiteral", True)
             self.notes_page.setProperty("characterLiteral", True)
-            self.tabs.addTab(self.tasks_page, "Tarefas")
-            self.tabs.addTab(self.notes_page, "Notas")
+            self.tabs.addTab(scrollable(self.tasks_page), "Tarefas")
+            self.tabs.addTab(scrollable(self.notes_page), "Notas")
         self.minigames_page = MinigamesPage()
         self.diagnostics_page = DiagnosticsPage()
         self.tabs.addTab(self.minigames_page, "Minigames")
@@ -89,7 +109,7 @@ class ToolsDialog(QDialog):
                       "system": self.tabs.widget(2), "minigames": self.minigames_page,
                       "diagnostics": self.diagnostics_page}
         if productivity is not None:
-            self.pages.update(tasks=self.tasks_page, notes=self.notes_page)
+            self.pages.update(tasks=self.tabs.widget(3), notes=self.tabs.widget(4))
         self.tabs.setUsesScrollButtons(True)
         layout.addWidget(self.tabs, 1)
         self.completion = label("Tudo pronto. Escolha uma ferramenta para começar.", "muted")
@@ -125,10 +145,7 @@ class ToolsDialog(QDialog):
 
     @staticmethod
     def scroll(content):
-        area = QScrollArea()
-        area.setWidgetResizable(True)
-        area.setWidget(content)
-        return area
+        return scrollable(content)
 
     def overview(self):
         page = QWidget()
@@ -144,7 +161,7 @@ class ToolsDialog(QDialog):
         self.date_label.setWordWrap(True)
         content.addWidget(self.date_label)
         layout.addWidget(hero)
-        row = QHBoxLayout()
+        row = ActionRow()
         quick, box = card()
         box.addWidget(label("TEMPO PARA VOCÊ", "eyebrow"))
         box.addWidget(label("Um intervalo na medida certa"))
@@ -158,13 +175,13 @@ class ToolsDialog(QDialog):
         system, box = card()
         box.addWidget(label("SEU COMPUTADOR", "eyebrow"))
         self.metrics = label("CPU —\nMemória —")
-        self.metrics.setStyleSheet("font-size: 19px; font-weight: 600;")
+        styled(self.metrics, "font-size: 19px; font-weight: 600;")
         box.addWidget(self.metrics)
         button = QPushButton("Ver sistema  →")
         button.clicked.connect(lambda: self.tabs.setCurrentIndex(2))
         box.addWidget(button)
         row.addWidget(system, 1)
-        layout.addLayout(row)
+        layout.addWidget(row)
         layout.addStretch()
         return self.scroll(page)
 
@@ -173,11 +190,14 @@ class ToolsDialog(QDialog):
         layout = QVBoxLayout(page)
         layout.setContentsMargins(0, 16, 0, 0)
         panel, content = card()
+        content.setContentsMargins(14, 16, 14, 16)
         content.addWidget(label("DEFINA SEU PRÓXIMO INTERVALO", "eyebrow"))
-        body = QHBoxLayout()
+        body = ActionRow()
         self.dial = TimerDial()
         body.addWidget(self.dial, 1)
-        controls = QVBoxLayout()
+        controls_widget = QWidget()
+        controls = QVBoxLayout(controls_widget)
+        controls.setContentsMargins(0, 0, 0, 0)
         controls.addWidget(label("Quanto tempo você precisa?"))
         durations = QHBoxLayout()
         self.minutes = QSpinBox()
@@ -208,22 +228,22 @@ class ToolsDialog(QDialog):
         self.start_button.setProperty("role", "primary")
         self.start_button.clicked.connect(self.start)
         controls.addWidget(self.start_button)
-        row = QHBoxLayout()
+        row = ActionRow()
         self.pause_button = QPushButton("Pausar")
         self.pause_button.clicked.connect(self.toggle_pause)
         self.restart_button = QPushButton("Reiniciar")
         self.restart_button.clicked.connect(self.countdown.restart)
         row.addWidget(self.pause_button)
         row.addWidget(self.restart_button)
-        controls.addLayout(row)
+        controls.addWidget(row)
         self.stop_button = QPushButton("Encerrar")
         self.stop_button.setAccessibleName("Encerrar temporizador")
         self.stop_button.setToolTip("Cancelar a contagem atual e liberar a escolha de outro intervalo.")
         self.stop_button.clicked.connect(self.stop_countdown)
         controls.addWidget(self.stop_button)
         controls.addStretch()
-        body.addLayout(controls, 2)
-        content.addLayout(body)
+        body.addWidget(controls_widget, 2)
+        content.addWidget(body)
         self.timer_label = label("Pronto", "muted")
         content.addWidget(self.timer_label)
         layout.addWidget(panel)
@@ -253,7 +273,7 @@ class ToolsDialog(QDialog):
             bar = QProgressBar()
             bar.setRange(0, 100)
             bar.setTextVisible(False)
-            bar.setFixedHeight(9)
+            bar.setAccessibleName(title)
             content.addWidget(bar)
             content.addWidget(label(description, "muted"))
             self.metric_labels[key], self.metric_bars[key] = value, bar

@@ -1,9 +1,10 @@
 from functools import lru_cache
 import math
 
-from PySide6.QtCore import QPointF, QRectF, QSize, Qt
+from PySide6.QtCore import QEvent, QPointF, QRectF, Qt
 from PySide6.QtGui import QColor, QGuiApplication, QIcon, QPainter, QPainterPath, QPen, QPixmap
-from PySide6.QtWidgets import QFrame, QHBoxLayout, QLabel, QVBoxLayout, QWidget
+from PySide6.QtWidgets import (QBoxLayout, QFormLayout, QFrame, QHBoxLayout, QLabel, QLayout,
+                               QScrollArea, QVBoxLayout, QWidget)
 from ..droids.themes import COLOR_TOKENS, color as theme_color, color, styled, theme_manager
 
 NAVY = "#102c48"
@@ -27,19 +28,18 @@ QPushButton { background: #ffffff; color: #244b6b; border: 1px solid #ccddea;
     border-radius: 9px; padding: 10px 16px; font-weight: 600; min-height: 18px; }
 QPushButton:hover { background: #e8f3ff; border-color: #70b0ee; }
 QPushButton:pressed { background: #d3e8ff; }
-QPushButton:focus { border: 2px solid #3188ee; }
 QPushButton:disabled { color: #8ba0b3; background: #f2f5f8; border-color: #e0e7ee; }
 QPushButton[role='primary'] { background: #216eea; color: white; border-color: #216eea; }
 QPushButton[role='primary']:hover { background: #175dcc; }
 QPushButton[role='primary']:disabled { background: #b3cced; border-color: #b3cced; }
 QPushButton[role='danger'] { color: #b94343; }
 QPushButton[role='preset'] { padding: 6px 10px; min-height: 14px; }
+QPushButton[compact='true'] { padding: 8px 8px; }
 QLineEdit, QSpinBox, QDoubleSpinBox, QComboBox, QTimeEdit { background: white; color: #193b57; border: 1px solid #caddea;
     border-radius: 8px; padding: 9px 12px; min-height: 20px; selection-background-color: #216eea; }
-QLineEdit:focus, QSpinBox:focus, QDoubleSpinBox:focus, QComboBox:focus, QTimeEdit:focus { border: 2px solid #3188ee; }
 QComboBox::drop-down { border: none; width: 26px; }
 QComboBox QAbstractItemView { background: white; color: #193b57; selection-background-color: #e2efff; selection-color: #14314c; }
-QCheckBox { color: #214763; spacing: 10px; padding: 5px 0; }
+QCheckBox { color: #214763; spacing: 10px; padding: 5px 1px; border: 2px solid transparent; }
 QCheckBox::indicator { width: 18px; height: 18px; border: 1px solid #afc7dc; border-radius: 5px; background: white; }
 QCheckBox::indicator:checked { background: #216eea; border: 4px solid #a6d8ff; }
 QCheckBox:disabled { color: #91a3b4; }
@@ -53,20 +53,27 @@ QScrollBar:vertical { background: transparent; width: 8px; margin: 4px 0; }
 QScrollBar::handle:vertical { background: #b9cede; border-radius: 4px; min-height: 28px; }
 QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical { height: 0; }
 QScrollBar::add-page:vertical, QScrollBar::sub-page:vertical { background: transparent; }
-QListWidget { background: transparent; border: none; outline: none; }
+QListWidget { background: transparent; border: 2px solid transparent; }
 QListWidget::item { border: none; margin: 4px 0; padding: 0; }
 QProgressBar { background: #e2edf6; border: none; border-radius: 5px; height: 10px; text-align: center; }
 QProgressBar::chunk { background: #3385ee; border-radius: 5px; }
 QToolTip { background: #102c48; color: white; border: 1px solid #39739c; padding: 8px; }
 QMenu { background: #102c48; color: #eaf5ff; border: 1px solid #37617e; border-radius: 8px; padding: 8px; }
 QMenu::item { padding: 8px 32px 8px 16px; border-radius: 5px; }
-QMenu::item:selected { background: #216eea; }
+QMenu::item:selected { background: @primary; color: @button_text; }
 QMenu::item:disabled { color: #7796b1; }
 QMenu::separator { background: #2d4b66; height: 1px; margin: 6px 10px; }
 QPushButton[role='primary'] { color: @button_text; }
 QPlainTextEdit, QTextEdit, QListWidget { background: @panel; color: @text; }
+QPlainTextEdit, QTextEdit { border: 1px solid @border; }
 QListWidget::item { padding: 9px; }
 QListWidget::item:selected { background: @selected; color: @text; }
+QPushButton:focus, QCheckBox:focus, QListWidget:focus, QPlainTextEdit:focus, QTextEdit:focus,
+QLineEdit:focus, QSpinBox:focus, QDoubleSpinBox:focus, QComboBox:focus, QTimeEdit:focus {
+    border: 2px solid @focus;
+}
+QPushButton[role='primary']:focus { border: 2px solid @button_text; }
+QTabBar::tab:selected:focus { border-bottom: 3px solid @focus; background: @selected; color: @text; }
 QFrame#speech { background: @notification; }
 QLabel[role='brand'] { background: @hero; color: @accent; border-radius: 12px; font-size: 25px; font-weight: 800; }
 """
@@ -75,9 +82,66 @@ QLabel[role='brand'] { background: @hero; color: @accent; border-radius: 12px; f
 def label(text: str, role: str = "", parent=None) -> QLabel:
     widget = QLabel(text, parent)
     widget.setTextFormat(Qt.TextFormat.PlainText)
+    widget.setWordWrap(True)
     if role:
         widget.setProperty("role", role)
     return widget
+
+
+def scrollable(content):
+    area = QScrollArea()
+    area.setWidgetResizable(True)
+    area.setWidget(content)
+    return area
+
+
+def configure_form(form):
+    form.setRowWrapPolicy(QFormLayout.RowWrapPolicy.WrapLongRows)
+    form.setFieldGrowthPolicy(QFormLayout.FieldGrowthPolicy.AllNonFixedFieldsGrow)
+
+
+def form_row(form, title, control):
+    caption = label(title)
+    caption.setBuddy(control)
+    control.setAccessibleName(title.replace("&", ""))
+    form.addRow(caption, control)
+
+
+class ActionRow(QWidget):
+    """Stack related controls when their preferred widths exceed the viewport."""
+
+    def __init__(self):
+        super().__init__()
+        self.row = QBoxLayout(QBoxLayout.Direction.LeftToRight, self)
+        self.row.setContentsMargins(0, 0, 0, 0)
+        self.row.setSizeConstraint(QLayout.SizeConstraint.SetNoConstraint)
+
+    def addWidget(self, widget, stretch=0):
+        self.row.addWidget(widget, stretch)
+
+    def minimumSizeHint(self):
+        size = super().minimumSizeHint()
+        widths = [self.row.itemAt(i).minimumSize().width() for i in range(self.row.count())]
+        size.setWidth(max(widths, default=0))
+        return size
+
+    def reflow(self):
+        items = [self.row.itemAt(i) for i in range(self.row.count())]
+        total = sum(item.minimumSize().width() for item in items if not item.isEmpty())
+        total += max(0, sum(not item.isEmpty() for item in items) - 1) * self.row.spacing()
+        direction = QBoxLayout.Direction.TopToBottom if total > self.width() else QBoxLayout.Direction.LeftToRight
+        if self.row.direction() != direction:
+            self.row.setDirection(direction)
+            self.updateGeometry()
+
+    def resizeEvent(self, event):
+        super().resizeEvent(event)
+        self.reflow()
+
+    def event(self, event):
+        if event.type() == QEvent.Type.LayoutRequest:
+            self.reflow()
+        return super().event(event)
 
 
 def card(role="card") -> tuple[QFrame, QVBoxLayout]:
@@ -95,8 +159,8 @@ def header(title: str, subtitle: str) -> QWidget:
     layout.setContentsMargins(0, 0, 0, 10)
     brand = QLabel("R2")
     brand.setAlignment(Qt.AlignmentFlag.AlignCenter)
-    brand.setFixedSize(54, 54)
     brand.setProperty("role", "brand")
+    styled(brand, "min-width: 34px; min-height: 54px; padding: 0 10px;")
     layout.addWidget(brand)
     text = QVBoxLayout()
     text.setSpacing(3)
@@ -118,10 +182,14 @@ def fit_dialog(widget, anchor):
     if screen is None:
         return
     area = screen.availableGeometry()
-    widget.resize(min(widget.width(), max(320, area.width() - 32)),
-                  min(widget.height(), max(300, area.height() - 32)))
-    x = area.x() + (area.width() - widget.width()) // 2
-    y = area.y() + (area.height() - widget.height()) // 2
+    decoration = widget.frameSize() - widget.size()
+    # Before the window is shown Qt may not know the native title bar and borders.
+    frame_width = max(16, decoration.width())
+    frame_height = max(40, decoration.height())
+    widget.resize(min(widget.width(), max(1, area.width() - frame_width - 16)),
+                  min(widget.height(), max(1, area.height() - frame_height - 16)))
+    x = area.x() + (area.width() - widget.width() - frame_width) // 2
+    y = area.y() + (area.height() - widget.height() - frame_height) // 2
     widget.move(x, y)
 
 
@@ -139,7 +207,7 @@ def icon(name: str, color=None) -> QIcon:
 
 
 def refresh_icons(widget):
-    from PySide6.QtWidgets import QAbstractButton, QComboBox, QTabWidget
+    from PySide6.QtWidgets import QAbstractButton, QTabWidget
     if isinstance(widget, QAbstractButton):
         spec = ICON_SPECS.get(widget.icon().cacheKey())
         if spec:
@@ -246,6 +314,3 @@ def apply_character_name(root, name):
             template = widget.text()
             widget.setProperty("characterText", template)
         widget.setText(re.sub(r"\bR2\b(?! Companion)", lambda match: name, template))
-        if widget.property("role") == "brand":
-            widget.ensurePolished()
-            widget.setFixedWidth(max(54, widget.fontMetrics().horizontalAdvance(name) + 20))
