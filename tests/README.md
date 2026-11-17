@@ -80,6 +80,7 @@ Para reduzir por subsistema, combine arquivos e marcas:
 |---|---|
 | Política de presença | `test_presence.py` com `-m logic`; `test_presence_audio.py` com `-m qt`; `test_presence_integration.py` e `test_presence_projection.py` com `-m windows_native`: modos, recuperação sem bandeja, persistência e integração ao Companion |
 | Configuração e persistência | `test_config_storage.py`, `test_audio_productivity.py`, `test_companion_state.py` com `-m 'logic or qt'`; `test_companion_state_native.py` para troca de droide, reinício e avisos no desktop |
+| Desfazer exclusões | `test_productivity_undo.py` com `-m qt` para restauração e limites e `-m windows_native` para o fluxo pela Central de ferramentas |
 | Timer e comportamento | `test_timer_behavior.py`, `test_timer_stop_v121.py`, `test_context_v03.py`; use a marca para distinguir serviço de integração |
 | Personagens e recursos | `test_droids.py`, `test_garage_expansion.py`, `test_animation_refinement.py`; modelos/renderização em Qt, equipamento/Companion em nativo |
 | Temas e tarefas assíncronas | `test_theme_events.py`, `test_task_lifecycle.py` com `-m qt` |

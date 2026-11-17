@@ -71,7 +71,7 @@ Para isolar os dados dentro do projeto:
 - Ferramentas → Minigames: catálogo com Duel of Fates. Jogar abre `https://nicolasgrotto.github.io/duel-of-fates/` via QDesktopServices/QUrl no navegador padrão. Não há navegador incorporado, WebEngine ou download do jogo pelo Companion. Para ampliar o catálogo, acrescente um Minigame em `features/minigames.py`.
 - Ferramentas → Diagnóstico: mostra personagem, versão, sistema, CPU, memória, bateria e áudio sob demanda. A página possui rolagem e a central permanece dentro da tela.
 - Segure o botão esquerdo sobre a cabeça por 650 ms para fazer carinho. Arrastar cancela o carinho; a reação não abre a roda de ações.
-- Tarefas: adicionar, concluir, reabrir, filtrar pendentes e excluir. Notas: criar, editar, excluir e copiar, com salvamento automático local. Ambas também estão no menu de contexto.
+- Tarefas: adicionar, concluir, reabrir, filtrar pendentes e excluir. Notas: criar, editar, excluir e copiar, com salvamento automático local. **Desfazer exclusão** restaura a última tarefa ou nota excluída nesta sessão. Ambas também estão no menu de contexto.
 - Depois de três minutos contínuos dormindo, o droide só acorda com um clique nele. Esse clique reproduz o despertar sem abrir a roda; um sono curto ainda pode terminar automaticamente quando você voltar.
 - Na transmissão e nas preferências, o nome acompanha o personagem equipado. A reação de aquecimento por CPU elevada inclui fumaça animada.
 - Clique duplo: cumprimento. Cliques repetidos: confusão. Arrasto: esforço e recuperação. Bateria baixa, carregamento e CPU elevada podem gerar reações discretas com cooldown.

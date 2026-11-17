@@ -1,4 +1,5 @@
 from copy import deepcopy
+from dataclasses import dataclass
 import json
 import logging
 from pathlib import Path
@@ -10,6 +11,14 @@ from ..core.config import FutureSchemaError
 from ..services.storage import ConfigStore
 
 log = logging.getLogger(__name__)
+COLLECTION_LIMITS = {"tasks": (500, "tarefas"), "notes": (100, "notas")}
+
+
+@dataclass(frozen=True)
+class DeletedEntry:
+    collection: str
+    position: int
+    record: dict
 
 
 def validate_document(raw):
@@ -21,16 +30,20 @@ def validate_document(raw):
         raise ValueError("Versão inválida.")
     ids = set()
     result = {"schema_version": 1, "tasks": [], "notes": []}
-    for key, maximum in (("tasks", 500), ("notes", 100)):
+    for key, (maximum, name) in COLLECTION_LIMITS.items():
         entries = raw.get(key)
-        if not isinstance(entries, list) or len(entries) > maximum:
-            raise ValueError("Lista inválida ou extensa demais.")
+        if not isinstance(entries, list):
+            raise ValueError("Lista inválida.")
+        if len(entries) > maximum:
+            raise ValueError(f"Limite de {maximum} {name} atingido.")
         for item in entries:
             if not isinstance(item, dict):
                 raise ValueError("Registro inválido.")
             entry_id = item.get("id")
-            if not isinstance(entry_id, str) or not entry_id or len(entry_id) > 80 or entry_id in ids:
+            if not isinstance(entry_id, str) or not entry_id or len(entry_id) > 80:
                 raise ValueError("Identificador inválido.")
+            if entry_id in ids:
+                raise ValueError("Já existe um registro com o mesmo identificador.")
             ids.add(entry_id)
             fields = {"text": 240} if key == "tasks" else {"title": 120, "body": 50000}
             record = {"id": entry_id}
@@ -53,12 +66,15 @@ class ProductivityStore(QObject):
     warning = Signal(str)
     task_completed = Signal(str)
     saved = Signal()
+    undo_changed = Signal()
+    entry_restored = Signal(str, str)
 
     def __init__(self, directory: Path, read_only=False):
         super().__init__()
         self.path = directory / "tools.json"
         self.backup = directory / "tools.backup.json"
         self.data = {"schema_version": 1, "tasks": [], "notes": []}
+        self._deleted_entry = None
         self.read_only = read_only
         self.dirty = False
         self.notices = []
@@ -119,9 +135,32 @@ class ProductivityStore(QObject):
             self.task_completed.emit(entry_id)
 
     def remove(self, key, entry_id):
-        if key not in ("tasks", "notes"):
+        if key not in COLLECTION_LIMITS:
             raise ValueError("Coleção inválida.")
-        self.change(self.data | {key: [item for item in self.data[key] if item["id"] != entry_id]})
+        entries = self.data[key]
+        for position, entry in enumerate(entries):
+            if entry["id"] == entry_id:
+                self.change(self.data | {key: entries[:position] + entries[position + 1:]})
+                self._deleted_entry = DeletedEntry(key, position, entry.copy())
+                self.undo_changed.emit()
+                return True
+        return False
+
+    @property
+    def undo_collection(self):
+        return self._deleted_entry.collection if self._deleted_entry is not None else None
+
+    def undo_remove(self):
+        deleted = self._deleted_entry
+        if deleted is None:
+            return None
+        entries = self.data[deleted.collection].copy()
+        entries.insert(deleted.position, deleted.record)
+        self.change(self.data | {deleted.collection: entries})
+        self._deleted_entry = None
+        self.entry_restored.emit(deleted.collection, deleted.record["id"])
+        self.undo_changed.emit()
+        return deleted.collection
 
     def add_note(self):
         entry = {"id": uuid4().hex, "title": "Nova anotação", "body": ""}
@@ -159,4 +198,7 @@ class ProductivityStore(QObject):
             return False
 
     def close(self):
+        if self._deleted_entry is not None:
+            self._deleted_entry = None
+            self.undo_changed.emit()
         self.flush()

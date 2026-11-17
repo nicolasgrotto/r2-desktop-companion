@@ -1,4 +1,4 @@
-from PySide6.QtCore import Qt
+from PySide6.QtCore import QSignalBlocker, Qt, Signal
 from PySide6.QtWidgets import (QApplication, QCheckBox, QHBoxLayout, QLineEdit,
                               QListWidget, QListWidgetItem, QPlainTextEdit, QPushButton, QVBoxLayout, QWidget)
 
@@ -26,6 +26,31 @@ def style_list(widget):
                         "QListWidget:focus { border: 2px solid @focus; }")
 
 
+class UndoDeletionButton(QPushButton):
+    message = Signal(str)
+
+    def __init__(self, store):
+        super().__init__()
+        self.store = store
+        self.clicked.connect(self.restore)
+        store.undo_changed.connect(self.refresh)
+        self.refresh()
+
+    def refresh(self):
+        kind = {"tasks": "tarefa", "notes": "nota"}.get(self.store.undo_collection)
+        self.setText(f"Desfazer exclusão da {kind}" if kind else "Desfazer exclusão")
+        self.setEnabled(kind is not None)
+
+    def restore(self):
+        try:
+            collection = self.store.undo_remove()
+        except ValueError as error:
+            self.message.emit(f"Não foi possível desfazer a exclusão. {error}")
+            return
+        if collection is not None:
+            self.message.emit("Tarefa restaurada." if collection == "tasks" else "Nota restaurada.")
+
+
 class TasksPage(QWidget):
     def __init__(self, store):
         super().__init__()
@@ -42,7 +67,7 @@ class TasksPage(QWidget):
         button.clicked.connect(self.add)
         row.addWidget(button)
         layout.addLayout(row)
-        self.pending = QCheckBox("Mostrar somente pendentes")
+        self.pending = QCheckBox("Apenas pendentes")
         self.pending.toggled.connect(self.render)
         layout.addWidget(self.pending)
         self.list = QListWidget()
@@ -51,16 +76,24 @@ class TasksPage(QWidget):
         style_list(self.list)
         self.list.itemChanged.connect(self.toggle)
         layout.addWidget(self.list, 1)
+        actions = ActionRow()
         button = QPushButton("Excluir selecionada")
         button.clicked.connect(self.remove)
-        layout.addWidget(button)
+        actions.addWidget(button)
+        self.undo_button = UndoDeletionButton(store)
+        actions.addWidget(self.undo_button)
+        layout.addWidget(actions)
         self.status = label("", "muted")
+        self.undo_button.message.connect(self.status.setText)
+        store.entry_restored.connect(self.entry_restored)
         layout.addWidget(self.status)
         self.render()
 
-    def render(self, *_):
+    def render(self, *_, selected=None):
         current = self.list.currentItem()
-        current_id = None if current is None else current.data(Qt.ItemDataRole.UserRole)
+        current_id = selected
+        if current_id is None and current is not None:
+            current_id = current.data(Qt.ItemDataRole.UserRole)
         current_row = self.list.currentRow()
         self.list.blockSignals(True)
         self.list.clear()
@@ -100,9 +133,13 @@ class TasksPage(QWidget):
 
     def remove(self):
         item = self.list.currentItem()
-        if item:
-            self.store.remove("tasks", item.data(Qt.ItemDataRole.UserRole))
+        if item and self.store.remove("tasks", item.data(Qt.ItemDataRole.UserRole)):
             self.render()
+            self.status.setText("Tarefa excluída.")
+
+    def entry_restored(self, collection, entry_id):
+        if collection == "tasks":
+            self.render(selected=entry_id)
 
 
 class NotesPage(QWidget):
@@ -122,6 +159,8 @@ class NotesPage(QWidget):
             button = QPushButton(title)
             button.clicked.connect(callback)
             row.addWidget(button)
+        self.undo_button = UndoDeletionButton(store)
+        row.addWidget(self.undo_button)
         layout.addWidget(row)
         self.title = QLineEdit()
         self.title.setMaxLength(120)
@@ -137,6 +176,8 @@ class NotesPage(QWidget):
         layout.addWidget(self.title)
         layout.addWidget(self.body, 1)
         self.status = label("Salvamento automático local · Até 50.000 caracteres por nota.", "muted")
+        self.undo_button.message.connect(self.status.setText)
+        store.entry_restored.connect(self.entry_restored)
         store.saved.connect(lambda: self.status.setText("Salvo neste computador."))
         store.warning.connect(self.status.setText)
         layout.addWidget(self.status)
@@ -157,15 +198,15 @@ class NotesPage(QWidget):
     def select(self, item, *_):
         self.current_id = None if item is None else item.data(Qt.ItemDataRole.UserRole)
         note = next((n for n in self.store.data["notes"] if n["id"] == self.current_id), None)
-        for widget, value in ((self.title, "" if note is None else note["title"]),
-                              (self.body, "" if note is None else note["body"])):
-            widget.blockSignals(True)
-            widget.setText(value) if widget is self.title else widget.setPlainText(value)
-            widget.setEnabled(note is not None)
-            widget.blockSignals(False)
+        with QSignalBlocker(self.title), QSignalBlocker(self.body):
+            self.title.setText(note["title"] if note is not None else "")
+            self.body.setPlainText(note["body"] if note is not None else "")
+            self.title.setEnabled(note is not None)
+            self.body.setEnabled(note is not None)
 
     def save(self, *_):
-        if self.current_id is None:
+        item = self.list.currentItem()
+        if self.current_id is None or item is None or item.data(Qt.ItemDataRole.UserRole) != self.current_id:
             return
         try:
             body = self.body.toPlainText()
@@ -174,7 +215,7 @@ class NotesPage(QWidget):
                 self.body.setPlainText(body[:50000])
                 self.body.blockSignals(False)
             self.store.edit_note(self.current_id, self.title.text(), self.body.toPlainText())
-            self.list.currentItem().setText(self.title.text().strip() or "Sem título")
+            item.setText(self.title.text().strip() or "Sem título")
             self.status.setText("Salvando alterações…")
         except ValueError as error:
             self.status.setText(str(error))
@@ -186,9 +227,19 @@ class NotesPage(QWidget):
             self.status.setText(str(error))
 
     def remove(self):
-        if self.current_id is not None:
-            self.store.remove("notes", self.current_id)
+        entry_id = self.current_id
+        if entry_id is None:
+            return
+        with QSignalBlocker(self.list):
+            self.list.setCurrentItem(None)
+        self.select(None)
+        if self.store.remove("notes", entry_id):
             self.render()
+            self.status.setText("Nota excluída.")
+
+    def entry_restored(self, collection, entry_id):
+        if collection == "notes":
+            self.render(entry_id)
 
     def copy(self):
         if self.current_id is not None:
