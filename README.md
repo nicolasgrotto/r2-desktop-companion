@@ -72,7 +72,7 @@ Para isolar os dados dentro do projeto:
 - Ferramentas → Diagnóstico: mostra personagem, versão, sistema, CPU, memória, bateria e áudio sob demanda. A página possui rolagem e a central permanece dentro da tela.
 - Segure o botão esquerdo sobre a cabeça por 650 ms para fazer carinho. Arrastar cancela o carinho; a reação não abre a roda de ações.
 - Tarefas: adicionar, concluir, reabrir, filtrar pendentes e excluir. Notas: criar, editar, excluir e copiar, com salvamento automático local. **Desfazer exclusão** restaura a última tarefa ou nota excluída nesta sessão. Ambas também estão no menu de contexto.
-- Em **Ferramentas → Dados**, exporte tarefas e notas em JSON ou confira e restaure os backups locais. O Companion guarda uma cópia dos dados atuais antes da substituição. Na aba **Notas**, use **Exportar nota em TXT** para salvar o conteúdo selecionado em UTF-8.
+- Em **Ferramentas → Dados**, exporte tarefas e notas em JSON ou confira e restaure os backups locais. **Atualizar estado dos backups** confirma a consulta e mostra a data da última gravação de cada backup válido. O Companion guarda uma cópia dos dados atuais antes da substituição. Na aba **Notas**, use **Exportar nota em TXT** para salvar o conteúdo selecionado em UTF-8.
 - Depois de três minutos contínuos dormindo, o droide só acorda com um clique nele. Esse clique reproduz o despertar sem abrir a roda; um sono curto ainda pode terminar automaticamente quando você voltar.
 - Na transmissão e nas preferências, o nome acompanha o personagem equipado. A reação de aquecimento por CPU elevada inclui fumaça animada.
 - Clique duplo: cumprimento. Cliques repetidos: confusão. Arrasto: esforço e recuperação. Bateria baixa, carregamento e CPU elevada podem gerar reações discretas com cooldown.

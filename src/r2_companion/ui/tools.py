@@ -386,6 +386,8 @@ class ToolsDialog(QDialog):
         super().hideEvent(event)
 
     def stop(self):
+        if "data" in self.pages:
+            self.pages["data"].tasks.close()
         self.diagnostics_page.stop()
         self.clock_timer.stop()
         self.hide()

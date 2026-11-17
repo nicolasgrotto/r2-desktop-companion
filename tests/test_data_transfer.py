@@ -1,7 +1,12 @@
+from datetime import datetime
 import json
+import os
+from threading import Event
+from time import monotonic
 
 import pytest
-from PySide6.QtCore import Qt
+from PySide6.QtCore import Qt, QTimer
+from PySide6.QtTest import QTest
 from PySide6.QtWidgets import QFileDialog, QMessageBox
 
 from r2_companion.core.config import FutureSchemaError, Settings
@@ -11,6 +16,13 @@ from r2_companion.services.companion_state import CompanionStateStore
 from r2_companion.services.storage import ConfigStore
 from r2_companion.ui.data_transfer import DataPage
 from test_context_v03 import pet
+
+
+def wait_for_backups(page):
+    deadline = monotonic() + 15
+    while (page.tasks.busy or page.restoring) and monotonic() < deadline:
+        QTest.qWait(20)
+    assert not (page.tasks.busy or page.restoring), page.status.text()
 
 
 @pytest.fixture
@@ -79,6 +91,11 @@ def test_backup_inspection_enforces_schema_size_and_confirmed_contents(transfer,
     with pytest.raises(FutureSchemaError):
         transfer.restore(checked)
     assert tools.path.read_bytes() == b'{"schema_version":99}'
+    tools.path.write_bytes(valid)
+    prepared = transfer.prepare_restore(checked)
+    ConfigStore.atomic_write(tools.path, b'{"schema_version":99}')
+    with pytest.raises(ValueError, match="dados atuais mudaram"):
+        transfer.apply_restore(prepared)
 
 
 def test_cancel_and_atomic_restore_failure_leave_current_data_and_backup(transfer, monkeypatch):
@@ -90,7 +107,10 @@ def test_cancel_and_atomic_restore_failure_leave_current_data_and_backup(transfe
     document, backup = tools.path.read_bytes(), tools.backup.read_bytes()
     page = DataPage(transfer)
     monkeypatch.setattr(QMessageBox, "question", lambda *args, **kwargs: QMessageBox.StandardButton.No)
+    page.refresh()
+    wait_for_backups(page)
     page.rows["tools"][1].click()
+    wait_for_backups(page)
     assert page.status.text() == "Restauração cancelada."
     assert tools.path.read_bytes() == document and not transfer.recovery_path(tools).exists()
 
@@ -115,23 +135,59 @@ def test_data_page_shows_availability_and_respects_read_only(transfer):
     tools = transfer.productivity
     page = DataPage(transfer)
     page.refresh()
+    wait_for_backups(page)
     assert not page.rows["tools"][1].isEnabled()
     tools.backup.write_bytes(b'{"schema_version":99}')
     page.refresh()
+    wait_for_backups(page)
     assert "versão futura" in page.rows["tools"][0].text()
     tools.backup.write_bytes(b'{"schema_version":1,"tasks":[],"notes":[]}')
     tools.read_only = True
     page.refresh()
+    wait_for_backups(page)
     assert not page.rows["tools"][1].isEnabled()
     assert "somente leitura" in page.rows["tools"][0].text()
     with pytest.raises(OSError, match="somente leitura"):
         transfer.restore(transfer.inspect("tools"))
 
 
+def test_manual_backup_refresh_shows_dates_and_leaves_gui_responsive(transfer, monkeypatch):
+    tools = transfer.productivity
+    contents = b'{"schema_version":1,"tasks":[],"notes":[]}'
+    tools.backup.write_bytes(contents)
+    timestamp = 1_700_000_000
+    os.utime(tools.backup, (timestamp, timestamp))
+    inspect = transfer.inspect
+    release = Event()
+
+    def paused_inspect(group):
+        if group == "tools":
+            assert release.wait(5)
+        return inspect(group)
+
+    monkeypatch.setattr(transfer, "inspect", paused_inspect)
+    page = DataPage(transfer)
+    try:
+        page.refresh_button.click()
+        assert page.refresh_status.text() == "Consultando backups…"
+        assert not page.refresh_button.isEnabled() and not page.rows["tools"][1].isEnabled()
+        QTimer.singleShot(0, release.set)
+        wait_for_backups(page)
+        assert release.is_set()
+        assert page.refresh_status.text().startswith("Estado dos backups atualizado em ")
+        assert datetime.fromtimestamp(timestamp).strftime("%d/%m/%Y às %H:%M:%S") in page.rows["tools"][0].text()
+        assert page.refresh_button.isEnabled() and page.rows["tools"][1].isEnabled()
+        assert tools.backup.read_bytes() == contents and tools.backup.stat().st_mtime == timestamp
+    finally:
+        release.set()
+        page.tasks.close()
+
+
 def test_restore_from_tools_updates_open_pages_and_equipped_droid(pet, tmp_path, monkeypatch):
     pet.show_tools_page("data")
     page = pet.tools.pages["data"]
     assert page.isVisible()
+    wait_for_backups(page)
     result = tmp_path / "export.txt"
     monkeypatch.setattr(QFileDialog, "getSaveFileName", lambda *args: (str(result), ""))
     monkeypatch.setattr(QMessageBox, "question", lambda *args, **kwargs: QMessageBox.StandardButton.Yes)
@@ -145,6 +201,7 @@ def test_restore_from_tools_updates_open_pages_and_equipped_droid(pet, tmp_path,
     note_page.add()
     assert pet.productivity.flush()
     page.restore("tools")
+    wait_for_backups(page)
     assert note_page.list.count() == 1 and note_page.current_id is None
     assert not note_page.export_button.isEnabled()
 
@@ -152,6 +209,7 @@ def test_restore_from_tools_updates_open_pages_and_equipped_droid(pet, tmp_path,
     assert state.update("accessibility", {"ui_scale": 125}, immediate=True)
     assert state.update("accessibility", {"ui_scale": 150}, immediate=True)
     page.restore("companion_state")
+    wait_for_backups(page)
     assert state.data["accessibility"]["ui_scale"] == 125
     assert page.status.text().startswith("Backup restaurado.")
 
@@ -161,6 +219,7 @@ def test_restore_from_tools_updates_open_pages_and_equipped_droid(pet, tmp_path,
     pet.store.backup.write_text(json.dumps(saved.to_dict()), encoding="utf-8")
     original = pet.profile.id
     page.restore("config")
+    wait_for_backups(page)
     assert pet.profile.id == pet.audio.profile_id == "pico"
     assert pet.tools.selected_duration() == 60
     assert pet.tools.notes_page.list.item(0).data(Qt.ItemDataRole.UserRole)
