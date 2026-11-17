@@ -83,6 +83,41 @@ def test_projection_option_is_opt_in_persistent_and_respects_manual_override(pet
     assert pet.window.projection_kind == "timer" and pet.window.projection_overlay.isVisible()
 
 
+def test_ending_clock_and_date_restores_only_an_active_opted_in_timer(pet, clock):
+    pet.countdown.clock = clock
+    pet.tools.project_timer.setChecked(True)
+    actions = pet.navigation_actions()
+    pet.countdown.start(65)
+    assert pet.window.projection_kind == "timer"
+    actions["project_clock"]()
+    assert pet.window.projection_kind == "clock"
+    clock.advance(5)
+    actions["project_stop"]()
+    assert pet.window.projection_kind == "timer" and "01:00" in pet.window.projection_text
+    actions["project_stop"]()
+    pet.countdown.tick()
+    assert pet.window.projection_kind is None
+
+    actions["project_date"]()
+    pet.countdown.restart()
+    pet.countdown.pause()
+    assert pet.window.projection_kind == "date"
+    actions["project_stop"]()
+    assert pet.window.projection_kind == "timer" and "Pausado" in pet.window.projection_text
+
+    actions["project_clock"]()
+    pet.tools.project_timer.setChecked(False)
+    actions["project_stop"]()
+    assert pet.window.projection_kind is None
+    actions["project_date"]()
+    pet.tools.project_timer.setChecked(True)
+    pet.countdown.resume()
+    clock.advance(70)
+    pet.countdown.tick()
+    actions["project_stop"]()
+    assert pet.window.projection_kind is None
+
+
 def test_old_settings_default_to_no_timer_projection():
     raw = Settings().to_dict()
     raw.pop("timer_projection")

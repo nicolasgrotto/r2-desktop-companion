@@ -463,6 +463,13 @@ class Companion(QObject):
         elif self.window.projection_kind == "timer":
             self.window.refresh_projection()
 
+    def end_projection(self):
+        if (self.window.projection_kind in {"clock", "date"} and self.tools.project_timer.isChecked()
+                and self.countdown.state in {TimerState.RUNNING, TimerState.PAUSED}):
+            self.window.show_projection("timer")
+        else:
+            self.window.clear_projection()
+
     def state_changed(self, state):
         self.presence.refresh()
         self.audio.spontaneous = self.controller.action_spontaneous
@@ -543,7 +550,7 @@ class Companion(QObject):
                    "explore": self.walk_now, "pause": self.toggle_pause,
                    "project_clock": lambda: self.project_tool("clock"),
                    "project_date": lambda: self.project_tool("date"),
-                   "project_stop": self.window.clear_projection}
+                   "project_stop": self.end_projection}
         for page in self.tools.pages:
             actions[page] = lambda page=page: self.show_tools_page(page)
         return actions
