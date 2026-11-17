@@ -52,7 +52,9 @@ class UndoDeletionButton(QPushButton):
 
 
 class TasksPage(QWidget):
-    def __init__(self, store):
+    focus_requested = Signal(str)
+
+    def __init__(self, store, *, focus_available=False):
         super().__init__()
         self.store = store
         layout = QVBoxLayout(self)
@@ -77,6 +79,12 @@ class TasksPage(QWidget):
         self.list.itemChanged.connect(self.toggle)
         layout.addWidget(self.list, 1)
         actions = ActionRow()
+        if focus_available:
+            self.focus_button = QPushButton("Iniciar foco")
+            self.focus_button.setAccessibleName("Iniciar foco na tarefa selecionada")
+            self.focus_button.clicked.connect(self.request_focus)
+            self.list.currentItemChanged.connect(self.update_focus_button)
+            actions.addWidget(self.focus_button)
         button = QPushButton("Excluir selecionada")
         button.clicked.connect(self.remove)
         actions.addWidget(button)
@@ -112,6 +120,15 @@ class TasksPage(QWidget):
             self.list.setCurrentRow(min(current_row, self.list.count() - 1))
         self.list.blockSignals(False)
         self.update_status()
+        self.update_focus_button()
+
+    def update_focus_button(self, *_):
+        if hasattr(self, "focus_button"):
+            self.focus_button.setEnabled(self.list.currentItem() is not None)
+
+    def request_focus(self):
+        if item := self.list.currentItem():
+            self.focus_requested.emit(item.data(Qt.ItemDataRole.UserRole))
 
     def update_status(self):
         remaining = sum(not task["done"] for task in self.store.data["tasks"])

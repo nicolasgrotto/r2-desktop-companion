@@ -12,6 +12,7 @@ from .productivity import NotesPage, TasksPage
 from .minigames import MinigamesPage
 from .diagnostics import DiagnosticsPage
 from .data_transfer import DataPage
+from .focus import FocusPage, confirm_countdown
 from ..droids.themes import color, styled, theme_manager
 
 
@@ -68,12 +69,14 @@ class TimerDial(QWidget):
 class ToolsDialog(QDialog):
     duration_selected = Signal(int)
 
-    def __init__(self, countdown, monitor, duration: int, productivity=None, project_timer=False, data_transfer=None):
+    def __init__(self, countdown, monitor, duration: int, productivity=None, project_timer=False, data_transfer=None,
+                 focus=None):
         super().__init__()
         self.setWindowTitle("Central de ferramentas · R2 Companion")
         self.resize(760, 650)
         apply_theme(self)
         self.countdown, self.monitor = countdown, monitor
+        self.focus = focus
         self.project_timer = QCheckBox("Projetar timer")
         self.project_timer.setChecked(project_timer)
         self.project_timer.setToolTip("Exibir a contagem no holograma do droide até terminar.")
@@ -96,7 +99,7 @@ class ToolsDialog(QDialog):
         self.tabs.addTab(self.timer_page(), icon("play"), "Temporizador")
         self.tabs.addTab(self.system_page(), icon("system"), "Sistema")
         if productivity is not None:
-            self.tasks_page = TasksPage(productivity)
+            self.tasks_page = TasksPage(productivity, focus_available=focus is not None)
             self.notes_page = NotesPage(productivity, data_transfer)
             self.tasks_page.setProperty("characterLiteral", True)
             self.notes_page.setProperty("characterLiteral", True)
@@ -115,6 +118,13 @@ class ToolsDialog(QDialog):
             data_page = DataPage(data_transfer)
             self.tabs.addTab(data_page, "Dados")
             self.pages["data"] = data_page
+        if focus is not None:
+            self.focus_page = FocusPage(focus, timer_text)
+            self.focus_page.setProperty("characterLiteral", True)
+            self.pages["focus"] = scrollable(self.focus_page)
+            self.tabs.addTab(self.pages["focus"], "Foco")
+            self.tasks_page.focus_requested.connect(self.start_task_focus)
+            self.focus_page.task_finished.connect(self.tasks_page.render)
         self.tabs.setUsesScrollButtons(True)
         layout.addWidget(self.tabs, 1)
         self.completion = label("Tudo pronto. Escolha uma ferramenta para começar.", "muted")
@@ -161,6 +171,10 @@ class ToolsDialog(QDialog):
         text = model.accessible_text if model else ""
         if details.toPlainText() != text:
             details.setPlainText(text)
+
+    def start_task_focus(self, task_id):
+        self.select_page("focus")
+        self.focus_page.start_for(task_id)
 
     @staticmethod
     def scroll(content):
@@ -251,7 +265,7 @@ class ToolsDialog(QDialog):
         self.pause_button = QPushButton("Pausar")
         self.pause_button.clicked.connect(self.toggle_pause)
         self.restart_button = QPushButton("Reiniciar")
-        self.restart_button.clicked.connect(self.countdown.restart)
+        self.restart_button.clicked.connect(self.restart_countdown)
         row.addWidget(self.pause_button)
         row.addWidget(self.restart_button)
         controls.addWidget(row)
@@ -312,22 +326,39 @@ class ToolsDialog(QDialog):
         if not 1 <= seconds <= 86400:
             self.completion.setText("Escolha um intervalo entre 1 segundo e 24 horas.")
             return
+        if self.focus is None:
+            self.countdown.start(seconds)
+        elif confirm_countdown(self, lambda **confirmation: self.focus.start_timer(seconds, **confirmation),
+                               report=self.completion.setText) is None:
+            return
         self.duration_selected.emit(seconds)
         self.completion.setText(f"Seu tempo está correndo. Pode deixar que {getattr(self, 'character_name', 'R2')} avisa.")
-        self.countdown.start(seconds)
+
+    def has_focus_session(self):
+        return self.focus is not None and self.focus.session is not None
 
     def toggle_pause(self):
+        if self.has_focus_session():
+            return
         if self.countdown.state == TimerState.RUNNING:
             self.countdown.pause()
         else:
             self.countdown.resume()
 
     def stop_countdown(self):
+        if self.has_focus_session():
+            return
         self.countdown.stop()
         self.completion.setText("Temporizador encerrado. Escolha outro intervalo para iniciar uma nova contagem.")
 
     def completed(self, run_id):
+        if self.has_focus_session() or self.countdown.run_id != run_id:
+            return
         self.completion.setText(f"✓ Temporizador #{run_id} concluído. Seu intervalo chegou ao fim.")
+
+    def restart_countdown(self):
+        if not self.has_focus_session():
+            self.countdown.restart()
 
     def refresh_clock(self):
         time_text, date_text = local_clock().split("\n", 1)
@@ -337,7 +368,8 @@ class ToolsDialog(QDialog):
     def refresh_timer(self, *_):
         if not hasattr(self, "start_button"):
             return
-        state = self.countdown.state
+        focus_active = self.has_focus_session()
+        state = TimerState.STOPPED if focus_active else self.countdown.state
         remaining = self.selected_duration() if state == TimerState.STOPPED else self.countdown.remaining
         self.dial.value = remaining
         self.dial.total = self.selected_duration() if state == TimerState.STOPPED else self.countdown.duration
@@ -345,8 +377,9 @@ class ToolsDialog(QDialog):
                             TimerState.PAUSED: "PAUSADO", TimerState.COMPLETED: "CONCLUÍDO"}[state]
         if self.isVisible():
             self.dial.update()
-        self.timer_label.setText(f"{state.value} · {timer_text(remaining)}")
-        self.timer_summary.setText(f"{state.value} · {timer_text(remaining)}")
+        description = ("Sessão na página Foco" if focus_active else f"{state.value} · {timer_text(remaining)}")
+        self.timer_label.setText(description)
+        self.timer_summary.setText(description)
         active = state in {TimerState.RUNNING, TimerState.PAUSED}
         self.start_button.setEnabled(not active)
         self.pause_button.setEnabled(active)

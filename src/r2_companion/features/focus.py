@@ -212,6 +212,10 @@ class FocusSessionService(QObject):
         if self._matches(run_id, *ACTIVE):
             self.countdown.stop()
 
+    def dismiss(self, run_id):
+        if self._matches(run_id, TimerState.COMPLETED):
+            self.countdown.stop()
+
     def complete(self, run_id):
         if self._matches(run_id, *ACTIVE):
             self.countdown.complete()

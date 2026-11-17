@@ -77,7 +77,7 @@ class ProjectionController(QObject):
             self.end()
             return
         self._publish(model)
-        if self.selected not in {"clock", "date", "timer"}:
+        if self.selected not in {"clock", "date", "timer", "focus"}:
             self.timer.stop()
         elif not self.suspended and not self.timer.isActive():
             self.timer.start()

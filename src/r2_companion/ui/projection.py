@@ -13,7 +13,7 @@ def card_size(model, dip):
 
 
 def line_height(model, index):
-    return 33 if index == 0 and model.kind in {"clock", "date", "timer"} else 20
+    return 33 if index == 0 and model.kind in {"clock", "date", "timer", "focus"} else 20
 
 
 def place_card(area, pet, preferred):

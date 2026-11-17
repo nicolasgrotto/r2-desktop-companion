@@ -40,7 +40,7 @@ def test_presentation_preserves_timer_and_projection_and_allows_tools(pet, monke
     assert pet.window.projection_kind == "clock" and not pet.window.projection_timer.isActive()
     assert not pet.animation.timer.isActive() and not pet.behavior.timer.isActive()
     assert pet.countdown.state == TimerState.RUNNING
-    pet.timer_completed(777)
+    pet.timer_completed(pet.countdown.run_id)
     assert not pet.tray.notice.isVisible() and not pet.bubble.isVisible()
     pet.show_tools_page("timer")
     assert pet.tools.isVisible()

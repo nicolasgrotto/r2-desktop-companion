@@ -18,7 +18,7 @@ from .features.launcher import launch
 from .features.locations import validate_location
 from .features.system_monitor import SystemMonitor
 from .features.timer import Countdown, TimerState
-from .features.focus import FocusSessionService
+from .features.focus import FocusPhase, FocusSessionService
 from .features.productivity import ProductivityStore
 from .features.data_transfer import DataTransfer
 from .features.projections import ProjectionModel
@@ -126,9 +126,12 @@ class Companion(QObject):
         self.tasks = LocalTasks()
         self.startup = StartupService(packaged_executable())
         self.tools = ToolsDialog(self.countdown, self.monitor, store.settings.timer_seconds, self.productivity,
-                                 project_timer=store.settings.timer_projection, data_transfer=self.data_transfer)
+                                 project_timer=store.settings.timer_projection, data_transfer=self.data_transfer,
+                                 focus=self.focus)
         self._timer_projection_run = 0
+        self._projected_focus_id = None
         self.window.projection.providers["timer"] = self.timer_projection_model
+        self.window.projection.providers["focus"] = self.focus_projection_model
         self.window.projection.changed.connect(self.tools.show_projection_details)
         self.countdown.changed.connect(self.update_timer_projection)
         self.tools.project_timer.toggled.connect(self.timer_projection_toggled)
@@ -192,6 +195,10 @@ class Companion(QObject):
         self.desktop_timer.timeout.connect(self.check_desktop)
         self.qt_app.aboutToQuit.connect(self.shutdown)
         self.presence = PresenceRuntime(self)
+        self.focus.changed.connect(self.presence.update_focus)
+        self.focus.changed.connect(self.update_focus_projection)
+        self.focus.completed.connect(self.focus_completed)
+        self.tools.focus_page.projection_requested.connect(self.project_focus)
         initial_position = deepcopy(store.settings.window)
         self.apply_preferences(store.settings)
         self.positioning.restore(initial_position)
@@ -272,6 +279,8 @@ class Companion(QObject):
         self.tools.project_timer.setChecked(settings.timer_projection)
         self.tools.project_timer.blockSignals(blocked)
         self.tools.project_timer.setEnabled(settings.holograms)
+        self.tools.focus_page.projections_enabled = settings.holograms
+        self.tools.focus_page.refresh()
         self.window.projection.set_blocked("disabled", not settings.holograms)
         if not settings.holograms:
             self.window.clear_ephemeral_projection()
@@ -447,7 +456,8 @@ class Companion(QObject):
         self.update_timer_projection(force=True)
 
     def timer_projection_model(self):
-        if self.closed or self.countdown.state not in {TimerState.RUNNING, TimerState.PAUSED}:
+        if (self.closed or self.focus.session is not None
+                or self.countdown.state not in {TimerState.RUNNING, TimerState.PAUSED}):
             return None
         remaining = self.countdown.remaining
         progress = 1 - ceil(remaining) / self.countdown.duration
@@ -456,7 +466,7 @@ class Companion(QObject):
     def update_timer_projection(self, force=False):
         new_run = self._timer_projection_run != self.countdown.run_id
         self._timer_projection_run = self.countdown.run_id
-        active = (not self.closed and self.tools.project_timer.isChecked()
+        active = (not self.closed and self.focus.session is None and self.tools.project_timer.isChecked()
                   and self.countdown.state in {TimerState.RUNNING, TimerState.PAUSED})
         if not active:
             self.window.projection.end("timer")
@@ -468,10 +478,41 @@ class Companion(QObject):
 
     def end_projection(self):
         if (self.window.projection_kind in {"clock", "date"} and self.tools.project_timer.isChecked()
+                and self.focus.session is None
                 and self.countdown.state in {TimerState.RUNNING, TimerState.PAUSED}):
             self.window.show_projection("timer")
         else:
             self.window.clear_projection()
+
+    def project_focus(self):
+        session = self.focus.session
+        if (session and session.state in (TimerState.RUNNING, TimerState.PAUSED)
+                and self.store.settings.holograms):
+            self._projected_focus_id = session.session_id
+            self.window.show_projection("focus")
+
+    def focus_projection_model(self):
+        session = self.focus.session
+        if (self.closed or session is None or session.session_id != self._projected_focus_id
+                or session.state not in (TimerState.RUNNING, TimerState.PAUSED)):
+            return None
+        remaining = self.countdown.remaining
+        title = "Foco" if session.phase == FocusPhase.FOCUS else "Intervalo"
+        lines = (timer_text(remaining), session.state.value)
+        task = self.productivity.task(session.task_id)
+        if task:
+            lines += (task["text"],)
+        progress = 1 - min(ceil(remaining), session.duration) / session.duration
+        return ProjectionModel("focus", title, lines, progress)
+
+    def update_focus_projection(self, session):
+        if self.window.projection_kind != "focus":
+            return
+        if (session is None or session.session_id != self._projected_focus_id
+                or session.state == TimerState.COMPLETED):
+            self.window.projection.end("focus")
+        else:
+            self.window.refresh_projection()
 
     def state_changed(self, state):
         self.presence.refresh()
@@ -902,12 +943,20 @@ class Companion(QObject):
             self.warning("Aguarde a operação local em andamento.")
 
     def timer_completed(self, run_id):
+        if self.focus.session is not None or self.countdown.run_id != run_id:
+            return
+        self.notify_countdown(f"timer-{run_id}", f"Temporizador #{run_id} concluído.")
+
+    def focus_completed(self, session):
+        message = "Sessão de foco concluída." if session.phase == FocusPhase.FOCUS else "Intervalo de foco concluído."
+        self.notify_countdown(f"focus-{session.run_id}", message)
+
+    def notify_countdown(self, event_id, message):
         if self.closed:
             return
-        message = f"Temporizador #{run_id} concluído."
         if not self.fullscreen_active:
             self.tray.notify(message)
-        self.controller.notify(f"timer-{run_id}", message)
+        self.controller.notify(event_id, message)
 
     def shutdown(self):
         if self.closed:
@@ -1140,7 +1189,7 @@ def main(argv=None) -> int:
                  companion.countdown.timer, companion.monitor.timer, companion.idle_timer,
                  companion.desktop_timer, companion.tools.clock_timer, companion.bubble.timer,
                  companion.radial.dismiss_timer, companion.radial.deactivate_timer, companion.greeting_timer, companion.awareness.timer,
-                 companion.productivity.timer, companion.companion_state.timer,
+                 companion.productivity.timer, companion.companion_state.timer, companion.focus.checkpoint_timer,
                  companion.tray.notice.timer, companion.window.affection_timer,
                  companion.window.hologram_timer, companion.window.projection_timer, companion.window.steam.timer,
                  companion.window.sleep_effect.timer, companion.tools.diagnostics_page.timer, store.timer])

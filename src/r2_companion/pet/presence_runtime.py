@@ -16,6 +16,7 @@ class PresenceRuntime:
                                       reduced_motion=document["accessibility"]["reduced_motion"])
         self.decision = self.policy.evaluate(self.context)
         self.refreshing = False
+        self.focus_override = None
         companion.companion_state.changed.connect(self.saved_changed)
         companion.controller.context_changed.connect(self.refresh)
 
@@ -28,6 +29,18 @@ class PresenceRuntime:
     def select_mode(self, mode):
         self.context = self.context.select_mode(mode)
         self.companion.companion_state.update("presence", {"mode": self.context.manual_mode.value})
+        self.refresh()
+
+    def update_focus(self, session):
+        requested = session.override_id if session else None
+        previous = self.focus_override
+        if requested == previous:
+            return
+        self.focus_override = requested
+        if previous is not None:
+            self.context = self.context.end_focus(previous)
+        if requested is not None:
+            self.context = self.context.begin_focus(requested)
         self.refresh()
 
     def refresh(self):
