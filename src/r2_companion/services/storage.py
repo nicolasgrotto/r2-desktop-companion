@@ -97,6 +97,11 @@ class ConfigStore(QObject):
         if notify:
             self.changed.emit(checked)
 
+    def accept_restored(self, settings: Settings) -> None:
+        self.settings = settings
+        self.timer.stop()
+        self.dirty = False
+
     def flush(self) -> bool:
         self.timer.stop()
         if not self.dirty:

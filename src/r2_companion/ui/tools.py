@@ -11,6 +11,7 @@ from .theme import ActionRow, apply_theme, card, header, icon, label, scrollable
 from .productivity import NotesPage, TasksPage
 from .minigames import MinigamesPage
 from .diagnostics import DiagnosticsPage
+from .data_transfer import DataPage
 from ..droids.themes import color, styled, theme_manager
 
 
@@ -67,7 +68,7 @@ class TimerDial(QWidget):
 class ToolsDialog(QDialog):
     duration_selected = Signal(int)
 
-    def __init__(self, countdown, monitor, duration: int, productivity=None, project_timer=False):
+    def __init__(self, countdown, monitor, duration: int, productivity=None, project_timer=False, data_transfer=None):
         super().__init__()
         self.setWindowTitle("Central de ferramentas · R2 Companion")
         self.resize(760, 650)
@@ -96,7 +97,7 @@ class ToolsDialog(QDialog):
         self.tabs.addTab(self.system_page(), icon("system"), "Sistema")
         if productivity is not None:
             self.tasks_page = TasksPage(productivity)
-            self.notes_page = NotesPage(productivity)
+            self.notes_page = NotesPage(productivity, data_transfer)
             self.tasks_page.setProperty("characterLiteral", True)
             self.notes_page.setProperty("characterLiteral", True)
             self.tabs.addTab(scrollable(self.tasks_page), "Tarefas")
@@ -110,6 +111,10 @@ class ToolsDialog(QDialog):
                       "diagnostics": self.diagnostics_page}
         if productivity is not None:
             self.pages.update(tasks=self.tabs.widget(3), notes=self.tabs.widget(4))
+        if data_transfer is not None:
+            data_page = DataPage(data_transfer)
+            self.tabs.addTab(data_page, "Dados")
+            self.pages["data"] = data_page
         self.tabs.setUsesScrollButtons(True)
         layout.addWidget(self.tabs, 1)
         self.completion = label("Tudo pronto. Escolha uma ferramenta para começar.", "muted")

@@ -1,5 +1,5 @@
 from PySide6.QtCore import QSignalBlocker, Qt, Signal
-from PySide6.QtWidgets import (QApplication, QCheckBox, QHBoxLayout, QLineEdit,
+from PySide6.QtWidgets import (QApplication, QCheckBox, QFileDialog, QHBoxLayout, QLineEdit,
                               QListWidget, QListWidgetItem, QPlainTextEdit, QPushButton, QVBoxLayout, QWidget)
 
 from .theme import ActionRow, label
@@ -86,6 +86,7 @@ class TasksPage(QWidget):
         self.status = label("", "muted")
         self.undo_button.message.connect(self.status.setText)
         store.entry_restored.connect(self.entry_restored)
+        store.restored.connect(self.render)
         layout.addWidget(self.status)
         self.render()
 
@@ -143,9 +144,10 @@ class TasksPage(QWidget):
 
 
 class NotesPage(QWidget):
-    def __init__(self, store):
+    def __init__(self, store, transfer=None):
         super().__init__()
         self.store = store
+        self.transfer = transfer
         self.current_id = None
         layout = QVBoxLayout(self)
         self.list = QListWidget()
@@ -161,6 +163,10 @@ class NotesPage(QWidget):
             row.addWidget(button)
         self.undo_button = UndoDeletionButton(store)
         row.addWidget(self.undo_button)
+        if transfer is not None:
+            self.export_button = QPushButton("Exportar nota em TXT")
+            self.export_button.clicked.connect(self.export_note)
+            row.addWidget(self.export_button)
         layout.addWidget(row)
         self.title = QLineEdit()
         self.title.setMaxLength(120)
@@ -178,6 +184,7 @@ class NotesPage(QWidget):
         self.status = label("Salvamento automático local · Até 50.000 caracteres por nota.", "muted")
         self.undo_button.message.connect(self.status.setText)
         store.entry_restored.connect(self.entry_restored)
+        store.restored.connect(self.refresh_from_store)
         store.saved.connect(lambda: self.status.setText("Salvo neste computador."))
         store.warning.connect(self.status.setText)
         layout.addWidget(self.status)
@@ -198,6 +205,8 @@ class NotesPage(QWidget):
     def select(self, item, *_):
         self.current_id = None if item is None else item.data(Qt.ItemDataRole.UserRole)
         note = next((n for n in self.store.data["notes"] if n["id"] == self.current_id), None)
+        if self.transfer is not None:
+            self.export_button.setEnabled(note is not None)
         with QSignalBlocker(self.title), QSignalBlocker(self.body):
             self.title.setText(note["title"] if note is not None else "")
             self.body.setPlainText(note["body"] if note is not None else "")
@@ -240,6 +249,23 @@ class NotesPage(QWidget):
     def entry_restored(self, collection, entry_id):
         if collection == "notes":
             self.render(entry_id)
+
+    def refresh_from_store(self):
+        self.render(self.current_id)
+
+    def export_note(self):
+        entry_id = self.current_id
+        if entry_id is None:
+            return
+        destination, _ = QFileDialog.getSaveFileName(self, "Exportar nota", "nota.txt", "Texto UTF-8 (*.txt)")
+        if not destination:
+            return
+        try:
+            self.transfer.export_note(entry_id, destination)
+        except (OSError, ValueError, RuntimeError) as error:
+            self.status.setText(f"Não foi possível exportar a nota. {error}")
+        else:
+            self.status.setText("Nota exportada como texto UTF-8.")
 
     def copy(self):
         if self.current_id is not None:

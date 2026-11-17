@@ -276,3 +276,9 @@ class CompanionStateStore(QObject):
         result = self.flush()
         self._closed = True
         return result
+
+    def accept_restored(self, data):
+        self._data = data
+        self.timer.stop()
+        self.dirty = False
+        self.changed.emit(self.data)

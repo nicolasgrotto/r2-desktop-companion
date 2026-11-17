@@ -11,6 +11,7 @@ from ..core.config import FutureSchemaError
 from ..services.storage import ConfigStore
 
 log = logging.getLogger(__name__)
+MAX_BYTES = 8 * 1024 * 1024
 COLLECTION_LIMITS = {"tasks": (500, "tarefas"), "notes": (100, "notas")}
 
 
@@ -68,6 +69,7 @@ class ProductivityStore(QObject):
     saved = Signal()
     undo_changed = Signal()
     entry_restored = Signal(str, str)
+    restored = Signal()
 
     def __init__(self, directory: Path, read_only=False):
         super().__init__()
@@ -86,7 +88,7 @@ class ProductivityStore(QObject):
 
     @staticmethod
     def read(path):
-        if path.stat().st_size > 8 * 1024 * 1024:
+        if path.stat().st_size > MAX_BYTES:
             raise ValueError("Dados excedem 8 MiB.")
         return validate_document(json.loads(path.read_text(encoding="utf-8")))
 
@@ -107,13 +109,13 @@ class ProductivityStore(QObject):
                 self.notices.append("Dados de ferramentas inválidos; usando backup ou lista vazia.")
                 if path == self.path and not self.read_only:
                     try:
-                        ConfigStore.atomic_write(path.with_name("tools.corrupt.json"), path.read_bytes()[:8 * 1024 * 1024])
+                        ConfigStore.atomic_write(path.with_name("tools.corrupt.json"), path.read_bytes()[:MAX_BYTES])
                     except OSError:
                         pass
 
     def change(self, data):
         checked = validate_document(data)
-        if len(json.dumps(checked, ensure_ascii=False, indent=2).encode("utf-8")) > 8 * 1024 * 1024:
+        if len(json.dumps(checked, ensure_ascii=False, indent=2).encode("utf-8")) > MAX_BYTES:
             raise ValueError("Tarefas e notas atingiram o limite total de 8 MiB.")
         if checked != self.data:
             self.data = checked
@@ -198,7 +200,17 @@ class ProductivityStore(QObject):
             return False
 
     def close(self):
+        self.discard_undo()
+        self.flush()
+
+    def discard_undo(self):
         if self._deleted_entry is not None:
             self._deleted_entry = None
             self.undo_changed.emit()
-        self.flush()
+
+    def accept_restored(self, data):
+        self.data = data
+        self.timer.stop()
+        self.dirty = False
+        self.discard_undo()
+        self.restored.emit()

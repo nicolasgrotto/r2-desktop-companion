@@ -18,6 +18,7 @@ from .features.locations import validate_location
 from .features.system_monitor import SystemMonitor
 from .features.timer import Countdown, TimerState
 from .features.productivity import ProductivityStore
+from .features.data_transfer import DataTransfer
 from .features.minigames import open_game
 from .features.diagnostics import collect_diagnostics
 from .pet.animation import AnimationManager, load_clips
@@ -115,12 +116,13 @@ class Companion(QObject):
         self.monitor = SystemMonitor(SystemInfo())
         self.droid_controller = DroidController(self.droids, self.audio, self.window)
         self.productivity = ProductivityStore(store.directory, store.read_only)
+        self.data_transfer = DataTransfer(store, self.productivity, self.companion_state, self.restore_configuration)
         self.awareness = ContextReactions(self.controller, self.positioning, store, self.audio)
         self.updates = UpdateService(store.directory)
         self.tasks = LocalTasks()
         self.startup = StartupService(packaged_executable())
         self.tools = ToolsDialog(self.countdown, self.monitor, store.settings.timer_seconds, self.productivity,
-                                 project_timer=store.settings.timer_projection)
+                                 project_timer=store.settings.timer_projection, data_transfer=self.data_transfer)
         self._timer_projection_run = 0
         self.window.timer_projection_source = self.timer_projection_text
         self.countdown.changed.connect(self.update_timer_projection)
@@ -319,14 +321,22 @@ class Companion(QObject):
         from .ui.droids import AudioCenter
         self.show_droid_dialog("audio_dialog", AudioCenter)
 
-    def equip_droid(self, identifier, preferences=None):
+    def restore_configuration(self, settings, persist):
+        if not self.equip_droid(settings.active_droid, recovery=(settings, persist)):
+            raise ValueError(self.droid_error)
+        for dialog in (self.garage_dialog, self.audio_dialog):
+            if dialog is not None:
+                dialog.close()
+
+    def equip_droid(self, identifier, preferences=None, *, recovery=None):
         if self.closed or self._switching_droid or self.window.dragging:
             self.droid_error = "Aguarde o término do arrasto ou da troca em andamento."
             return False
         prepared = None
         try:
             prepared = self.droid_controller.prepare(identifier)
-            selected = select_droid(self.store.settings, prepared.profile, preferences)
+            base_settings = self.store.settings if recovery is None else recovery[0]
+            selected = select_droid(base_settings, prepared.profile, preferences)
         except (OSError, ValueError, KeyError, TypeError, RuntimeError) as error:
             if prepared:
                 prepared.movement.close()
@@ -354,15 +364,20 @@ class Companion(QObject):
             self.animation.clips = prepared.clips
             self.positioning.movement = prepared.movement
             self.apply_preferences(selected)
-            if position:
-                self.positioning.restore(position)
+            target_position = position if recovery is None else selected.window
+            if target_position:
+                self.positioning.restore(target_position)
             self.controller.enter(State.SLEEP if previous_inactive else State.IDLE)
             snapshot = self.positioning.snapshot()
             if snapshot:
                 selected.window = snapshot
-            self.store.apply(selected, notify=False)
-            if not self.store.flush():
-                raise OSError("Falha ao persistir a troca; o personagem anterior foi mantido.")
+            if recovery is None:
+                self.store.apply(selected, notify=False)
+                if not self.store.flush():
+                    raise OSError("Falha ao persistir a troca; o personagem anterior foi mantido.")
+            else:
+                recovery[1](selected)
+                self.store.accept_restored(selected)
             self.droids.profiles[identifier] = self.profile
             self.droids.active_id = identifier
             old_movement.close()
