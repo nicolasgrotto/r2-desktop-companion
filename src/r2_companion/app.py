@@ -18,6 +18,7 @@ from .features.launcher import launch
 from .features.locations import validate_location
 from .features.system_monitor import SystemMonitor
 from .features.timer import Countdown, TimerState
+from .features.focus import FocusSessionService
 from .features.productivity import ProductivityStore
 from .features.data_transfer import DataTransfer
 from .features.projections import ProjectionModel
@@ -118,6 +119,7 @@ class Companion(QObject):
         self.monitor = SystemMonitor(SystemInfo())
         self.droid_controller = DroidController(self.droids, self.audio, self.window)
         self.productivity = ProductivityStore(store.directory, store.read_only)
+        self.focus = FocusSessionService(self.countdown, self.productivity, self.companion_state)
         self.data_transfer = DataTransfer(store, self.productivity, self.companion_state, self.restore_configuration)
         self.awareness = ContextReactions(self.controller, self.positioning, store, self.audio)
         self.updates = UpdateService(store.directory)
@@ -924,6 +926,7 @@ class Companion(QObject):
         self.desktop_timer.stop()
         self.greeting_timer.stop()
         self.awareness.close()
+        self.focus.close()
         self.productivity.close()
         self.companion_state.close()
         self.controller.close()

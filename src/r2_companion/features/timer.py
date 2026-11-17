@@ -60,6 +60,19 @@ class Countdown(QObject):
                 self.timer.stop()
                 self.changed.emit()
 
+    def restore(self, duration: float, remaining: float, *, owner: object) -> int:
+        """Install a validated relative checkpoint without arming the timer."""
+        self.timer.stop()
+        self.run_id += 1
+        run_id = self.run_id
+        self.owner = owner
+        self.duration = duration
+        self.remaining_at_pause = remaining
+        self.deadline = 0.0
+        self.state = TimerState.PAUSED if remaining else TimerState.COMPLETED
+        self.changed.emit()
+        return run_id
+
     def resume(self) -> None:
         if self.state == TimerState.PAUSED:
             self.deadline = self.clock() + self.remaining_at_pause

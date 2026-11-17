@@ -110,7 +110,12 @@ def validate_document(raw):
                 raise ValueError("Fase de foco inválida.")
             duration = session.get("duration_seconds")
             _number(duration, 1, 86400)
-            _number(session.get("remaining_seconds"), 0, duration)
+            remaining = session.get("remaining_seconds")
+            _number(remaining, 0, duration)
+            if "state" in session:
+                state = session["state"]
+                if state not in ("running", "paused", "completed") or (state == "completed") != (remaining == 0):
+                    raise ValueError("Estado da sessão de foco inválido.")
             if session.setdefault("task_id", None) is not None:
                 _reference(session["task_id"])
         _encode(result)
@@ -194,7 +199,7 @@ class CompanionStateStore(QObject):
         if self.dirty and not self.read_only:
             self.timer.start()
 
-    def apply(self, data, *, immediate=False):
+    def apply(self, data, *, immediate=False, notify=True):
         if self._closed:
             raise RuntimeError("Armazenamento complementar encerrado.")
         checked = validate_document(data)
@@ -202,7 +207,8 @@ class CompanionStateStore(QObject):
             self._data = checked
             self.dirty = True
             self.timer.start()
-            self.changed.emit(self.data)
+            if notify:
+                self.changed.emit(self.data)
         return self.flush() if immediate else True
 
     def update(self, group, values, *, immediate=False):
@@ -211,6 +217,14 @@ class CompanionStateStore(QObject):
         data = self.data
         data[group].update(deepcopy(values))
         return self.apply(data, immediate=immediate)
+
+    def save_focus_checkpoint(self, checkpoint):
+        data = self.data
+        previous = data["focus"]["session"]
+        if checkpoint is not None and previous and previous["id"] == checkpoint["id"]:
+            checkpoint = previous | checkpoint
+        data["focus"]["session"] = checkpoint
+        return self.apply(data, immediate=True, notify=False)
 
     def save_theme_override(self, droid_id, provider_id):
         candidate = self.data
