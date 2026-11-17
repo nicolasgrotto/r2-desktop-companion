@@ -2,7 +2,7 @@ import math
 
 from PySide6.QtCore import QRectF, QSize, Qt, QTimer, Signal
 from PySide6.QtGui import QColor, QFont, QPainter, QPen
-from PySide6.QtWidgets import (QAbstractSpinBox, QCheckBox, QDialog, QHBoxLayout, QProgressBar,
+from PySide6.QtWidgets import (QAbstractSpinBox, QCheckBox, QDialog, QHBoxLayout, QPlainTextEdit, QProgressBar,
                               QPushButton, QScrollArea, QSpinBox, QTabWidget, QVBoxLayout, QWidget)
 
 from ..features.clock import local_clock
@@ -120,6 +120,13 @@ class ToolsDialog(QDialog):
         self.completion = label("Tudo pronto. Escolha uma ferramenta para começar.", "muted")
         self.completion.setWordWrap(True)
         layout.addWidget(self.completion)
+        self.projection_details = QPlainTextEdit()
+        self.projection_details.setReadOnly(True)
+        self.projection_details.setTabChangesFocus(True)
+        self.projection_details.setAccessibleName("Conteúdo da projeção")
+        self.projection_details.setMaximumHeight(135)
+        self.projection_details.hide()
+        layout.addWidget(self.projection_details)
         self.clock_timer = QTimer(self)
         self.clock_timer.setInterval(1000)
         self.clock_timer.timeout.connect(self.refresh_clock)
@@ -147,6 +154,13 @@ class ToolsDialog(QDialog):
         if self.tabs.currentWidget() is self.diagnostics_page:
             self.diagnostics_page.finish()
         return True
+
+    def show_projection_details(self, model):
+        details = self.projection_details
+        details.setVisible(model is not None)
+        text = model.accessible_text if model else ""
+        if details.toPlainText() != text:
+            details.setPlainText(text)
 
     @staticmethod
     def scroll(content):

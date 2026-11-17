@@ -4,6 +4,7 @@ from dataclasses import replace
 import json
 import logging
 from logging.handlers import RotatingFileHandler
+from math import ceil
 from pathlib import Path
 import sys
 import time
@@ -19,6 +20,7 @@ from .features.system_monitor import SystemMonitor
 from .features.timer import Countdown, TimerState
 from .features.productivity import ProductivityStore
 from .features.data_transfer import DataTransfer
+from .features.projections import ProjectionModel
 from .features.minigames import open_game
 from .features.diagnostics import collect_diagnostics
 from .pet.animation import AnimationManager, load_clips
@@ -124,7 +126,8 @@ class Companion(QObject):
         self.tools = ToolsDialog(self.countdown, self.monitor, store.settings.timer_seconds, self.productivity,
                                  project_timer=store.settings.timer_projection, data_transfer=self.data_transfer)
         self._timer_projection_run = 0
-        self.window.projection.providers["timer"] = self.timer_projection_text
+        self.window.projection.providers["timer"] = self.timer_projection_model
+        self.window.projection.changed.connect(self.tools.show_projection_details)
         self.countdown.changed.connect(self.update_timer_projection)
         self.tools.project_timer.toggled.connect(self.timer_projection_toggled)
         self.navigation_trace = NavigationTrace(store.directory)
@@ -440,10 +443,12 @@ class Companion(QObject):
         self.store.apply(settings, notify=False)
         self.update_timer_projection(force=True)
 
-    def timer_projection_text(self):
+    def timer_projection_model(self):
         if self.closed or self.countdown.state not in {TimerState.RUNNING, TimerState.PAUSED}:
             return None
-        return timer_text(self.countdown.remaining), self.countdown.state.value
+        remaining = self.countdown.remaining
+        progress = 1 - ceil(remaining) / self.countdown.duration
+        return ProjectionModel("timer", "Temporizador", (timer_text(remaining), self.countdown.state.value), progress)
 
     def update_timer_projection(self, force=False):
         new_run = self._timer_projection_run != self.countdown.run_id

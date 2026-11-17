@@ -19,25 +19,28 @@ from r2_companion.services.storage import ConfigStore
 def test_native_transparency_passes_hit_test_to_another_process(qapp, tmp_path):
     ready = tmp_path / "underlay.json"
     helper = Path(__file__).parent / "helpers/native_underlay.py"
-    child = subprocess.Popen([sys.executable, str(helper), str(ready)],
-                             creationflags=subprocess.CREATE_NO_WINDOW,
-                             stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-    companion = None
+    companion = child = None
     try:
+        user32 = ctypes.WinDLL("user32", use_last_error=True)
+        user32.GetForegroundWindow.restype = wintypes.HWND
+        user32.WindowFromPoint.argtypes = [wintypes.POINT]
+        user32.WindowFromPoint.restype = wintypes.HWND
+        startup_foreground = user32.GetForegroundWindow()
+        store = ConfigStore(tmp_path / "data")
+        assert store.acquire()
+        companion = Companion(qapp, store)
+        assert user32.GetForegroundWindow() == startup_foreground, "Mascot stole startup activation"
+
+        child = subprocess.Popen([sys.executable, str(helper), str(ready)],
+                                 creationflags=subprocess.CREATE_NO_WINDOW,
+                                 stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
         for _ in range(100):
             if ready.exists():
                 break
             QTest.qWait(50)
         assert ready.exists(), "Underlay did not start"
         underlay_handle = json.loads(ready.read_text())["hwnd"]
-        user32 = ctypes.WinDLL("user32", use_last_error=True)
-        user32.GetForegroundWindow.restype = wintypes.HWND
-        user32.WindowFromPoint.argtypes = [wintypes.POINT]
-        user32.WindowFromPoint.restype = wintypes.HWND
         before = user32.GetForegroundWindow()
-        store = ConfigStore(tmp_path / "data")
-        assert store.acquire()
-        companion = Companion(qapp, store)
         companion.positioning.place(QPointF(150, 150))
         QTest.qWait(250)
         pet_handle = int(companion.window.winId())
@@ -57,8 +60,22 @@ def test_native_transparency_passes_hit_test_to_another_process(qapp, tmp_path):
         companion.window.set_pass_through(False)
         QTest.qWait(100)
         assert user32.WindowFromPoint(wintypes.POINT(230, 190)) == int(companion.window.winId())
+
+        companion.positioning.place(QPointF(200, 300))
+        assert companion.window.show_projection("date")
+        QTest.qWait(100)
+        overlay = companion.window.projection_overlay
+        assert overlay.isVisible()
+        center, dpr = overlay.card.center(), overlay.devicePixelRatioF()
+        point = wintypes.POINT(round(center.x() * dpr), round(center.y() * dpr))
+        user32.ClientToScreen.argtypes = [wintypes.HWND, ctypes.POINTER(wintypes.POINT)]
+        user32.ClientToScreen.restype = wintypes.BOOL
+        assert user32.ClientToScreen(int(overlay.winId()), ctypes.byref(point))
+        assert user32.WindowFromPoint(point) == underlay_handle
+        assert user32.GetForegroundWindow() == before, "Projection stole foreground activation"
     finally:
         if companion is not None:
             companion.shutdown()
-        child.terminate()
-        child.wait(timeout=5)
+        if child is not None:
+            child.terminate()
+            child.wait(timeout=5)

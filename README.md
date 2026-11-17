@@ -80,7 +80,9 @@ Para isolar os dados dentro do projeto:
 - Configurações: tamanho, frequência, caminhada, inatividade, som, balões, prioridade da janela, aplicativos e locais favoritos.
 - Áudio: habilite Efeitos sonoros do R2 em Preferências; ajuste volume, modo silencioso, intervalo e categorias na aba Áudio. O som começa desativado e não modifica o volume do Windows.
 - Personalidade: Calmo, Curioso e Comunicativo ajustam pesos, frequência e vocalizações. O perfil não liga o som nem altera seu volume ou modo silencioso. As preferências continuam ajustáveis.
-- Aparência: detalhes em azul original, verde oceano, violeta ou âmbar. Projetar → Relógio ou Horário e data mantém uma projeção com conteúdo atualizado. A projeção flutua acima do personagem, ou abaixo quando faltar espaço, com feixes holográficos saindo do olho. Use Encerrar projeção para removê-la. A opção Permitir projeções holográficas nas Configurações controla sua disponibilidade.
+- Aparência: detalhes em azul original, verde oceano, violeta ou âmbar.
+- **Projetar → Relógio** ou **Horário e data** exibe um cartão com as cores do tema da interface. O cartão se encaixa na área útil do monitor e o feixe segue o emissor do droide. O texto completo aparece em **Conteúdo da projeção** na Central de ferramentas.
+- **Projetar timer** inclui o progresso da contagem. A projeção escolhida pelo menu tem prioridade sobre a projeção automática do timer. Desativar **Permitir projeções** suspende o cartão selecionado. Use **Encerrar projeção** para limpar a seleção.
 - Horário de silêncio: use horas locais em HH:mm; é possível atravessar a meia-noite. Início e fim iguais significam silêncio o dia inteiro. Durante o período, autonomia, sons e avisos ficam suspensos; ferramentas continuam disponíveis.
 - Para adicionar um aplicativo/pasta/arquivo, use a aba Aplicativos e atalhos. Selecione um destino e use Criar atalho para um nome adicional no menu Atalhos.
 - Somente `.exe` local sem argumentos; scripts e interpretadores conhecidos são bloqueados. Arquivos favoritos: TXT, PDF, PNG, JPG/JPEG, WAV e MP3. Pastas locais também são aceitas. Não importamos `.lnk`/`.url` nem comandos.

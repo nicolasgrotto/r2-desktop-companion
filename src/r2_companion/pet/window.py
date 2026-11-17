@@ -46,13 +46,14 @@ class PetWindow(QWidget):
         self.accent = "blue"
         self.original_frame = QPixmap()
         self.tinted_frames = {}
-        self.hologram = QPixmap()
+        self._ephemeral_projection = QPixmap()
         self.hologram_timer = QTimer(self)
         self.hologram_timer.setSingleShot(True)
         self.hologram_timer.timeout.connect(self.clear_ephemeral_projection)
         self.projection = ProjectionController(self)
         self.projection.changed.connect(self.present_projection)
         theme_manager().changed.connect(self.restyle_projection)
+        theme_manager().scale_changed.connect(self.restyle_projection)
         self.affection_timer = QTimer(self)
         self.affection_timer.setSingleShot(True)
         self.affection_timer.setInterval(650)
@@ -79,13 +80,17 @@ class PetWindow(QWidget):
         if self.projection_suspended:
             return
         self.clear_projection()
-        self.hologram = pixmap
+        self._ephemeral_projection = pixmap
         self.hologram_timer.start(1800)
         self.update()
 
     @property
     def projection_kind(self):
         return self.projection.selected
+
+    @property
+    def hologram(self):
+        return self.projection_overlay.picture if self.projection_kind else self._ephemeral_projection
 
     @property
     def projection_suspended(self):
@@ -103,7 +108,7 @@ class PetWindow(QWidget):
     def show_projection(self, kind, *, automatic=False):
         selected = self.projection.select(kind, automatic=automatic)
         if selected:
-            self.hologram_timer.stop()
+            self.clear_ephemeral_projection()
         return selected
 
     def refresh_projection(self):
@@ -114,8 +119,7 @@ class PetWindow(QWidget):
             self.present_projection(self.projection.model)
 
     def present_projection(self, model):
-        self.hologram = self.projection_overlay.render_card(model) if model else QPixmap()
-        self.projection_overlay.reposition()
+        self.projection_overlay.set_model(model)
         self.update()
 
     def clear_projection(self):
@@ -124,8 +128,8 @@ class PetWindow(QWidget):
 
     def clear_ephemeral_projection(self):
         self.hologram_timer.stop()
-        if self.projection_kind is None and not self.hologram.isNull():
-            self.hologram = QPixmap()
+        if not self._ephemeral_projection.isNull():
+            self._ephemeral_projection = QPixmap()
             self.update()
 
     def set_projection_suspended(self, suspended):

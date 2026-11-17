@@ -8,7 +8,20 @@ from .clock import local_clock
 @dataclass(frozen=True)
 class ProjectionModel:
     kind: str
+    title: str
     lines: tuple[str, ...]
+    progress: float | None = None
+
+    @property
+    def accessible_text(self):
+        return "\n".join((self.title, *self.lines))
+
+
+def clock_model(kind):
+    time, _, date = local_clock().partition("\n")
+    if kind == "clock":
+        return ProjectionModel(kind, "Relógio", (time,))
+    return ProjectionModel(kind, "Horário e data", (time, date))
 
 
 class ProjectionController(QObject):
@@ -17,8 +30,8 @@ class ProjectionController(QObject):
     def __init__(self, parent=None):
         super().__init__(parent)
         self.providers = {
-            "clock": lambda: (local_clock().partition("\n")[0],),
-            "date": lambda: tuple(local_clock().split("\n", 1)),
+            "clock": lambda: clock_model("clock"),
+            "date": lambda: clock_model("date"),
         }
         self.selected = None
         self.model = None
@@ -59,12 +72,14 @@ class ProjectionController(QObject):
     def refresh(self):
         if self.selected is None or self.suspended:
             return
-        lines = self.providers[self.selected]()
-        if lines is None:
+        model = self.providers[self.selected]()
+        if model is None:
             self.end()
             return
-        self._publish(ProjectionModel(self.selected, lines))
-        if self.selected is not None and not self.suspended and not self.timer.isActive():
+        self._publish(model)
+        if self.selected not in {"clock", "date", "timer"}:
+            self.timer.stop()
+        elif not self.suspended and not self.timer.isActive():
             self.timer.start()
 
     def _publish(self, model):
