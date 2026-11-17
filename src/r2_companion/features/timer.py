@@ -24,6 +24,7 @@ class Countdown(QObject):
         self.remaining_at_pause = 0.0
         self.deadline = 0.0
         self.run_id = 0
+        self.owner = None
         self.visible = False
         self.timer = QTimer(self)
         self.timer.setSingleShot(True)
@@ -35,20 +36,26 @@ class Countdown(QObject):
             return max(0.0, self.deadline - self.clock())
         return self.remaining_at_pause
 
-    def start(self, seconds: float) -> None:
+    def start(self, seconds: float, *, owner: object | None = None) -> int:
+        """Attach optional run metadata before notifying synchronous listeners."""
         if not math.isfinite(seconds) or not 1 <= seconds <= 86400:
             raise ValueError("Escolha uma duração entre 1 segundo e 24 horas.")
         self.run_id += 1
+        run_id = self.run_id
+        self.owner = owner
         self.duration = seconds
         self.deadline = self.clock() + seconds
         self.state = TimerState.RUNNING
         self.tick()
+        return run_id
 
     def pause(self) -> None:
         if self.state == TimerState.RUNNING:
-            self.tick()
-            if self.state == TimerState.RUNNING:
-                self.remaining_at_pause = self.remaining
+            remaining = self.remaining
+            if remaining <= 0:
+                self.complete()
+            else:
+                self.remaining_at_pause = remaining
                 self.state = TimerState.PAUSED
                 self.timer.stop()
                 self.changed.emit()
@@ -59,27 +66,35 @@ class Countdown(QObject):
             self.state = TimerState.RUNNING
             self.tick()
 
-    def restart(self) -> None:
-        self.start(self.duration)
+    def restart(self) -> int:
+        return self.start(self.duration, owner=self.owner)
 
     def stop(self) -> None:
         """Cancel the current run without emitting a completion notification."""
         self.timer.stop()
         self.state = TimerState.STOPPED
+        self.owner = None
         self.deadline = 0.0
         self.remaining_at_pause = 0.0
         self.changed.emit()
 
+    def complete(self) -> None:
+        if self.state not in (TimerState.RUNNING, TimerState.PAUSED):
+            return
+        self.state = TimerState.COMPLETED
+        self.remaining_at_pause = 0.0
+        self.timer.stop()
+        self.completed.emit(self.run_id)
+        self.changed.emit()
+
     def tick(self) -> None:
         if self.state == TimerState.RUNNING:
-            if self.remaining <= 0:
-                self.state = TimerState.COMPLETED
-                self.remaining_at_pause = 0
-                self.timer.stop()
-                self.completed.emit(self.run_id)
-            else:
-                delay = min(self.remaining, 0.5 if self.visible else 30)
-                self.timer.start(max(1, math.ceil(delay * 1000)))
+            remaining = self.remaining
+            if remaining <= 0:
+                self.complete()
+                return
+            delay = min(remaining, 0.5 if self.visible else 30)
+            self.timer.start(max(1, math.ceil(delay * 1000)))
         self.changed.emit()
 
     def set_visible(self, visible: bool) -> None:
@@ -87,5 +102,4 @@ class Countdown(QObject):
         self.tick()
 
     def close(self) -> None:
-        self.timer.stop()
-        self.state = TimerState.STOPPED
+        self.stop()

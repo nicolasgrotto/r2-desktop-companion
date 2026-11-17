@@ -66,6 +66,7 @@ def validate_document(raw):
 class ProductivityStore(QObject):
     warning = Signal(str)
     task_completed = Signal(str)
+    tasks_changed = Signal()
     saved = Signal()
     undo_changed = Signal()
     entry_restored = Signal(str, str)
@@ -118,9 +119,15 @@ class ProductivityStore(QObject):
         if len(json.dumps(checked, ensure_ascii=False, indent=2).encode("utf-8")) > MAX_BYTES:
             raise ValueError("Tarefas e notas atingiram o limite total de 8 MiB.")
         if checked != self.data:
+            tasks_changed = checked["tasks"] != self.data["tasks"]
             self.data = checked
             self.dirty = True
             self.timer.start()
+            if tasks_changed:
+                self.tasks_changed.emit()
+
+    def task(self, entry_id):
+        return next((item for item in self.data["tasks"] if item["id"] == entry_id), None)
 
     def add_task(self, text):
         entry = {"id": uuid4().hex, "text": text.strip(), "done": False}
@@ -213,4 +220,5 @@ class ProductivityStore(QObject):
         self.timer.stop()
         self.dirty = False
         self.discard_undo()
+        self.tasks_changed.emit()
         self.restored.emit()
