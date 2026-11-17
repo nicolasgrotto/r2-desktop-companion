@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from functools import cache
 import json
 from pathlib import Path
 import re
@@ -79,6 +80,7 @@ class DroidProfile:
 
     @classmethod
     def load(cls, path, assets):
+        checked_resource = cache(resource)
         if path.stat().st_size > 131072:
             raise ValueError("Perfil excede 128 KiB.")
         data = json.loads(path.read_text(encoding="utf-8"))
@@ -87,7 +89,7 @@ class DroidProfile:
         identifier = data.get("id", "")
         if not isinstance(identifier, str) or not re.fullmatch(r"[a-z][a-z0-9_]{0,63}", identifier):
             raise ValueError("ID de droide inválido.")
-        manifest = resource(assets, data["manifest"], ".json")
+        manifest = checked_resource(assets, data["manifest"], ".json")
         if manifest.stat().st_size > 1024 * 1024:
             raise ValueError("Manifesto muito grande.")
         animation_data = json.loads(manifest.read_text(encoding="utf-8"))
@@ -105,17 +107,17 @@ class DroidProfile:
         for spec in animation_data["clips"].values():
             for frame in spec["frames"]:
                 if renderer == "atlas":
-                    resource(assets, str(manifest.parent.relative_to(assets) / frame["image"]), ".png")
+                    checked_resource(assets, str(manifest.parent.relative_to(assets) / frame["image"]), ".png")
         if renderer == "layered":
             for component in ("body", "head"):
-                resource(assets, str(manifest.parent.relative_to(assets) / animation_data[component]), ".png")
+                checked_resource(assets, str(manifest.parent.relative_to(assets) / animation_data[component]), ".png")
         if renderer == "rigged":
             if not isinstance(animation_data.get("parts"), list):
                 raise ValueError("Peças articuladas inválidas.")
             for part in animation_data["parts"]:
                 if not isinstance(part, dict):
                     raise ValueError("Peça articulada inválida.")
-                resource(assets, str(manifest.parent.relative_to(assets) / part["image"]), ".png")
+                checked_resource(assets, str(manifest.parent.relative_to(assets) / part["image"]), ".png")
         if data["personality"] not in PROFILES.keys() | {"custom"}:
             raise ValueError("Personalidade desconhecida.")
         from .movement import MOVEMENT_CONTROLLERS
@@ -126,8 +128,8 @@ class DroidProfile:
             raise ValueError("Canvas inválido.")
         canvas = tuple(int(number(n, 32, 256)) for n in canvas)
         audio = data["audio"]
-        voice = resource(assets, audio["voice"] + "/soft.wav", ".wav").parent
-        sounds = resource(assets, audio["sounds"] + "/notifications/timer.wav", ".wav").parent.parent
+        voice = checked_resource(assets, audio["voice"] + "/soft.wav", ".wav").parent
+        sounds = checked_resource(assets, audio["sounds"] + "/notifications/timer.wav", ".wav").parent.parent
         phrases = audio.get("phrases", PHRASES)
         if not isinstance(phrases, dict) or set(phrases) != set(PHRASES):
             raise ValueError("Mapeamento vocal incompleto.")
@@ -138,7 +140,7 @@ class DroidProfile:
                 if not isinstance(phrase, (list, tuple)) or not 1 <= len(phrase) <= 6:
                     raise ValueError("Frase vocal inválida.")
                 for syllable in phrase:
-                    resource(voice, syllable + ".wav", ".wav")
+                    checked_resource(voice, syllable + ".wav", ".wav")
         customization = data.get("customization", {})
         if not isinstance(customization, dict) or len(customization) > 8:
             raise ValueError("Personalizações inválidas.")

@@ -68,16 +68,34 @@ class ThemeManager(QObject):
 
     def style(self, widget, template):
         self.widgets[widget] = template
-        widget.setStyleSheet(self.render(template, theme_for(widget)))
+        rendered = self.render(template, theme_for(widget))
+        if rendered != widget.styleSheet():
+            widget.setStyleSheet(rendered)
 
     def refresh(self, *, theme_changed=True, root=None):
-        refreshed = set()
+        from ..ui.theme import refresh_icons
+
+        rendered = {}
+        styled_widgets = []
         for widget, template in list(self.widgets.items()):
             try:
                 if root is not None and widget is not root and not root.isAncestorOf(widget):
                     continue
-                widget.setStyleSheet(self.render(template, theme_for(widget)))
-                from ..ui.theme import refresh_icons
+                theme = theme_for(widget)
+                key = (template, id(theme))
+                if key not in rendered:
+                    rendered[key] = self.render(template, theme)
+                if rendered[key] != widget.styleSheet():
+                    widget.setStyleSheet(rendered[key])
+                styled_widgets.append(widget)
+            except RuntimeError:
+                self.widgets.pop(widget, None)
+
+        refreshed = set()
+        for widget in styled_widgets:
+            if widget in refreshed:
+                continue
+            try:
                 for child in (widget, *widget.findChildren(QWidget)):
                     if child not in refreshed:
                         refreshed.add(child)
@@ -109,13 +127,15 @@ class ThemeManager(QObject):
         self.active = theme
         app = QApplication.instance()
         if app:
-            palette = app.palette()
+            current = app.palette()
+            palette = QPalette(current)
             for role, key in ((QPalette.ColorRole.Window, "background"), (QPalette.ColorRole.WindowText, "text"),
                               (QPalette.ColorRole.Base, "panel"), (QPalette.ColorRole.Text, "text"),
                               (QPalette.ColorRole.Button, "panel"), (QPalette.ColorRole.ButtonText, "text"),
                               (QPalette.ColorRole.Highlight, "primary"), (QPalette.ColorRole.HighlightedText, "button_text")):
                 palette.setColor(role, QColor(theme.colors[key]))
-            app.setPalette(palette)
+            if palette != current:
+                app.setPalette(palette)
         self.refresh()
 
 

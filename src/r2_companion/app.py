@@ -294,9 +294,10 @@ class Companion(QObject):
         if not self._switching_droid:
             self.controller.update_inactivity(0)
         self.session_events.bind(int(self.window.winId()))
-        self.refresh_menu()
-        if not self.initializing:
-            self.check_desktop()
+        if not self._switching_droid:
+            self.refresh_menu()
+            if not self.initializing:
+                self.check_desktop()
 
     def droid_diagnostics(self):
         result = collect_diagnostics(self.awareness.info, self.audio)
@@ -747,6 +748,7 @@ class Companion(QObject):
         self.tray.setContextMenu(self.menu)
         self.presence.update_controls()
         if old_menu is not None:
+            theme_manager().unregister_tree(old_menu)
             old_menu.deleteLater()
 
     def menu_opened(self):
