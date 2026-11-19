@@ -66,6 +66,7 @@ def validate_document(raw):
 class ProductivityStore(QObject):
     warning = Signal(str)
     task_completed = Signal(str)
+    task_reopened = Signal(str)
     tasks_changed = Signal()
     saved = Signal()
     undo_changed = Signal()
@@ -137,11 +138,12 @@ class ProductivityStore(QObject):
     def set_done(self, entry_id, done):
         data = deepcopy(self.data)
         entry = next(item for item in data["tasks"] if item["id"] == entry_id)
-        completed = done and not entry["done"]
+        changed = done != entry["done"]
         entry["done"] = done
         self.change(data)
-        if completed:
-            self.task_completed.emit(entry_id)
+        if changed:
+            signal = self.task_completed if done else self.task_reopened
+            signal.emit(entry_id)
 
     def remove(self, key, entry_id):
         if key not in COLLECTION_LIMITS:

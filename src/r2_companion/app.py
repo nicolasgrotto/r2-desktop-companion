@@ -29,7 +29,6 @@ from .pet.behavior import BehaviorManager
 from .pet.controller import PetController
 from .pet.positioning import Positioner, detect_corner, fingerprint
 from .pet.awareness import ContextReactions, fullscreen_policy
-from .pet.reactions import ReactionDirector
 from .pet.personality import quiet_now
 from .pet.state import State
 from .pet.window import PetWindow
@@ -110,7 +109,7 @@ class Companion(QObject):
         self.positioning.movement = create_movement(self.profile, self.window)
         self.animation = AnimationManager(clips)
         self.behavior = BehaviorManager()
-        self.controller = PetController(self.animation, self.positioning, self.behavior)
+        self.controller = PetController(self.animation, self.positioning, self.behavior, audio=self.audio)
         self.bubble = Bubble()
         self.radial = RadialMenu()
         self.apps_panel = LaunchpadDialog("apps")
@@ -140,7 +139,6 @@ class Companion(QObject):
         self.radial.begin_attempt = self.navigation_trace.begin
         self.radial.trigger_widget = self.window
         self._pet_press_pending = False
-        self._pending_confused_reaction = False
         self._destination_attempts = {}
         self.window.interaction_event.connect(self.trace_pet_input)
         self.qt_app.installEventFilter(self)
@@ -172,7 +170,7 @@ class Companion(QObject):
         self.positioning.screens_changed.connect(self.display_changed)
         self.animation.frame_changed.connect(self.window.set_frame)
         self.controller.state_changed.connect(self.state_changed)
-        self.reactions = ReactionDirector(self.controller, self.audio)
+        self.reactions = self.controller.reactions
         self.window.petted.connect(lambda: self.reactions.start("affection"))
         self.tools.minigames_page.game_requested.connect(self.launch_minigame)
         self.tools.diagnostics_page.provider = self.droid_diagnostics
@@ -186,6 +184,8 @@ class Companion(QObject):
         self.companion_state.warning.connect(self.warning)
         self.productivity.warning.connect(self.tools.completion.setText)
         self.productivity.task_completed.connect(self.task_completed)
+        self.productivity.task_reopened.connect(self.reactions.forget_task_completion)
+        self.productivity.restored.connect(self.reactions.tasks_restored)
         self.tray.activated.connect(self.tray_activated)
         self.idle_timer = QTimer(self)
         self.idle_timer.setInterval(5000)
@@ -563,18 +563,14 @@ class Companion(QObject):
             self.radial.record("dismiss_requested", reason="pet_toggle")
             self.radial.hide()
             return
-        if self.awareness.click():
-            self._pending_confused_reaction = True
-            self.radial.record("reaction_queued", reason="repeated_pet_clicks")
+        repeated = self.awareness.click()
         self.interact()
         self.radial.popup_near(self.window, self.controller.paused, new_attempt=False)
+        if repeated and self.controller.react(State.CONFUSED):
+            self.radial.record("reaction_queued", reason="repeated_pet_clicks")
 
     def radial_dismissed(self):
         self.controller.set_gate("radial", False)
-        if self._pending_confused_reaction and not self.closed:
-            if self.controller.react(State.CONFUSED):
-                self._pending_confused_reaction = False
-                self.radial.record("reaction_started", reaction="CONFUSED")
 
     def double_click(self):
         if self.controller.state in {State.SLEEP, State.WAKE}:
@@ -643,9 +639,7 @@ class Companion(QObject):
         self.radial.hide()
         self.controller.set_gate("menu", False)
         if not self.controller.gates:
-            self.controller.enter(State.IDLE)
-            if self.controller.request(State.WALK):
-                self.behavior.accepted(State.WALK)
+            self.controller.react(State.WALK, source="explore")
 
     def drag_started(self):
         self.radial.hide()
@@ -843,7 +837,7 @@ class Companion(QObject):
             self.show_tools()
 
     def task_completed(self, entry_id):
-        self.reactions.start("task")
+        self.reactions.start("task", key=entry_id)
 
     def launch_minigame(self, game_id):
         try:
@@ -952,7 +946,7 @@ class Companion(QObject):
         self.notify_countdown(f"focus-{session.run_id}", message)
 
     def notify_countdown(self, event_id, message):
-        if self.closed:
+        if self.closed or self.reactions.already_notified(event_id):
             return
         if not self.fullscreen_active:
             self.tray.notify(message)

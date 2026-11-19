@@ -1,3 +1,4 @@
+from collections import deque
 from collections.abc import Callable
 import random
 import time
@@ -21,7 +22,8 @@ class BehaviorManager(QObject):
         self.next_walk_at = self.clock() + self.rng.uniform(15, 25)
         self.settings = BehaviorSettings()
         self.history: dict[State, float] = {}
-        self.last = State.IDLE
+        self.recent = deque(maxlen=8)
+        self.supports = lambda state: True
         self.eligible = False
         self.presence_initiative = True
         self.presence_movement = True
@@ -34,20 +36,25 @@ class BehaviorManager(QObject):
         if self.settings.frequency == "off" or not self.presence_initiative:
             return State.IDLE
         now = self.clock()
-        if self.settings.movement and self.presence_movement and now >= self.next_walk_at:
-            return State.WALK
+        walk_due = self.settings.movement and self.presence_movement and now >= self.next_walk_at and self.supports(State.WALK)
         weights = {State(key): value for key, value in self.settings.weights.items()}
-        options = [state for state in weights if state != State.WALK
+        options = [state for state in weights if state != State.WALK and weights[state] > 0 and self.supports(state)
                    and (state in {State.IDLE, State.BLINK} or now - self.last_reaction >= self.settings.reaction_interval)
                    and now - self.history.get(state, -1000000) >= COOLDOWNS.get(state, 0)]
-        if not options or not any(weights[state] for state in options):
+        if walk_due and (not options or not self.recent or self.recent[-1] != State.WALK):
+            return State.WALK
+        if not options:
             return State.IDLE
+        alternatives = [state for state in options if state not in self.recent]
+        if not alternatives and self.recent:
+            alternatives = [state for state in options if state != self.recent[-1]]
+        options = alternatives or options
         return self.rng.choices(options, weights=[weights[state] for state in options], k=1)[0]
 
     def accepted(self, state: State) -> None:
+        self.recent.append(state)
         if state != State.IDLE:
             self.history[state] = self.clock()
-            self.last = state
             if state not in {State.BLINK, State.WALK}:
                 self.last_reaction = self.clock()
             if state == State.WALK:
@@ -65,7 +72,7 @@ class BehaviorManager(QObject):
             delay = self.rng.uniform(10 if quiet else 8, 20) * factor
             if quiet:
                 self.defer_walk(delay)
-            if self.settings.movement and self.presence_movement:
+            if self.settings.movement and self.presence_movement and self.supports(State.WALK):
                 delay = min(delay, max(0.1, self.next_walk_at - self.clock()))
             self.timer.start(max(100, round(delay * 1000)))
 

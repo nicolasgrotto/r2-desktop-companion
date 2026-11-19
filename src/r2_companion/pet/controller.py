@@ -1,9 +1,9 @@
-from collections import deque
 import time
 
 from PySide6.QtCore import QObject, Signal
 
 from .behavior import BehaviorManager
+from .reactions import Priority, ReactionDirector
 from .state import State, can_request
 
 
@@ -13,7 +13,7 @@ class PetController(QObject):
     woke = Signal(float)
     context_changed = Signal()
 
-    def __init__(self, animation, positioning, behavior: BehaviorManager, clock=time.monotonic):
+    def __init__(self, animation, positioning, behavior: BehaviorManager, clock=time.monotonic, *, audio=None):
         super().__init__()
         self.animation = animation
         self.positioning = positioning
@@ -22,9 +22,7 @@ class PetController(QObject):
         self.state = State.IDLE
         self.token = 0
         self.gates: set[str] = set()
-        self.pending_click = False
-        self.pending_notifications = deque(maxlen=5)
-        self.seen_notifications = deque(maxlen=100)
+        self.reactions = ReactionDirector(self, audio)
         self.inactive = False
         self.closed = False
         self.paused = False
@@ -37,6 +35,15 @@ class PetController(QObject):
         self.animation.clip_finished.connect(self.finished)
         self.positioning.movement_finished.connect(self.finished)
         self.behavior.action_requested.connect(self.autonomous)
+        self.behavior.supports = self.supports
+
+    @property
+    def pending_click(self):
+        return any(item.action == State.INTERACT for item in self.reactions.pending)
+
+    @property
+    def pending_notifications(self):
+        return [item.message for item in self.reactions.pending if item.message is not None]
 
     @property
     def requires_wake_click(self):
@@ -49,7 +56,6 @@ class PetController(QObject):
         self.inactive = False
         self.sleep_started = None
         self.sleep_entered = None
-        self.pending_click = False
         self.behavior.defer_walk()
         self.action_spontaneous = False
         self.enter(State.WAKE)
@@ -85,7 +91,11 @@ class PetController(QObject):
         if not self.gates.intersection({"hidden", "session"}):
             self.animation.play(state, self.token)
         self.behavior.schedule(state == State.IDLE and not self.gates and not self.paused)
+        token = self.token
         self.state_changed.emit(state)
+        if token != self.token or self.closed:
+            return
+        self.reactions.changed(state)
         if previous == State.SLEEP and state == State.IDLE and not self.inactive:
             duration = 0 if self.sleep_started is None else self.clock() - self.sleep_started
             self.sleep_started = None
@@ -110,6 +120,11 @@ class PetController(QObject):
         self.presence = decision
         self.behavior.presence_initiative = decision.initiative
         self.behavior.presence_movement = decision.autonomous_movement
+        if decision.mode == "presentation" and (self.reactions.active or self.reactions.pending):
+            was_active = self.reactions.active is not None
+            self.reactions.close()
+            if was_active:
+                self.enter(State.IDLE)
         if (self.state == State.WALK and self.action_spontaneous
                 and not decision.autonomous_movement):
             self.enter(State.IDLE)
@@ -120,19 +135,15 @@ class PetController(QObject):
         if self.paused:
             return
         if state == State.IDLE:
+            if self.state == State.IDLE:
+                self.behavior.accepted(state)
             self.behavior.schedule(self.state == State.IDLE and not self.gates and not self.paused)
-        elif self.request(state, spontaneous=True):
-            self.behavior.accepted(state)
+        else:
+            self.reactions.offer("autonomy", state, Priority.SPONTANEOUS)
 
-    def react(self, state: State, *, spontaneous=False) -> bool:
-        if self.presence and not (self.presence.initiative if spontaneous else self.presence.explicit_reactions):
-            return False
-        if self.closed or self.gates or self.inactive or self.state == State.SLEEP or not self.supports(state):
-            return False
-        self.behavior.defer_walk()
-        self.action_spontaneous = spontaneous
-        self.enter(state)
-        return True
+    def react(self, state: State, *, spontaneous=False, source=None, destination=None) -> bool:
+        priority = Priority.CONTEXT if spontaneous else Priority.EXPLICIT
+        return self.reactions.offer(source or state.value, state, priority, destination=destination)
 
     def request(self, state: State, *, spontaneous=False) -> bool:
         if self.presence and (not (self.presence.initiative if spontaneous else self.presence.explicit_reactions)
@@ -154,30 +165,13 @@ class PetController(QObject):
         self.last_click = now
         self.behavior.defer_walk()
         self.inactive = False
-        if self.state in {State.INTERACT, State.HAPPY}:
-            self.pending_click = True
-        else:
-            self.request(State.INTERACT)
+        self.reactions.offer("click", State.INTERACT, Priority.EXPLICIT)
 
     def notify(self, event_id: str, message: str):
-        if event_id in self.seen_notifications or self.closed:
-            return
-        self.seen_notifications.append(event_id)
-        self.pending_notifications.append(message)
-        self.drain()
+        return self.reactions.offer("notification", State.NOTIFICATION, Priority.COMPLETION, key=event_id, message=message)
 
     def drain(self):
-        if self.closed or self.gates or self.requires_wake_click:
-            return
-        if self.pending_click and self.state in {State.IDLE, State.SLEEP}:
-            self.pending_click = False
-            self.enter(State.INTERACT)
-        elif (self.pending_notifications and (self.presence is None or self.presence.notifications)
-              and can_request(self.state, State.NOTIFICATION)):
-            message = self.pending_notifications.popleft()
-            self.action_spontaneous = False
-            self.enter(State.NOTIFICATION)
-            self.notification_presented.emit(message)
+        self.reactions.drain()
 
     def finished(self, token: int):
         if self.closed or token != self.token or self.gates - {"radial"}:
@@ -187,6 +181,8 @@ class PetController(QObject):
         elif self.state == State.INTERACT:
             self.enter(State.HAPPY)
         elif self.state not in {State.IDLE, State.SLEEP}:
+            if self.reactions.advance_scene():
+                return
             self.enter(State.SLEEP if self.inactive else State.IDLE)
             self.drain()
 
@@ -195,12 +191,12 @@ class PetController(QObject):
             return
         if active:
             self.gates.add(name)
+            self.reactions.gate_entered(name)
             self.behavior.defer_walk()
             if name == "radial" and self.state in {State.INTERACT, State.HAPPY}:
                 self.behavior.schedule(False)
                 self.context_changed.emit()
                 return
-            self.pending_click = False
             self.enter(State.SLEEP if self.state == State.SLEEP else State.IDLE)
             self.behavior.schedule(False)
             if name in {"hidden", "session"}:
@@ -211,15 +207,20 @@ class PetController(QObject):
                 if name != "radial" or self.state not in {State.INTERACT, State.HAPPY}:
                     self.enter(State.SLEEP if self.inactive else State.IDLE)
                 self.behavior.schedule(self.state == State.IDLE and not self.paused, quiet=True)
-                self.drain()
         self.context_changed.emit()
+        if not active and not self.gates:
+            self.drain()
 
     def set_paused(self, paused: bool):
         self.paused = paused
-        if not self.gates:
+        if paused:
+            self.reactions.pause_autonomy()
+        active = self.reactions.active
+        if not self.gates and (active is None or active.priority <= Priority.CONTEXT):
             self.enter(State.IDLE)
         self.behavior.schedule(not paused and not self.gates and self.state == State.IDLE, quiet=True)
         self.context_changed.emit()
+        self.drain()
 
     def update_inactivity(self, seconds: float):
         self.inactive = (seconds >= self.behavior.settings.sleep_seconds
@@ -238,4 +239,4 @@ class PetController(QObject):
         self.behavior.close()
         self.animation.stop()
         self.positioning.stop()
-        self.pending_notifications.clear()
+        self.reactions.close()

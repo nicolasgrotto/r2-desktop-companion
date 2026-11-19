@@ -38,6 +38,7 @@ def test_keyboard_task_to_focus_to_break_and_new_cycle(pet, qapp, clock):
     tools = pet.tools
     tools.tasks_page.render(selected=task_id)
     pet.show_tools_page("tasks")
+    assert QTest.qWaitForWindowActive(tools)
     tools.tasks_page.list.setFocus()
     tab_to(qapp, tools, tools.tasks_page.focus_button)
     QTest.keyClick(qapp.focusWidget(), Qt.Key.Key_Space)

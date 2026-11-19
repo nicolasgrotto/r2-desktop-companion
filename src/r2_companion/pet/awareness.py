@@ -6,6 +6,7 @@ from PySide6.QtGui import QCursor
 
 from ..services.system_info import SystemInfo
 from .positioning import fingerprint, from_normalized
+from .reactions import Priority
 from .state import State
 
 
@@ -57,11 +58,13 @@ class ContextReactions(QObject):
     def available(self):
         return (not self.controller.closed and not self.controller.gates and not self.controller.paused
                 and (self.controller.presence is None or self.controller.presence.initiative)
-                and not self.controller.inactive and self.controller.state == State.IDLE)
+                and not self.controller.inactive and (self.controller.state == State.IDLE
+                    or self.controller.reactions.active is not None
+                    and self.controller.reactions.active.priority == Priority.SPONTANEOUS))
 
     def limited_reaction(self, key, state, cooldown=300):
         if self.available() and self.clock() - self.history.get(key, -1000000) >= cooldown:
-            if self.controller.react(state, spontaneous=True):
+            if self.controller.react(state, spontaneous=True, source=key):
                 self.history[key] = self.clock()
                 return True
         return False
@@ -105,7 +108,8 @@ class ContextReactions(QObject):
                 return
         if settings.cursor_attention and now - self.last_attention >= 25 and distance < 450:
             self.last_attention = now
-            self.controller.react(State.CURIOUS if distance < 160 else State.LOOK_LEFT if delta.x() < 0 else State.LOOK_RIGHT, spontaneous=True)
+            state = State.CURIOUS if distance < 160 else State.LOOK_LEFT if delta.x() < 0 else State.LOOK_RIGHT
+            self.controller.react(state, spontaneous=True, source="cursor")
             return
         movement = settings.movement and (self.controller.presence is None or self.controller.presence.autonomous_movement)
         if (settings.cursor_attention and movement and now - self.cursor_since >= 15
@@ -114,9 +118,7 @@ class ContextReactions(QObject):
                 and self.positioning.screen.availableGeometry().contains(cursor.toPoint())):
             self.last_approach = now
             destination = QPointF(window.pos()) + delta * (min(80, distance - 180) / distance)
-            self.controller.next_destination = destination
-            if self.controller.request(State.WALK, spontaneous=True):
-                self.controller.behavior.accepted(State.WALK)
+            self.controller.react(State.WALK, spontaneous=True, source="approach", destination=destination)
             return
         home = self.store.settings.manual_position
         if (movement and home is not None and now - self.last_home >= 300
@@ -126,9 +128,7 @@ class ContextReactions(QObject):
                 QRectF(self.positioning.screen.availableGeometry()), QSizeF(window.size()))
             if (destination - QPointF(window.pos())).manhattanLength() < 5:
                 return
-            self.controller.next_destination = destination
-            if self.controller.request(State.WALK, spontaneous=True):
-                self.controller.behavior.accepted(State.WALK)
+            self.controller.react(State.WALK, spontaneous=True, source="home", destination=destination)
 
     def avoid_window(self, obstacle):
         settings = self.store.settings.behavior
@@ -140,11 +140,7 @@ class ContextReactions(QObject):
                                          QRectF(self.positioning.screen.availableGeometry()))
         if destination is None:
             return False
-        self.controller.next_destination = destination
-        if self.controller.request(State.WALK, spontaneous=True):
-            self.controller.behavior.accepted(State.WALK)
-            return True
-        return False
+        return self.controller.react(State.WALK, spontaneous=True, source="obstacle", destination=destination)
 
     def sample_system(self):
         if (not self.store.settings.behavior.system_reactions
