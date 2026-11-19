@@ -10,6 +10,9 @@ estão descritos em `src/r2_companion/assets/LICENSES.md` (no repositório).
 | PySide6-Addons / Qt Multimedia | 6.10.2 | Licenças Qt/PySide6 e dependências multimídia incluídas pela distribuição |
 | Shiboken6 | 6.10.2 | Licenças da distribuição Shiboken |
 | psutil | 7.2.2 | BSD-3-Clause, licença da distribuição psutil |
+| PyWinRT runtime | 4.2.0 | Licença incluída na distribuição winrt-runtime |
+| Projeções PyWinRT Foundation, Foundation.Collections, Media.Control e Storage.Streams | 4!10.0.28000.2957 | Licenças incluídas nas quatro distribuições |
+| typing_extensions | 4.16.0 | Licença incluída na distribuição typing_extensions |
 | PyInstaller | 6.19.0 | GPL com exceção de distribuição do bootloader; licença do empacotador |
 
 O spec de empacotamento copia os textos de licença presentes nas distribuições

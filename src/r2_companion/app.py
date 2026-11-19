@@ -33,6 +33,7 @@ from .pet.personality import quiet_now
 from .pet.state import State
 from .pet.window import PetWindow
 from .services.audio import AudioService
+from .services.media import MediaService
 from .services.storage import ConfigStore
 from .services.companion_state import CompanionStateStore
 from .pet.presence_runtime import PresenceRuntime
@@ -102,6 +103,9 @@ class Companion(QObject):
             raise ValueError("Nenhum personagem possui recursos válidos para iniciar.")
         store.apply(select_droid(store.settings, self.profile), notify=False)
         self.companion_state = CompanionStateStore(store)
+        self.media = MediaService(self)
+        self.companion_state.changed.connect(self.apply_media_preference)
+        self.apply_media_preference(self.companion_state.data)
         self.apply_interface_preferences(self.companion_state.data)
         self.companion_state.changed.connect(self.apply_interface_preferences)
         self.window = PetWindow()
@@ -965,11 +969,16 @@ class Companion(QObject):
             self.tray.notify(message)
         self.controller.notify(event_id, message)
 
+    def apply_media_preference(self, data):
+        if not self.closed:
+            self.media.set_enabled(data["media"]["enabled"])
+
     def shutdown(self):
         if self.closed:
             return
         self.positioning.settle()
         self.closed = True
+        self.media.close()
         self.radial.record("shutdown_started")
         self.reactions.close()
         for dialog in (self.garage_dialog, self.audio_dialog):
@@ -1182,6 +1191,7 @@ def main(argv=None) -> int:
             report["version"] = __version__
             report["navigation"] = navigation_checks
             report["active_droid"] = companion.profile.id
+            report["media_status"] = companion.media.view.status
             effects = companion.audio.all_effects()
             report["audio_effects"] = len(effects)
             report["audio_loaded_effects"] = sum(effect.isLoaded() for effect in effects)

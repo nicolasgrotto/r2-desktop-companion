@@ -186,6 +186,22 @@ def companion(qapp, native_desktop, tmp_path, monkeypatch):
     qapp.processEvents()
 
 
+def test_media_preference_owns_native_service_lifetime(companion, qapp):
+    assert companion.media.view.status == "disabled"
+    companion.companion_state.update("media", {"enabled": True})
+    for _ in range(250):
+        if companion.media.view.status != "connecting":
+            break
+        QTest.qWait(20)
+    assert companion.media.view.status == "ready"
+    companion.companion_state.update("media", {"enabled": False})
+    assert companion.media.view.status == "disabled"
+    companion.companion_state.update("media", {"enabled": True})
+    companion.shutdown()
+    qapp.processEvents()
+    assert companion.media.view.status == "disabled"
+
+
 def test_application_window_and_shutdown(companion):
     assert companion.window.isVisible()
     assert companion.window.testAttribute(Qt.WidgetAttribute.WA_TranslucentBackground)

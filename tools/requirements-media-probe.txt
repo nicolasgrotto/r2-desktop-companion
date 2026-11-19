@@ -1,4 +1,4 @@
-# Investigation only. Do not add these bindings to the application environment.
+# Pinned environment for the standalone probe. Application installs use the root requirements.
 typing_extensions==4.16.0
 winrt-runtime==4.2.0
 winrt-Windows.Foundation==4!10.0.28000.2957

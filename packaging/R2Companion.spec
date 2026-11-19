@@ -2,12 +2,20 @@ from importlib.metadata import distribution
 from pathlib import Path
 import sys
 
+from PyInstaller.utils.hooks import copy_metadata
+
 root = Path(SPECPATH).parent
 assets = root / "src/r2_companion/assets"
 data = [(str(assets), "r2_companion/assets"),
         (str(root / "scripts/update-r2-companion.ps1"), "scripts"),
         (str(root / "packaging/docs/THIRD_PARTY_NOTICES.md"), ".")]
-for name in ("PySide6-Essentials", "PySide6-Addons", "shiboken6", "psutil", "pyinstaller"):
+media_packages = ("typing_extensions", "winrt-runtime", "winrt-Windows.Foundation",
+                  "winrt-Windows.Foundation.Collections", "winrt-Windows.Media.Control",
+                  "winrt-Windows.Storage.Streams")
+# The winrt-runtime hook also collects the projection modules and their native tables.
+for name in media_packages:
+    data += copy_metadata(name)
+for name in ("PySide6-Essentials", "PySide6-Addons", "shiboken6", "psutil", "pyinstaller", *media_packages):
     dist = distribution(name)
     for entry in dist.files or []:
         if "licenses" in str(entry).lower() or Path(str(entry)).name.lower().startswith(("license", "copying", "notice")):
