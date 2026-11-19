@@ -67,7 +67,7 @@ class PetController(QObject):
     def supports(self, state):
         return not hasattr(self.animation, "clips") or state in self.animation.clips
 
-    def enter(self, state: State):
+    def enter(self, state: State, *, clip=None):
         if self.closed:
             return
         if hasattr(self.animation, "clips") and state not in self.animation.clips:
@@ -89,7 +89,10 @@ class PetController(QObject):
         self.positioning.stop()
         self.state = state
         if not self.gates.intersection({"hidden", "session"}):
-            self.animation.play(state, self.token)
+            if clip is None:
+                self.animation.play(state, self.token)
+            else:
+                self.animation.play(state, self.token, clip=clip)
         self.behavior.schedule(state == State.IDLE and not self.gates and not self.paused)
         token = self.token
         self.state_changed.emit(state)

@@ -170,8 +170,9 @@ def test_shutdown_stops_new_services_and_specific_task_sound(pet, monkeypatch):
     calls = []
     monkeypatch.setattr(pet.audio, "vocalize", lambda emotion, category="reactions": calls.append((emotion, category)))
     pet.task_completed("one")
-    assert pet.controller.state == State.LOOK_AROUND and not calls
+    assert pet.controller.state == State.HAPPY and calls == [("celebrate", "reactions")]
     pet.controller.finished(pet.controller.token)
+    assert pet.controller.state == State.GREETING
     assert calls == [("celebrate", "reactions")]
     pet.shutdown()
     assert not pet.awareness.timer.isActive()

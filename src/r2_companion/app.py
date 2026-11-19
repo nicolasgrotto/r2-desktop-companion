@@ -171,6 +171,8 @@ class Companion(QObject):
         self.animation.frame_changed.connect(self.window.set_frame)
         self.controller.state_changed.connect(self.state_changed)
         self.reactions = self.controller.reactions
+        self.reactions.profile_id = self.profile.id
+        self._focus_scene_run = None
         self.window.petted.connect(lambda: self.reactions.start("affection"))
         self.tools.minigames_page.game_requested.connect(self.launch_minigame)
         self.tools.diagnostics_page.provider = self.droid_diagnostics
@@ -196,6 +198,7 @@ class Companion(QObject):
         self.qt_app.aboutToQuit.connect(self.shutdown)
         self.presence = PresenceRuntime(self)
         self.focus.changed.connect(self.presence.update_focus)
+        self.focus.changed.connect(self.react_to_focus)
         self.focus.changed.connect(self.update_focus_projection)
         self.focus.completed.connect(self.focus_completed)
         self.tools.focus_page.projection_requested.connect(self.project_focus)
@@ -380,6 +383,7 @@ class Companion(QObject):
             self.window.stop_effects(preserve_projection=True)
             old_bank = self.audio.activate_profile(prepared.audio_bank)
             self.profile = prepared.profile
+            self.reactions.profile_id = self.profile.id
             self.animation.clips = prepared.clips
             self.positioning.movement = prepared.movement
             self.apply_preferences(selected)
@@ -412,6 +416,7 @@ class Companion(QObject):
             prepared.movement.close()
             prepared.movement.deleteLater()
             self.profile, self.animation.clips = old_profile, old_clips
+            self.reactions.profile_id = self.profile.id
             self.positioning.movement = old_movement
             if old_bank is not None:
                 rejected = self.audio.activate_profile(old_bank)
@@ -837,7 +842,15 @@ class Companion(QObject):
             self.show_tools()
 
     def task_completed(self, entry_id):
-        self.reactions.start("task", key=entry_id)
+        self.reactions.start_scene("task_completed", key=entry_id)
+
+    def react_to_focus(self, session):
+        running = session.run_id if session and session.override_id else None
+        self.reactions.retain_focus(str(running) if running is not None else None)
+        new_run = session is not None and session.run_id != self._focus_scene_run
+        self._focus_scene_run = session.run_id if session else None
+        if new_run and running is not None:
+            self.reactions.start_scene("focus_started", key=str(running))
 
     def launch_minigame(self, game_id):
         try:

@@ -121,10 +121,10 @@ class AnimationManager(QObject):
             self.timer.stop()
             self.tick()
 
-    def play(self, state: State, token: int) -> None:
+    def play(self, state: State, token: int, *, clip: Clip | None = None) -> None:
         self.stop()
         self.token = token
-        self.clip = self.clips[state]
+        self.clip = self.clips[state] if clip is None else clip
         self.started = self.clock()
         self.last_frame = -1
         self.tick()

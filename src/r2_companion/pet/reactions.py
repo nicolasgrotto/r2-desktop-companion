@@ -4,6 +4,7 @@ from enum import IntEnum
 
 from PySide6.QtCore import QPointF
 
+from .scenes import CATALOG, MAX_SCENE_MS, bounded_clip, scene_clips
 from .state import State, AUTONOMOUS, can_request
 
 SCENES = {"task": (State.LOOK_AROUND, State.HAPPY), "game": (State.GREETING, State.HAPPY),
@@ -48,10 +49,15 @@ class ReactionDirector:
         self.steps = deque()
         self.previous = State.IDLE
         self.last_drop_reason = None
+        self.profile_id = None
+        self.scene_deadline = None
+        self.scene_voice = None
 
     @property
     def scene(self):
-        return self.active.action if self.active and self.active.action in SCENES else None
+        if self.active and (self.active.action in SCENES or self.scene_deadline is not None):
+            return self.active.action
+        return None
 
     def already_notified(self, event_id):
         return ("notification", event_id) in self.seen_completions
@@ -59,6 +65,22 @@ class ReactionDirector:
     def start(self, scene, *, key=None):
         priority = Priority.COMPLETION if scene == "task" else Priority.EXPLICIT
         return self.offer(scene, scene, priority, key=key)
+
+    def start_scene(self, action, *, key=None):
+        if action == "task_completed":
+            if action not in CATALOG.get(self.profile_id, {}):
+                return self.start("task", key=key)
+            return self.offer("task", action, Priority.COMPLETION, key=key)
+        priority = Priority.EXPLICIT if action == "focus_started" else Priority.CONTEXT
+        return self.offer(action, action, priority, key=key)
+
+    def retain_focus(self, run_id):
+        self.pending = [intent for intent in self.pending
+                        if intent.action != "focus_started" or intent.key == run_id]
+        if self.scene == "focus_started" and self.active.key != run_id:
+            self.reset_active()
+            self.controller.enter(State.IDLE)
+            self.drain()
 
     def _drop(self, reason):
         self.last_drop_reason = reason
@@ -103,11 +125,11 @@ class ReactionDirector:
         self.drain()
         return self.active is intent or intent in self.pending
 
-    @staticmethod
-    def _states(intent):
+    def _states(self, intent):
         if isinstance(intent.action, State):
             return (intent.action,)
-        return SCENES.get(intent.action, ())
+        scene = CATALOG.get(self.profile_id, {}).get(intent.action)
+        return tuple(state for state, _ in scene.steps) if scene else SCENES.get(intent.action, ())
 
     def _eligible(self, intent):
         c = self.controller
@@ -142,7 +164,11 @@ class ReactionDirector:
 
     def _begin(self, intent):
         c = self.controller
-        steps = deque(state for state in self._states(intent) if c.supports(state))
+        scene = CATALOG.get(self.profile_id, {}).get(intent.action)
+        if scene:
+            steps = deque(scene_clips(scene, c.animation.clips))
+        else:
+            steps = deque((state, None) for state in self._states(intent) if c.supports(state))
         if not steps:
             self._drop("unsupported")
             return
@@ -150,12 +176,14 @@ class ReactionDirector:
         self.previous = c.state if not self.active and c.state in AUTONOMOUS - {State.WALK} else State.IDLE
         self.active = intent
         self.steps = steps
-        state = steps.popleft()
+        self.scene_deadline = c.clock() + MAX_SCENE_MS / 1000 if scene else None
+        self.scene_voice = scene.voice if scene else None
+        state, clip = steps.popleft()
         c.action_spontaneous = intent.priority <= Priority.CONTEXT
         if state != State.WALK and intent.priority != Priority.SPONTANEOUS:
             c.behavior.defer_walk()
         c.next_destination = intent.destination
-        c.enter(state)
+        c.enter(state, clip=clip)
         if intent.priority == Priority.SPONTANEOUS or state == State.WALK:
             c.behavior.accepted(state)
         else:
@@ -166,8 +194,11 @@ class ReactionDirector:
     def advance_scene(self):
         if not self.scene or self.controller.inactive or self.controller.gates:
             return False
-        if self.steps:
-            self.controller.enter(self.steps.popleft())
+        remaining = (int((self.scene_deadline - self.controller.clock()) * 1000)
+                     if self.scene_deadline is not None else MAX_SCENE_MS)
+        if self.steps and remaining > 0:
+            state, clip = self.steps.popleft()
+            self.controller.enter(state, clip=bounded_clip(clip, remaining) if clip else None)
             return True
         previous = self.previous
         self.reset_active()
@@ -180,6 +211,7 @@ class ReactionDirector:
     def reset_active(self):
         self.active = None
         self.steps.clear()
+        self.scene_deadline = self.scene_voice = None
 
     def gate_entered(self, name):
         if name in self.passive_gates:
@@ -195,7 +227,11 @@ class ReactionDirector:
             self.reset_active()
         if self.audio is None:
             return
-        if self.scene:
+        if self.scene_deadline is not None:
+            if self.scene_voice is not None:
+                voice, self.scene_voice = self.scene_voice, None
+                self.audio.vocalize(voice, "reactions")
+        elif self.scene:
             if state == State.HAPPY:
                 self.audio.vocalize("affection" if self.scene == "affection" else "celebrate", "reactions")
         elif state == State.SLEEP:

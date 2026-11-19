@@ -159,6 +159,7 @@ def test_focus_completion_is_presented_and_voiced_once(pet, clock, monkeypatch):
     monkeypatch.setattr(pet.tray, "notify", tray.append)
     notices = QSignalSpy(pet.controller.notification_presented)
     pet.focus.start_focus(1)
+    voices.clear()
     clock.advance(1)
     pet.countdown.tick()
     pet.focus_completed(pet.focus.session)
@@ -188,7 +189,9 @@ def test_droid_swap_invalidates_active_and_pending_completion_then_accepts_new_e
     pet.productivity.set_done(task, True)
     old_token = pet.controller.token
     pet.productivity.set_done(queued, True)
-    assert pet.reactions.scene == "task" and len(pet.reactions.pending) == 1
+    assert pet.reactions.scene == "task_completed" and len(pet.reactions.pending) == 1
+    assert voices == [("celebrate", "reactions")]
+    voices.clear()
     assert pet.equip_droid("spherical_droid")
     new_token = pet.controller.token
     after_swap = tuple(voices)
@@ -205,4 +208,4 @@ def test_droid_swap_invalidates_active_and_pending_completion_then_accepts_new_e
     pet.controller.finished(pet.controller.token)
     pet.productivity.accept_restored(backup)
     pet.productivity.set_done(queued, True)
-    assert pet.reactions.scene == "task"
+    assert pet.reactions.scene == "task_completed"

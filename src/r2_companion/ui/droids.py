@@ -5,7 +5,7 @@ import time
 
 from PySide6.QtCore import QRectF, QSignalBlocker, Qt, QTimer, Signal
 from PySide6.QtGui import QColor, QPainter, QPen, QPixmap
-from PySide6.QtWidgets import (QCheckBox, QComboBox, QDialog, QFormLayout, QListWidget,
+from PySide6.QtWidgets import (QCheckBox, QComboBox, QDialog, QFormLayout, QListWidget, QListWidgetItem,
                               QPushButton, QScrollArea, QSlider, QSpinBox, QVBoxLayout, QWidget)
 
 from ..droids.preferences import defaults_for, preferences_for
@@ -14,8 +14,9 @@ from ..droids.visuals import VISUAL_TYPES, load_profile_clips, paint_visual
 from ..droids.movement import create_movement
 from ..droids.expressions import paint_expression
 from ..droids.rig import ArticulatedVisual
-from ..pet.animation import AnimationManager
+from ..pet.animation import AnimationManager, Clip
 from ..pet.personality import apply_profile
+from ..pet.scenes import CATALOG, SCENE_LABELS, scene_clips
 from ..pet.state import State
 from .theme import ActionRow, apply_character_name, apply_theme, configure_form, form_row, header, label
 
@@ -217,6 +218,8 @@ class DroidStudio(QDialog):
         self.category.blockSignals(True)
         self.category.clear()
         self.category.addItem("Todas as categorias", "")
+        if profile.id in CATALOG:
+            self.category.addItem("Cenas do personagem", "scenes")
         for category in sorted(set(profile.animations.values())):
             self.category.addItem(category, category)
         self.category.blockSignals(False)
@@ -240,22 +243,33 @@ class DroidStudio(QDialog):
     def filter_animations(self, *_):
         if self.profile is None:
             return
-        self.animations.clear()
-        for state, category in self.profile.animations.items():
-            if not self.category.currentData() or category == self.category.currentData():
-                from PySide6.QtWidgets import QListWidgetItem
-                item = QListWidgetItem(ANIMATION_NAMES.get(state.value, state.value))
-                item.setData(Qt.ItemDataRole.UserRole, state)
-                item.setToolTip(f"{state.value} · {len(self.clips[state].frames)} frames · {category}")
-                self.animations.addItem(item)
-        self.animations.setCurrentRow(0)
+        category = self.category.currentData()
+        with QSignalBlocker(self.animations):
+            self.animations.clear()
+            if category == "scenes":
+                for key, scene in CATALOG[self.profile.id].items():
+                    item = QListWidgetItem(SCENE_LABELS[key])
+                    item.setData(Qt.ItemDataRole.UserRole, key)
+                    item.setToolTip(" → ".join(ANIMATION_NAMES[state.value] for state, _ in scene.steps))
+                    self.animations.addItem(item)
+            else:
+                for state, group in self.profile.animations.items():
+                    if not category or group == category:
+                        item = QListWidgetItem(ANIMATION_NAMES.get(state.value, state.value))
+                        item.setData(Qt.ItemDataRole.UserRole, state)
+                        item.setToolTip(f"{state.value} · {len(self.clips[state].frames)} frames · {group}")
+                        self.animations.addItem(item)
+            self.animations.setCurrentRow(0)
+        self.animation_selected()
 
     def animation_selected(self, *_):
         item = self.animations.currentItem()
         self.frame_variant.blockSignals(True)
         self.frame_variant.clear()
         self.frame_variant.addItem("Sequência completa", -1)
-        if item is not None:
+        is_scene = self.category.currentData() == "scenes"
+        self.frame_variant.setEnabled(not is_scene)
+        if item is not None and not is_scene:
             clip = self.clips[item.data(Qt.ItemDataRole.UserRole)]
             for i in range(len(clip.frames)):
                 self.frame_variant.addItem(f"Frame {i + 1}", i)
@@ -268,6 +282,13 @@ class DroidStudio(QDialog):
         if item is None:
             return
         state = item.data(Qt.ItemDataRole.UserRole)
+        if self.category.currentData() == "scenes":
+            scene = CATALOG[self.profile.id][state]
+            frames = tuple(frame for _, clip in scene_clips(scene, self.clips) for frame in clip.frames)
+            if frames:
+                self.preview.state = None
+                self.animation.play(State.IDLE, 1, clip=Clip(frames, self.repeat.isChecked()))
+            return
         if state not in self.clips:
             return
         self.frame_variant.blockSignals(True)
