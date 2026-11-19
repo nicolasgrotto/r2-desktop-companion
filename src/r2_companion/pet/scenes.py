@@ -16,6 +16,7 @@ SCENE_LABELS = {
 class Scene:
     steps: tuple[tuple[State, int], ...]
     voice: str
+    still_index: int = 0
 
 
 CATALOG = {
@@ -34,6 +35,27 @@ CATALOG = {
         "task_completed": Scene(((State.HAPPY, 1550), (State.LOOK_AROUND, 1450)), "celebrate"),
         "media_started": Scene(((State.CURIOUS, 1450), (State.HAPPY, 1450)), "happy"),
     },
+    "lumo": {
+        "focus_started": Scene(((State.LOOK_AROUND, 1200), (State.WORK, 1440)), "curious", still_index=3),
+        "task_completed": Scene(((State.HAPPY, 1440), (State.RECOVER, 960)), "celebrate", still_index=3),
+        "media_started": Scene(((State.CURIOUS, 1080), (State.HAPPY, 1440)), "happy", still_index=3),
+    },
+    "vigia": {
+        "focus_started": Scene(((State.LOOK_LEFT, 960), (State.LOOK_RIGHT, 960), (State.WORK, 1440)),
+                               "curious", still_index=3),
+        "task_completed": Scene(((State.HAPPY, 1200), (State.LOOK_AROUND, 1440)), "celebrate", still_index=3),
+        "media_started": Scene(((State.LOOK_AROUND, 1200), (State.CURIOUS, 1440)), "curious", still_index=3),
+    },
+    "pico": {
+        "focus_started": Scene(((State.CURIOUS, 960), (State.WORK, 1320)), "curious", still_index=3),
+        "task_completed": Scene(((State.HAPPY, 1200), (State.GREETING, 1080)), "celebrate", still_index=3),
+        "media_started": Scene(((State.LOOK_RIGHT, 840), (State.CURIOUS, 1200)), "greeting", still_index=3),
+    },
+    "tranco": {
+        "focus_started": Scene(((State.WORK, 1440),), "curious", still_index=4),
+        "task_completed": Scene(((State.HAPPY, 1440), (State.GREETING, 1440)), "celebrate", still_index=4),
+        "media_started": Scene(((State.GREETING, 1320), (State.HAPPY, 1440)), "greeting", still_index=4),
+    },
 }
 
 
@@ -45,14 +67,15 @@ def bounded_clip(clip: Clip, budget: int) -> Clip:
         duration = min(frame.milliseconds, budget)
         frames.append(replace(frame, milliseconds=duration))
         budget -= duration
-    return Clip(tuple(frames), False)
+    return Clip(tuple(frames), False, min(clip.still_index, max(0, len(frames) - 1)))
 
 
 def scene_clips(scene, clips):
     remaining = MAX_SCENE_MS
     for state, budget in scene.steps:
         if state in clips and remaining > 0:
-            clip = bounded_clip(clips[state], min(budget, remaining))
+            original = replace(clips[state], still_index=scene.still_index)
+            clip = bounded_clip(original, min(budget, remaining))
             if clip.frames:
                 yield state, clip
                 remaining -= clip.duration

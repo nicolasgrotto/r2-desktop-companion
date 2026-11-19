@@ -284,10 +284,12 @@ class DroidStudio(QDialog):
         state = item.data(Qt.ItemDataRole.UserRole)
         if self.category.currentData() == "scenes":
             scene = CATALOG[self.profile.id][state]
-            frames = tuple(frame for _, clip in scene_clips(scene, self.clips) for frame in clip.frames)
-            if frames:
+            clips = tuple(clip for _, clip in scene_clips(scene, self.clips))
+            if clips:
+                frames = tuple(frame for clip in clips for frame in clip.frames)
                 self.preview.state = None
-                self.animation.play(State.IDLE, 1, clip=Clip(frames, self.repeat.isChecked()))
+                preview_clip = Clip(frames, self.repeat.isChecked(), clips[0].still_index)
+                self.animation.play(State.IDLE, 1, clip=preview_clip)
             return
         if state not in self.clips:
             return

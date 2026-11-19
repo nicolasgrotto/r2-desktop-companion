@@ -1,6 +1,7 @@
 import pytest
 from PySide6.QtCore import Qt
 
+from r2_companion.droids.rig import ArticulatedVisual
 from r2_companion.pet.scenes import CATALOG, SCENE_LABELS, scene_clips
 from r2_companion.pet.state import State
 from test_context_v03 import pet
@@ -24,9 +25,22 @@ def test_garage_scenes_are_independent_and_capture_each_pose(pet, identifier, cl
         clips = tuple(scene_clips(scene, garage.clips))
         assert [state for state, _ in clips] == [state for state, _ in scene.steps]
         assert 0 < garage.animation.clip.duration <= 6000
+        first = clips[0][1]
+        if isinstance(first.frames[0].visual, ArticulatedVisual):
+            garage.animation.set_reduced_motion(True)
+            garage.play()
+            still = first.frames[first.still_index].visual
+            assert garage.preview.frame is still
+            clock.advance(0.2)
+            garage.animation.tick()
+            assert garage.preview.frame is still
+            garage.animation.set_reduced_motion(False)
+            garage.play()
         elapsed = 0
         for state, clip in clips:
-            clock.now = garage.animation.started + (elapsed + 1) / 1000
+            frame_index = clip.still_index or len(clip.frames) // 2
+            offset = sum(frame.milliseconds for frame in clip.frames[:frame_index])
+            clock.now = garage.animation.started + (elapsed + offset + 1) / 1000
             garage.animation.tick()
             assert garage.preview.grab().save(str(tmp_path / f"{identifier}-{action}-{state.value}.png"))
             elapsed += clip.duration
@@ -34,6 +48,8 @@ def test_garage_scenes_are_independent_and_capture_each_pose(pet, identifier, cl
     garage.close()
     garage.animation.timer.timeout.emit()
     assert not garage.animation.timer.isActive() and garage.animation.clip is None
+    assert garage.preview.movement is None
+    assert not garage.preview.effect_timer.isActive() and not garage.preview.roll_timer.isActive()
 
 
 def test_focus_scene_uses_reduced_motion_and_is_interrupted_by_click(pet, clock, monkeypatch):

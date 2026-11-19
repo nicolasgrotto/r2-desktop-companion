@@ -14,6 +14,7 @@ from r2_companion.droids.movement import create_movement
 from r2_companion.droids.profiles import DroidRegistry
 from r2_companion.droids.rig import ArticulatedVisual
 from r2_companion.droids.visuals import load_profile_clips, paint_visual
+from r2_companion.pet.scenes import CATALOG, SCENE_LABELS, scene_clips
 from r2_companion.pet.state import State
 from r2_companion.pet.window import PetWindow
 from r2_companion.services.storage import ConfigStore
@@ -35,11 +36,11 @@ def resources(registry):
     return {key: load_profile_clips(registry.get(key)) for key in NEW}
 
 
-def render(visual, channels=None, side=96, padding=16):
+def render(visual, channels=None, side=96, padding=16, illumination=None):
     image = QImage(side + padding * 2, side + padding * 2, QImage.Format.Format_ARGB32)
     image.fill(Qt.GlobalColor.transparent)
     p = QPainter(image)
-    paint_visual(p, QRectF(padding, padding, side, side), visual, motion=channels)
+    paint_visual(p, QRectF(padding, padding, side, side), visual, illumination=illumination, motion=channels)
     p.end()
     return image
 
@@ -83,6 +84,83 @@ def test_every_pose_renders_at_native_scale_without_cutting_silhouette(resources
             assert opaque(image.copy(16, 16, 96, 96))
             for rect in ((0, 0, 128, 16), (0, 112, 128, 16), (0, 16, 16, 96), (112, 16, 16, 96)):
                 assert not opaque(image.copy(*rect)), (identifier, frame.visual.pose)
+
+
+def test_scene_catalog_covers_the_seven_profiles(registry):
+    assert set(CATALOG) == set(registry.profiles)
+    assert all(tuple(scenes) == tuple(SCENE_LABELS) for scenes in CATALOG.values())
+    assert sum(map(len, CATALOG.values())) == 21
+
+
+@pytest.mark.parametrize("side", [64, 160, 256])
+@pytest.mark.parametrize("identifier", NEW)
+def test_articulated_scene_frames_fit_at_desktop_sizes(resources, identifier, side):
+    originals = resources[identifier]
+    for name, scene in CATALOG[identifier].items():
+        steps = tuple(scene_clips(scene, originals))
+        assert [state for state, _ in steps] == [state for state, _ in scene.steps]
+        assert 0 < sum(clip.duration for _, clip in steps) <= 6000
+        for state, clip in steps:
+            assert state != State.WALK
+            still = clip.frames[clip.still_index].visual
+            assert still.pose != clip.frames[0].visual.pose
+            assert render(still, side=side, illumination="#ffbf70") != render(still, side=side, illumination="#8fe9d2")
+            for clipped, original in zip(clip.frames, originals[state].frames, strict=False):
+                visual = clipped.visual
+                # The clip retains the original hierarchical rig, including the emitter.
+                assert visual is original.visual
+                assert all(0 < axis < 1 for axis in visual.anchor())
+                image = render(visual, side=side)
+                assert opaque(image.copy(16, 16, side, side))
+                edge = side + 16
+                borders = ((0, 0, side + 32, 16), (0, edge, side + 32, 16),
+                           (0, 16, 16, side), (edge, 16, 16, side))
+                assert all(not opaque(image.copy(*rect)) for rect in borders), (identifier, name, state, side)
+
+
+@pytest.mark.parametrize("identifier", NEW)
+def test_live_articulated_scenes_keep_position_and_hologram_attached(pet, identifier, clock, monkeypatch):
+    assert pet.equip_droid(identifier), pet.droid_error
+    pet.controller.enter(State.IDLE)
+    pet.controller.clock = pet.animation.clock = pet.countdown.clock = clock
+    pet.companion_state.update("accessibility", {"reduced_motion": True})
+    assert pet.project_tool("clock")
+    position = pet.window.pos()
+    task_id = pet.productivity.add_task("Testar a cena do personagem")
+    voices = []
+    monkeypatch.setattr(pet.audio, "vocalize", lambda *args: voices.append(args))
+    run = pet.focus.start_focus()
+    for name, scene in CATALOG[identifier].items():
+        if name == "task_completed":
+            pet.productivity.set_done(task_id, True)
+        elif name == "media_started":
+            assert pet.reactions.start_scene(name)
+        assert pet.reactions.scene == name
+        clips = tuple(scene_clips(scene, pet.animation.clips))
+        for state, clip in clips:
+            visual = pet.window.visual
+            assert pet.controller.state == state
+            assert visual is clip.frames[clip.still_index].visual
+            assert not pet.positioning.timer.isActive() and not pet.positioning.movement.timer.isActive()
+            assert pet.window.pos() == position
+            x, y = visual.anchor(pet.window.articulation)
+            overlay = pet.window.projection_overlay
+            eye = overlay.eye + QPointF(overlay.pos())
+            assert eye.x() == pytest.approx(pet.window.x() + pet.window.width() * x)
+            assert eye.y() == pytest.approx(pet.window.y() + pet.window.height() * y)
+            token = pet.controller.token
+            if name == "media_started":
+                pet.controller.interact()
+                assert pet.controller.state == State.INTERACT and pet.reactions.scene is None
+                pet.controller.finished(token)
+                assert pet.controller.state == State.INTERACT and pet.window.pos() == position
+                break
+            clock.advance(clip.duration / 1000)
+            pet.controller.finished(token)
+        if name == "focus_started":
+            pet.focus.cancel(run)
+    assert pet.productivity.task(task_id)["done"]
+    assert [voice for voice, _ in voices[:3]] == [scene.voice for scene in CATALOG[identifier].values()]
 
 
 @pytest.mark.parametrize("identifier", NEW)
@@ -168,6 +246,8 @@ def test_tools_projection_sleep_and_radial_work_with_each_new_body(pet, resource
     assert eye.y() == pytest.approx(pet.window.y() + pet.window.height() * y)
     pet.countdown.start(30)
     pet.tools.project_timer.setChecked(True)
+    assert pet.window.projection_kind == "clock"
+    pet.end_projection()
     assert pet.window.projection_kind == "timer"
     pet.controller.enter(State.SLEEP)
     assert pet.window.sleep_effect.active

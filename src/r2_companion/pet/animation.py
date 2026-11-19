@@ -24,6 +24,7 @@ class Frame:
 class Clip:
     frames: tuple[Frame, ...]
     loop: bool
+    still_index: int = 0
 
     @property
     def duration(self) -> int:
@@ -141,8 +142,8 @@ class AnimationManager(QObject):
             return
         if self.reduced_motion:
             if self.last_frame < 0:
-                self.last_frame = 0
-                frame = clip.frames[0]
+                self.last_frame = clip.still_index
+                frame = clip.frames[self.last_frame]
                 self.frame_changed.emit(frame.visual if frame.visual is not None else frame.pixmap)
             if not clip.loop and self.clip is clip and self.token == token:
                 self.timer.start(max(1, clip.duration - elapsed))

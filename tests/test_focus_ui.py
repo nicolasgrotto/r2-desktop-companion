@@ -102,7 +102,8 @@ def test_timer_and_focus_confirm_replacement_in_both_directions(pet, qapp, clock
 
 
 def test_hidden_sleeping_focus_card_and_manual_mode_survive_task_removal(pet, clock, monkeypatch):
-    monkeypatch.setattr("r2_companion.pet.presence_runtime.QSystemTrayIcon.isSystemTrayAvailable", lambda: True)
+    monkeypatch.setattr("r2_companion.pet.presence_runtime.QSystemTrayIcon.isSystemTrayAvailable",
+                        staticmethod(lambda: True))
     pet.countdown.clock = clock
     task_id = pet.productivity.add_task("Tarefa do cartão")
     pet.controller.enter(State.SLEEP)
