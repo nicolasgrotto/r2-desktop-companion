@@ -99,7 +99,7 @@ def test_minigames_open_only_the_registered_https_url_with_qurl(qapp):
 
 def test_catalog_button_launches_once_and_fullscreen_suppresses_reaction(pet, monkeypatch):
     calls = []
-    monkeypatch.setattr("r2_companion.app.open_game", lambda key: calls.append(key) or True)
+    monkeypatch.setattr("r2_companion.app.open_game", lambda key, **kwargs: calls.append(key) or True)
     pet.show_tools_page(pet.tools.tabs.indexOf(pet.tools.minigames_page))
     from PySide6.QtWidgets import QPushButton
     button = next(b for b in pet.tools.minigames_page.findChildren(QPushButton) if "Jogar" in b.text())

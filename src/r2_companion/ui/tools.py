@@ -71,7 +71,7 @@ class ToolsDialog(QDialog):
     duration_selected = Signal(int)
 
     def __init__(self, countdown, monitor, duration: int, productivity=None, project_timer=False, data_transfer=None,
-                 focus=None, media=None):
+                 focus=None, media=None, companion_state=None):
         super().__init__()
         self.setWindowTitle("Central de ferramentas · R2 Companion")
         self.resize(760, 650)
@@ -106,7 +106,7 @@ class ToolsDialog(QDialog):
             self.notes_page.setProperty("characterLiteral", True)
             self.tabs.addTab(scrollable(self.tasks_page), "Tarefas")
             self.tabs.addTab(scrollable(self.notes_page), "Notas")
-        self.minigames_page = MinigamesPage()
+        self.minigames_page = MinigamesPage(store=companion_state)
         self.diagnostics_page = DiagnosticsPage()
         self.tabs.addTab(self.minigames_page, "Minigames")
         self.tabs.addTab(self.diagnostics_page, "Diagnóstico")

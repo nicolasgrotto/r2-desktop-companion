@@ -13,6 +13,7 @@ import re
 from PySide6.QtCore import QObject, QTimer, Signal
 
 from ..core.config import FutureSchemaError
+from ..features.minigames import validate_entries
 from .storage import ConfigStore
 
 log = logging.getLogger(__name__)
@@ -30,6 +31,7 @@ def default_document():
         "focus": {"session": None},
         "onboarding": {"dismissed": False},
         "actions": {"global_shortcut_enabled": False},
+        "minigames": {"entries": {}},
     }
 
 
@@ -118,6 +120,7 @@ def validate_document(raw):
                     raise ValueError("Estado da sessão de foco inválido.")
             if session.setdefault("task_id", None) is not None:
                 _reference(session["task_id"])
+        validate_entries(result["minigames"]["entries"])
         _encode(result)
         return result
     except (TypeError, RecursionError, OverflowError) as error:
@@ -233,6 +236,14 @@ class CompanionStateStore(QObject):
             overrides.pop(droid_id, None)
         else:
             overrides[droid_id] = provider_id
+        return self._save_candidate(candidate)
+
+    def save_minigames(self, entries):
+        candidate = self.data
+        candidate["minigames"]["entries"] = entries
+        return self._save_candidate(candidate)
+
+    def _save_candidate(self, candidate):
         if candidate == self._data:
             return True
         candidate = validate_document(candidate)

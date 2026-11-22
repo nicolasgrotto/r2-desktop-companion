@@ -133,7 +133,7 @@ class Companion(QObject):
         self.startup = StartupService(packaged_executable())
         self.tools = ToolsDialog(self.countdown, self.monitor, store.settings.timer_seconds, self.productivity,
                                  project_timer=store.settings.timer_projection, data_transfer=self.data_transfer,
-                                 focus=self.focus, media=self.media)
+                                 focus=self.focus, media=self.media, companion_state=self.companion_state)
         self._timer_projection_run = 0
         self._projected_focus_id = None
         self.window.projection.providers["timer"] = self.timer_projection_model
@@ -901,11 +901,11 @@ class Companion(QObject):
 
     def launch_minigame(self, game_id):
         try:
-            if not open_game(game_id):
+            if not open_game(game_id, games=self.tools.minigames_page.games):
                 self.warning("O Windows não aceitou abrir o jogo no navegador.")
                 return False
-        except (ValueError, OSError) as error:
-            self.warning(str(error))
+        except (ValueError, OSError):
+            self.warning("Não foi possível abrir o endereço do minigame.")
             return False
         self.reactions.start("game")
         return True
