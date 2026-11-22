@@ -82,6 +82,9 @@ class ReactionDirector:
             self.controller.enter(State.IDLE)
             self.drain()
 
+    def clear_pending_media_start(self):
+        self.pending = [intent for intent in self.pending if intent.action != "media_started"]
+
     def _drop(self, reason):
         self.last_drop_reason = reason
         return False

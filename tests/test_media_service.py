@@ -263,6 +263,15 @@ def test_windows_catalog_keeps_original_transport_and_retires_replaced_source():
         def try_play_async(self):
             self.calls.append("play")
 
+        def add_playback_info_changed(self, callback):
+            assert not hasattr(self, "playback_handler")
+            self.playback_handler = callback
+            return 1
+
+        def remove_playback_info_changed(self, token):
+            assert token == 1
+            del self.playback_handler
+
         try_pause_async = try_skip_next_async = try_skip_previous_async = try_play_async
 
     a, b = Native("a"), Native("b")
@@ -283,6 +292,7 @@ def test_windows_catalog_keeps_original_transport_and_retires_replaced_source():
     with pytest.raises(KeyError):
         backend.execute(first, MediaCommand.PLAY)
     backend.close()
+    assert not hasattr(a, "playback_handler") and not hasattr(b, "playback_handler")
 
 
 def test_timeout_and_disable_during_native_acknowledgement(qapp, monkeypatch):

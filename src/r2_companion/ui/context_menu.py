@@ -65,6 +65,8 @@ def create_menu(parent, actions: dict, settings, screens, tray_available: bool) 
                 add(tools, item.id, item.title)
         add(tools, "minigames", "Minigames")
         add(tools, "diagnostics", "Diagnóstico")
+        if "media" in actions:
+            add(tools, "media", "Música")
         menu.tools_ref = tools
     else:
         add(menu, "tools", "Ferramentas · relógio, temporizador e sistema")

@@ -53,6 +53,7 @@ class MediaView:
     pinned: MediaSession | None = None  # None follows the Windows current session.
     snapshot: MediaSnapshot | None = None
     error: str | None = None
+    playing: bool = False
 
 
 class MediaBackend(Protocol):
@@ -211,10 +212,19 @@ class _MediaWorker(Thread):
                 if snapshot is not None:
                     snapshot = replace(snapshot, title=None, artist=None, metadata_error=None)
                     self.reader = self.spawn(self.read_metadata(snapshot))
-            self.publish(MediaView("ready", sessions, pinned, snapshot, error))
+            playing = snapshot is not None and snapshot.playback == "playing"
+            if not playing:
+                playing = any(self.is_playing(session) for session in sessions if session != selected)
+            self.publish(MediaView("ready", sessions, pinned, snapshot, error, playing))
         except Exception:
             self.cancel_reader()
             self.publish(MediaView(status="unavailable", pinned=self.pinned, error="session_unavailable"))
+
+    def is_playing(self, session):
+        try:
+            return self.backend.playback(session)[0] == "playing"
+        except Exception:
+            return False  # An unavailable background session must not mask the selected one.
 
     def cancel_reader(self):
         if self.reader is not None:
@@ -284,6 +294,17 @@ class MediaService(QObject):
     def select(self, session: MediaSession | None):
         if self._worker is not None:
             self._worker.loop.call_soon_threadsafe(self._worker.select, session)
+
+    def refresh(self):
+        if self._worker is not None:
+            self._worker.loop.call_soon_threadsafe(self._worker.notify, "metadata")
+
+    def retry(self):
+        if self.view.error == "integration_unavailable":
+            self.close()
+            self.set_enabled(True)
+        else:
+            self.refresh()
 
     def pending(self, session: MediaSession) -> bool:
         return session in self._pending

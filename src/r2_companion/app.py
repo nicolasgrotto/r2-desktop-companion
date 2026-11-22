@@ -48,6 +48,7 @@ from .ui.bubble import Bubble
 from .ui.context_menu import create_menu
 from .ui.settings import SettingsDialog
 from .ui.tools import ToolsDialog, timer_text
+from .ui.media import music_projection
 from .ui.tray import Tray
 from .ui.radial import RadialMenu
 from .ui.targets import LaunchpadDialog
@@ -130,11 +131,12 @@ class Companion(QObject):
         self.startup = StartupService(packaged_executable())
         self.tools = ToolsDialog(self.countdown, self.monitor, store.settings.timer_seconds, self.productivity,
                                  project_timer=store.settings.timer_projection, data_transfer=self.data_transfer,
-                                 focus=self.focus)
+                                 focus=self.focus, media=self.media)
         self._timer_projection_run = 0
         self._projected_focus_id = None
         self.window.projection.providers["timer"] = self.timer_projection_model
         self.window.projection.providers["focus"] = self.focus_projection_model
+        self.window.projection.providers["music"] = lambda: music_projection(self.media.view)
         self.window.projection.changed.connect(self.tools.show_projection_details)
         self.countdown.changed.connect(self.update_timer_projection)
         self.tools.project_timer.toggled.connect(self.timer_projection_toggled)
@@ -177,6 +179,7 @@ class Companion(QObject):
         self.reactions = self.controller.reactions
         self.reactions.profile_id = self.profile.id
         self._focus_scene_run = None
+        self._previous_media = None
         self.window.petted.connect(lambda: self.reactions.start("affection"))
         self.tools.minigames_page.game_requested.connect(self.launch_minigame)
         self.tools.diagnostics_page.provider = self.droid_diagnostics
@@ -206,6 +209,10 @@ class Companion(QObject):
         self.focus.changed.connect(self.update_focus_projection)
         self.focus.completed.connect(self.focus_completed)
         self.tools.focus_page.projection_requested.connect(self.project_focus)
+        self.tools.media_page.enable_requested.connect(self.set_media_enabled)
+        self.tools.media_page.projection_requested.connect(self.project_music)
+        self.media.changed.connect(self.update_media)
+        self.update_media()
         initial_position = deepcopy(store.settings.window)
         self.apply_preferences(store.settings)
         self.positioning.restore(initial_position)
@@ -288,6 +295,8 @@ class Companion(QObject):
         self.tools.project_timer.setEnabled(settings.holograms)
         self.tools.focus_page.projections_enabled = settings.holograms
         self.tools.focus_page.refresh()
+        self.tools.media_page.projections_enabled = settings.holograms
+        self.tools.media_page.refresh()
         self.window.projection.set_blocked("disabled", not settings.holograms)
         if not settings.holograms:
             self.window.clear_ephemeral_projection()
@@ -712,11 +721,13 @@ class Companion(QObject):
 
     def set_suspended(self, active):
         self.session_hidden = active
+        self._previous_media = None
         self.controller.set_gate("session", active)
         if active:
             self.idle_timer.stop()
             self.desktop_timer.stop()
         else:
+            self.media.refresh()
             self.positioning.reconcile()
             self.countdown.tick()
             self.idle_timer.start()
@@ -972,6 +983,34 @@ class Companion(QObject):
     def apply_media_preference(self, data):
         if not self.closed:
             self.media.set_enabled(data["media"]["enabled"])
+
+    def set_media_enabled(self, enabled):
+        self.companion_state.update("media", {"enabled": enabled}, immediate=True)
+
+    def project_music(self):
+        if self.store.settings.holograms and self.media.view.snapshot is not None:
+            self.window.show_projection("music")
+
+    def update_media(self):
+        if self.closed:
+            return
+        view = self.media.view
+        snapshot = view.snapshot
+        previous = self._previous_media
+        self._previous_media = None if self.session_hidden else snapshot
+        if self.presence.context.media_playing != view.playing:
+            self.presence.refresh()
+        if self.window.projection_kind == "music":
+            if view.status == "disabled":
+                self.window.projection.end("music")
+            else:
+                self.window.refresh_projection()
+        same_selection = previous and snapshot and previous.generation == snapshot.generation
+        if not same_selection or snapshot.playback != "playing":
+            self.reactions.clear_pending_media_start()
+        elif (previous.playback in {"paused", "stopped", "opened"} and self.presence.decision.character_visible
+              and self.controller.state != State.SLEEP and not self.controller.inactive):
+            self.reactions.start_scene("media_started", key=str(snapshot.generation))
 
     def shutdown(self):
         if self.closed:

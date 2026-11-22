@@ -14,6 +14,7 @@ class WindowsMediaBackend:
         self._enumerated = {}
         self._manager_tokens = []
         self._session_tokens = []
+        self._playback_tokens = {}
         self._selected = None
         self._notify = None
 
@@ -29,11 +30,9 @@ class WindowsMediaBackend:
         self._subscribe(self._manager, "sessions_changed", "catalog", self._manager_tokens)
         self._subscribe(self._manager, "current_session_changed", "catalog", self._manager_tokens)
 
-    def _subscribe(self, owner, name, event, tokens):
-        session = self._selected
-
+    def _subscribe(self, owner, name, event, tokens, session=None):
         def deliver():
-            if self._notify and (event == "catalog" or session == self._selected):
+            if self._notify and (session is None or session == self._selected):
                 self._notify(event)
 
         def callback(sender, args):
@@ -82,6 +81,14 @@ class WindowsMediaBackend:
                 selected = key
         self._sessions = sessions
         self._enumerated = enumerated
+        for key in self._playback_tokens.keys() - sessions.keys():
+            self._unsubscribe(self._playback_tokens[key])
+            del self._playback_tokens[key]
+        for key, native in sessions.items():
+            if key not in self._playback_tokens:
+                tokens = []
+                self._subscribe(native, "playback_info_changed", "playback", tokens)
+                self._playback_tokens[key] = tokens
         if selected is None and current is not None:
             candidates = [s for s in sessions if s.source == current.source_app_user_model_id]
             if len(candidates) == 1:
@@ -96,8 +103,7 @@ class WindowsMediaBackend:
         if session is not None:
             native = self._sessions[session]
             try:
-                self._subscribe(native, "playback_info_changed", "playback", self._session_tokens)
-                self._subscribe(native, "media_properties_changed", "metadata", self._session_tokens)
+                self._subscribe(native, "media_properties_changed", "metadata", self._session_tokens, session)
             except Exception:
                 self._selected = None
                 self._unsubscribe(self._session_tokens)
@@ -130,14 +136,17 @@ class WindowsMediaBackend:
     def close(self):
         self._notify = None
         try:
-            self._unsubscribe(self._session_tokens)
+            tokens = self._manager_tokens + self._session_tokens
+            for entries in self._playback_tokens.values():
+                tokens.extend(entries)
+            self._unsubscribe(tokens)
         finally:
-            try:
-                self._unsubscribe(self._manager_tokens)
-            finally:
-                self._sessions.clear()
-                self._enumerated.clear()
-                self._manager = None
-                if self._uninit:
-                    self._uninit()
-                    self._uninit = None
+            self._manager_tokens.clear()
+            self._session_tokens.clear()
+            self._playback_tokens.clear()
+            self._sessions.clear()
+            self._enumerated.clear()
+            self._manager = None
+            if self._uninit:
+                self._uninit()
+                self._uninit = None

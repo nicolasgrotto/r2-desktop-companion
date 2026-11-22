@@ -64,6 +64,7 @@ class PresenceRuntime:
                 paused=c.controller.paused, sound_enabled=settings.sound_enabled, muted=settings.audio.muted,
                 tray_available=tray,
                 reduced_motion=self.context.reduced_motion,
+                media_playing=c.media.view.playing,
             )
             update = self.policy.update(self.context)
             previous, self.decision = self.decision, update.decision

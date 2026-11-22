@@ -13,6 +13,7 @@ from .minigames import MinigamesPage
 from .diagnostics import DiagnosticsPage
 from .data_transfer import DataPage
 from .focus import FocusPage, confirm_countdown
+from .media import MediaPage
 from ..droids.themes import color, styled, theme_manager
 
 
@@ -70,7 +71,7 @@ class ToolsDialog(QDialog):
     duration_selected = Signal(int)
 
     def __init__(self, countdown, monitor, duration: int, productivity=None, project_timer=False, data_transfer=None,
-                 focus=None):
+                 focus=None, media=None):
         super().__init__()
         self.setWindowTitle("Central de ferramentas · R2 Companion")
         self.resize(760, 650)
@@ -125,6 +126,11 @@ class ToolsDialog(QDialog):
             self.tabs.addTab(self.pages["focus"], "Foco")
             self.tasks_page.focus_requested.connect(self.start_task_focus)
             self.focus_page.task_finished.connect(self.tasks_page.render)
+        if media is not None:
+            self.media_page = MediaPage(media)
+            self.media_page.setProperty("characterLiteral", True)
+            self.pages["media"] = scrollable(self.media_page)
+            self.tabs.addTab(self.pages["media"], "Música")
         self.tabs.setUsesScrollButtons(True)
         layout.addWidget(self.tabs, 1)
         self.completion = label("Tudo pronto. Escolha uma ferramenta para começar.", "muted")
