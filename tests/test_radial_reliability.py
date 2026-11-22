@@ -32,6 +32,7 @@ def test_repeated_pet_clicks_preserve_personality_without_vetoing_navigation(pet
     for _ in range(8):
         QTest.mouseClick(pet.window, Qt.MouseButton.LeftButton, pos=QPoint(80, 110))
         assert pet.radial.isVisible()
+        enter(pet.radial, "tools")
         QTest.mouseClick(pet.radial.buttons["minigames"], Qt.MouseButton.LeftButton)
         assert pet.tools.isVisible() and pet.tools.tabs.currentWidget() is pet.tools.pages["minigames"]
         assert "radial" not in pet.controller.gates
@@ -52,6 +53,7 @@ def test_single_click_after_double_click_is_not_discarded_by_the_previous_gestur
         assert not pet.window.double_click
     QTest.mouseClick(pet.window, Qt.MouseButton.LeftButton, pos=point)
     assert pet.radial.isVisible() and not pet.window.double_click
+    enter(pet.radial, "tools")
     QTest.mouseClick(pet.radial.buttons["minigames"], Qt.MouseButton.LeftButton)
     assert pet.tools.isVisible() and pet.tools.tabs.currentWidget() is pet.tools.pages["minigames"]
 
@@ -106,6 +108,7 @@ def test_closing_and_reopening_rejects_callbacks_from_retired_animation(pet, pha
     old.finished.emit()
     assert wheel.level == "main" and not wheel.transitioning and wheel.history == []
     assert all(button.isEnabled() for button in wheel.buttons.values())
+    enter(wheel, "tools")
     wheel.buttons["diagnostics"].click()
     assert pet.tools.isVisible()
 
@@ -156,6 +159,7 @@ def test_navigation_survives_secondary_windows_minimization_and_recreation(pet, 
     pet.window.showMinimized()
     pet.window.showNormal()
     pet.radial.popup_near(pet.window)
+    enter(pet.radial, "tools")
     pet.radial.buttons["minigames"].click()
     assert pet.tools.isVisible() and pet.tools.tabs.currentWidget() is pet.tools.pages["minigames"]
     if pet.settings_dialog is not None:
@@ -181,8 +185,9 @@ def test_callback_exception_is_correlated_and_never_keeps_the_radial_gate(pet, m
     def fail():
         raise RuntimeError("callback failed")
 
-    monkeypatch.setattr(pet, "navigation_actions", lambda: {"diagnostics": fail})
+    monkeypatch.setitem(pet.actions.callbacks, "diagnostics", fail)
     pet.radial.popup_near(pet.window)
+    enter(pet.radial, "tools")
     pet.radial.buttons["diagnostics"].click()
     assert len(errors) == 1 and isinstance(errors[0], RuntimeError)
     assert not pet.radial.isVisible() and "radial" not in pet.controller.gates
@@ -195,7 +200,7 @@ def test_callback_exception_is_correlated_and_never_keeps_the_radial_gate(pet, m
 
 
 def test_invalid_callback_reports_an_error_and_cannot_announce_success(pet, monkeypatch):
-    monkeypatch.setattr(pet, "navigation_actions", lambda: {"diagnostics": None})
+    monkeypatch.setitem(pet.actions.callbacks, "diagnostics", None)
     with pytest.raises(ValueError, match="callback"):
         pet.radial_action("diagnostics")
 

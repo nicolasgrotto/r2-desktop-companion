@@ -38,6 +38,7 @@ class RadialMenu(QWidget):
 
     def __init__(self):
         super().__init__()
+        self.registry = None
         self.setWindowTitle("Acesso rápido · R2 Companion")
         self.setAccessibleName("Roda de acesso rápido")
         self.setWindowFlags(Qt.WindowType.Tool | Qt.WindowType.FramelessWindowHint)
@@ -109,8 +110,8 @@ class RadialMenu(QWidget):
 
     def button_rect(self, index, count, expanded=True):
         angle = math.radians(-90 + index * 360 / count)
-        radius = 118 if expanded else 60
-        width, height = (114, 60) if expanded else (76, 40)
+        radius = (128 if count > 6 else 118) if expanded else 60
+        width, height = ((108, 36) if count > 6 else (114, 60)) if expanded else (76, 40)
         return self.scaled_rect(184 + math.cos(angle) * radius - width / 2,
                                 184 + math.sin(angle) * radius - height / 2, width, height)
 
@@ -138,7 +139,11 @@ class RadialMenu(QWidget):
         for index, item in enumerate(items):
             title = "Continuar" if item.id == "pause" and self.paused else item.title
             glyph = "play" if item.id == "pause" and self.paused else item.glyph
-            button = RadialButton(title, self)
+            display_title = {"tools_center": "Central de\nferramentas",
+                             "project_date": "Projetar horário\ne data"}.get(item.id, title)
+            button = RadialButton(display_title, self)
+            if len(items) > 6:
+                styled(button, "padding: 2px;")
             button.setObjectName(item.id)
             button.setIcon(icon(glyph, "#a9e6ff"))
             side = theme_manager().dip(20)
@@ -146,6 +151,10 @@ class RadialMenu(QWidget):
             button.setGeometry(self.button_rect(index, len(items)))
             button.setToolTip(title.replace("\n", " "))
             button.setAccessibleName(title.replace("\n", " "))
+            reason = self.unavailable(item.id)
+            button.setEnabled(reason is None)
+            if reason:
+                button.setToolTip(reason)
             effect = QGraphicsOpacityEffect(button)
             effect.setOpacity(1)
             button.setGraphicsEffect(effect)
@@ -183,7 +192,7 @@ class RadialMenu(QWidget):
             opacity.setDuration(160 if entering else 80)
             opacity.setStartValue(0.0 if entering else 1.0)
             opacity.setEndValue(1.0 if entering else 0.0)
-            button.setEnabled(entering)
+            button.setEnabled(entering and not self.unavailable(button.objectName()))
         self.phase = "entering" if entering else "exiting"
         group.finished.connect(lambda: self.animation_finished(group, finished))
         group.stateChanged.connect(lambda state, previous: self.animation_state_changed(group, state))
@@ -230,7 +239,7 @@ class RadialMenu(QWidget):
         for index, button in enumerate(self.buttons.values()):
             button.setGeometry(self.button_rect(index, len(self.buttons)))
             button.graphicsEffect().setOpacity(1)
-            button.setEnabled(True)
+            button.setEnabled(not self.unavailable(button.objectName()))
         if self.isVisible():
             self.dismiss_timer.start(12000)
         self.record("transition_cancelled", reason=reason)
@@ -256,7 +265,7 @@ class RadialMenu(QWidget):
         self.transitioning = False
         self.phase = "idle"
         for button in self.buttons.values():
-            button.setEnabled(True)
+            button.setEnabled(not self.unavailable(button.objectName()))
         if self.isActiveWindow():
             next(iter(self.buttons.values())).setFocus(Qt.FocusReason.PopupFocusReason)
         self.dismiss_timer.start(12000)
@@ -338,11 +347,19 @@ class RadialMenu(QWidget):
         self.dismiss_timer.start(12000)
         self.record("wheel_shown")
 
+    def unavailable(self, key):
+        if self.registry is not None and key not in NAVIGATION:
+            return self.registry.reason(key)
+        return None
+
     def select(self, key):
         self.record("selection_received", action=key)
         if self.phase == "entering" and key in self.buttons and self.isVisible():
             self.cancel_transition("selection_during_entry")
         if self.transitioning or not self.isVisible() or key not in self.buttons:
+            self.record("selection_rejected", action=key)
+            return
+        if self.unavailable(key):
             self.record("selection_rejected", action=key)
             return
         self.record("item_selected", action=key)

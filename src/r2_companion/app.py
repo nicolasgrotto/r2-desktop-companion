@@ -14,6 +14,7 @@ from PySide6.QtGui import QDesktopServices, QGuiApplication, QIcon
 from PySide6.QtWidgets import QApplication, QMessageBox, QSystemTrayIcon
 
 from . import __version__
+from .core.actions import ActionRegistry
 from .features.launcher import launch
 from .features.locations import validate_location
 from .features.system_monitor import SystemMonitor
@@ -49,6 +50,7 @@ from .ui.context_menu import create_menu
 from .ui.settings import SettingsDialog
 from .ui.tools import ToolsDialog, timer_text
 from .ui.media import music_projection
+from .ui.actions import ActionSearch
 from .ui.tray import Tray
 from .ui.radial import RadialMenu
 from .ui.targets import LaunchpadDialog
@@ -204,6 +206,11 @@ class Companion(QObject):
         self.desktop_timer.timeout.connect(self.check_desktop)
         self.qt_app.aboutToQuit.connect(self.shutdown)
         self.presence = PresenceRuntime(self)
+        restrictions = {"project_clock": self.projection_unavailable, "project_date": self.projection_unavailable,
+                        "hide": self.tray_unavailable, "pass_through": self.tray_unavailable}
+        self.actions = ActionRegistry(self.action_callbacks(), restrictions)
+        self.radial.registry = self.actions
+        self.action_search = ActionSearch(self.actions, self.dispatch_action)
         self.focus.changed.connect(self.presence.update_focus)
         self.focus.changed.connect(self.react_to_focus)
         self.focus.changed.connect(self.update_focus_projection)
@@ -255,7 +262,7 @@ class Companion(QObject):
             return self.tools
         return {"garage": self.garage_dialog, "audio": self.audio_dialog,
                 "settings": self.settings_dialog, "apps": self.apps_panel,
-                "locations": self.locations_panel}.get(action)
+                "locations": self.locations_panel, "search_actions": self.action_search}.get(action)
 
     def navigation_role(self, action):
         if action in self.tools.pages or action in {"tools", "tools_center"}:
@@ -599,7 +606,7 @@ class Companion(QObject):
         self.controller.update_inactivity(0)
         self.controller.react(State.GREETING)
 
-    def navigation_actions(self):
+    def action_callbacks(self):
         actions = {"garage": self.show_garage, "audio": self.show_audio_center,
                    "tools": self.show_tools, "tools_center": self.show_tools,
                    "settings": self.show_settings, "updates": self.check_updates,
@@ -608,15 +615,45 @@ class Companion(QObject):
                    "explore": self.walk_now, "pause": self.toggle_pause,
                    "project_clock": lambda: self.project_tool("clock"),
                    "project_date": lambda: self.project_tool("date"),
-                   "project_stop": self.end_projection}
+                   "project_stop": self.end_projection, "search_actions": self.show_action_search,
+                   "interact": self.interact, "show": self.show_pet, "hide": self.hide_pet,
+                   "restore": self.restore_position, "pass_through": self.toggle_pass_through,
+                   "exit": self.shutdown}
         for page in self.tools.pages:
             actions[page] = lambda page=page: self.show_tools_page(page)
         return actions
 
+    def navigation_actions(self):
+        return {key: lambda key=key: self.actions.dispatch(key) for key in self.actions.callbacks}
+
+    def tray_unavailable(self):
+        if not QSystemTrayIcon.isSystemTrayAvailable():
+            return "A bandeja do Windows está indisponível."
+        return None
+
+    def projection_unavailable(self):
+        if not self.store.settings.holograms:
+            return "Ative as projeções nas Configurações."
+        if self.fullscreen_hidden or self.session_hidden or self.user_hidden:
+            return "O mascote está oculto."
+        return None
+
+    def toggle_pass_through(self):
+        self.set_pass_through(not self.pass_through)
+
+    def show_action_search(self):
+        self.radial.hide()
+        fit_dialog(self.action_search, self.window)
+        self.present_dialog(self.action_search)
+        self.action_search.activateWindow()
+
+    def dispatch_action(self, action):
+        self.radial.hide()
+        return self.actions.dispatch(action)
+
     def radial_action(self, action):
         self.radial.record("callback_started", action=action)
-        callback = self.navigation_actions().get(action)
-        if not callable(callback):
+        if not callable(self.actions.callbacks.get(action)):
             error = ValueError("Ação de navegação sem callback válido")
             self.radial.record("callback_invalid", action=action, error=error)
             raise error
@@ -625,7 +662,7 @@ class Companion(QObject):
         self._destination_attempts[self.navigation_role(action)] = {
             "attempt": self.navigation_trace.attempt, "action": action}
         try:
-            result = callback()
+            result = self.dispatch_action(action)
         except Exception as error:
             self.radial.record("callback_failed", action=action, error=error)
             raise
@@ -790,16 +827,11 @@ class Companion(QObject):
         if self.closed:
             return
         old_menu = self.menu
-        actions = {"interact": self.interact, "settings": self.show_settings, "tools": self.show_tools,
-                   "show": self.show_pet, "hide": self.hide_pet, "pause": self.toggle_pause,
-                   "paused": lambda: self.controller.paused, "restore": self.restore_position,
-                   "pass_through": lambda: self.set_pass_through(not self.pass_through),
-                   "passing": lambda: self.pass_through,
-                   "screen": self.move_screen, "exit": self.shutdown, "target": self.open_target}
-        actions.update(self.navigation_actions())
+        actions = {**self.actions.callbacks, "paused": lambda: self.controller.paused,
+                   "passing": lambda: self.pass_through, "screen": self.move_screen, "target": self.open_target}
         actions["presence_mode"] = self.presence.select_mode
         self.menu = create_menu(self.window, actions, self.store.settings, QGuiApplication.screens(),
-                                QSystemTrayIcon.isSystemTrayAvailable())
+                                QSystemTrayIcon.isSystemTrayAvailable(), registry=self.actions, dispatch=self.dispatch_action)
         self.menu.aboutToShow.connect(self.menu_opened)
         self.menu.aboutToHide.connect(lambda: self.controller.set_gate("menu", False))
         self.tray.setContextMenu(self.menu)
@@ -1018,6 +1050,7 @@ class Companion(QObject):
         self.positioning.settle()
         self.closed = True
         self.media.close()
+        self.action_search.close()
         self.radial.record("shutdown_started")
         self.reactions.close()
         for dialog in (self.garage_dialog, self.audio_dialog):
@@ -1049,7 +1082,8 @@ class Companion(QObject):
         self.tray.hide()
         self.window.hide()
         for widget in (self.window, self.tools, self.bubble, self.radial, self.apps_panel,
-                       self.locations_panel, self.tray.notice, self.garage_dialog, self.audio_dialog):
+                       self.locations_panel, self.tray.notice, self.garage_dialog, self.audio_dialog,
+                       self.action_search):
             if widget is not None:
                 theme_manager().unregister_tree(widget)
         self.session_events.close()

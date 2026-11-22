@@ -2,16 +2,28 @@ from PySide6.QtGui import QAction, QActionGroup
 from PySide6.QtWidgets import QMenu
 from .theme import apply_theme
 from .navigation import NAVIGATION
+from ..core.actions import ACTIONS
 
 
-def create_menu(parent, actions: dict, settings, screens, tray_available: bool) -> QMenu:
+def create_menu(parent, actions: dict, settings, screens, tray_available: bool, *, registry=None, dispatch=None) -> QMenu:
     menu = QMenu(parent)
     menu.setAccessibleName("Menu do R2 Companion")
     apply_theme(menu)
     references = []
     submenus = []
-    def add(target, key, title, callback=None):
+    def add(target, key, title=None, callback=None):
+        registered = registry is not None and key in ACTIONS and key in actions and callback is None
+        if registered:
+            title = ACTIONS[key if key != "tools" else "tools_center"].title
+            callback = lambda: dispatch(key)
+        elif title is None:
+            title = ACTIONS[key].title
         action = QAction(title, target)
+        if registered:
+            reason = registry.reason(key)
+            action.setEnabled(reason is None)
+            if reason:
+                action.setToolTip(reason)
         action.setData(key)
         action.triggered.connect(lambda checked=False, callback=callback or actions[key]: callback())
         target.addAction(action)
@@ -22,6 +34,8 @@ def create_menu(parent, actions: dict, settings, screens, tray_available: bool) 
         submenus.append(child)
         return child
     add(menu, "interact", "Interagir")
+    if "search_actions" in actions:
+        add(menu, "search_actions")
     if "presence_mode" in actions:
         presence = submenu("Modo de presença")
         group = QActionGroup(presence)
@@ -63,10 +77,9 @@ def create_menu(parent, actions: dict, settings, screens, tray_available: bool) 
         for item in NAVIGATION["tools"][1:]:
             if item.id in actions:
                 add(tools, item.id, item.title)
-        add(tools, "minigames", "Minigames")
-        add(tools, "diagnostics", "Diagnóstico")
-        if "media" in actions:
-            add(tools, "media", "Música")
+        for key in ("focus", "media", "data"):
+            if key in actions:
+                add(tools, key)
         menu.tools_ref = tools
     else:
         add(menu, "tools", "Ferramentas · relógio, temporizador e sistema")

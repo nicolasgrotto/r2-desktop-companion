@@ -1,48 +1,17 @@
-from dataclasses import dataclass
+from ..core.actions import ACTIONS
 
 
-@dataclass(frozen=True)
-class NavigationItem:
-    id: str
-    title: str
-    glyph: str
+def navigation(*, music=True):
+    levels = {
+        "main": ("garage", "focus", "media" if music else "tasks", "tools", "project", "configuration"),
+        "tools": ("tools_center", "clock", "timer", "tasks", "notes", "system", "minigames", "diagnostics"),
+        "project": ("project_clock", "project_date", "project_stop"),
+        "configuration": ("settings", "audio", "updates", "apps", "locations", "companion"),
+        "companion": ("explore", "pause"),
+    }
+    return {level: tuple(ACTIONS[key] for key in keys) for level, keys in levels.items()}
 
 
-NAVIGATION = {
-    "main": (
-        NavigationItem("garage", "Droid Garage", "apps"),
-        NavigationItem("tools", "Ferramentas", "system"),
-        NavigationItem("minigames", "Minigames", "duel"),
-        NavigationItem("diagnostics", "Diagnóstico", "search"),
-        NavigationItem("project", "Projetar", "clock"),
-        NavigationItem("configuration", "Configurações", "settings"),
-    ),
-    "tools": (
-        NavigationItem("tools_center", "Central de\nferramentas", "system"),
-        NavigationItem("clock", "Relógio", "clock"),
-        NavigationItem("timer", "Temporizador", "play"),
-        NavigationItem("tasks", "Tarefas", "folder"),
-        NavigationItem("notes", "Anotações", "folder"),
-        NavigationItem("system", "Sistema", "system"),
-    ),
-    "project": (
-        NavigationItem("project_clock", "Relógio", "clock"),
-        NavigationItem("project_date", "Horário e data", "clock"),
-        NavigationItem("project_stop", "Encerrar\nprojeção", "close"),
-    ),
-    "configuration": (
-        NavigationItem("settings", "Preferências", "settings"),
-        NavigationItem("audio", "Central de Áudio", "system"),
-        NavigationItem("updates", "Atualizações", "system"),
-        NavigationItem("apps", "Aplicativos", "apps"),
-        NavigationItem("locations", "Meus locais", "folder"),
-        NavigationItem("companion", "Autonomia", "explore"),
-    ),
-    "companion": (
-        NavigationItem("explore", "Explorar", "explore"),
-        NavigationItem("pause", "Pausar", "pause"),
-    ),
-}
-
-LEVEL_TITLES = {"main": "ACESSO RÁPIDO", "tools": "FERRAMENTAS", "project": "PROJETAR",
-                "configuration": "CONFIGURAÇÕES", "companion": "AUTONOMIA"}
+NAVIGATION = navigation()
+LEVEL_TITLES = {level: ACTIONS[level].title.upper() for level in NAVIGATION if level != "main"}
+LEVEL_TITLES["main"] = "ACESSO RÁPIDO"

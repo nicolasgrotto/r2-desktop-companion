@@ -28,10 +28,10 @@ def click_item(pet, key):
     wait_transition(pet.radial)
 
 
-@pytest.mark.parametrize("page", ["clock", "timer", "system", "tasks", "notes", "minigames", "diagnostics"])
+@pytest.mark.parametrize("page", ["clock", "timer", "system", "tasks", "notes", "minigames", "diagnostics", "focus", "media"])
 def test_wheel_opens_each_real_page_without_projection_and_reopens_minimized(pet, page):
     pet.radial.popup_near(pet.window)
-    if page not in {"minigames", "diagnostics"}:
+    if page not in {"focus", "media"}:
         click_item(pet, "tools")
         assert pet.radial.level == "tools" and "radial" in pet.controller.gates
     click_item(pet, page)
@@ -55,7 +55,7 @@ def test_wheel_has_registered_levels_and_blocks_duplicates_during_real_animation
     wheel.select("minigames")
     wheel.back()
     QTest.qWait(50)
-    assert any(button.geometry() != initial[key] for key, button in wheel.buttons.items())
+    assert any(button.geometry() != initial.get(key) for key, button in wheel.buttons.items())
     wait_transition(wheel)
     assert wheel.level == "tools" and selected.count() == 0
     assert set(wheel.buttons) == {item.id for item in NAVIGATION["tools"]}
