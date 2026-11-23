@@ -31,8 +31,8 @@ jobs:
           $version = python -c "import tomllib; print(tomllib.load(open('pyproject.toml', 'rb'))['project']['version'])"
           $executable = Join-Path $PWD "dist/$version/R2Companion/R2Companion.exe"
           $data = Join-Path $PWD '.runtime-ci-exe'
-          $process = Start-Process -FilePath $executable -ArgumentList @('--data-dir', ('"{0}"' -f $data), '--smoke-test', '--smoke-droids', '--smoke-navigation', '--smoke-seconds', '9') -PassThru -WindowStyle Hidden
-          if (-not $process.WaitForExit(60000)) { throw 'Smoke timeout' }
+          $process = Start-Process -FilePath $executable -ArgumentList @('--data-dir', ('"{0}"' -f $data), '--smoke-test', '--smoke-droids', '--smoke-navigation', '--smoke-seconds', '55') -PassThru -WindowStyle Hidden
+          if (-not $process.WaitForExit(120000)) { throw 'Smoke timeout' }
           if ($process.ExitCode -ne 0) { throw "Smoke exit code $($process.ExitCode)" }
           $report = Get-Content (Join-Path $data 'smoke.json') -Raw | ConvertFrom-Json
           if ($report.version -ne $version) { throw 'Loaded version differs from package' }
