@@ -1,5 +1,5 @@
 from PySide6.QtCore import QPointF, QRectF, QSize, QSizeF, Qt
-from PySide6.QtGui import QColor, QFont, QGuiApplication, QLinearGradient, QPainter, QPen, QPixmap, QPolygonF
+from PySide6.QtGui import QColor, QFont, QGuiApplication, QLinearGradient, QPainter, QPen, QPixmap, QPolygonF, QRegion
 from PySide6.QtWidgets import QWidget
 
 from ..droids.themes import theme_manager
@@ -16,23 +16,30 @@ def line_height(model, index):
     return 33 if index == 0 and model.kind in {"clock", "date", "timer", "focus"} else 20
 
 
-def place_card(area, pet, preferred):
+def outside(region, obstacle, gap):
+    edge = obstacle.adjusted(-gap, -gap, gap, gap).intersected(region)
+    if edge.isEmpty():
+        return [region]
+    strips = [
+        region.adjusted(0, 0, 0, edge.top() - region.bottom()),
+        region.adjusted(0, edge.bottom() - region.top(), 0, 0),
+        region.adjusted(edge.right() - region.left(), 0, 0, 0),
+        region.adjusted(0, 0, edge.left() - region.right(), 0),
+    ]
+    return [strip for strip in strips if not strip.isEmpty()]
+
+
+def place_card(area, pet, preferred, avoid=None):
     """Place a DIP-sized card outside the mascot and inside the monitor work area."""
     if area.isEmpty():
         return QRectF()
     gap = 8
     work = area.adjusted(gap, gap, -gap, -gap) if min(area.width(), area.height()) > 2 * gap else area
-    if not pet.intersects(work):
-        regions = [work]
-    else:
-        edge = pet.intersected(work)
-        regions = [
-            work.adjusted(0, 0, 0, edge.top() - work.bottom() - gap),
-            work.adjusted(0, edge.bottom() - work.top() + gap, 0, 0),
-            work.adjusted(edge.right() - work.left() + gap, 0, 0, 0),
-            work.adjusted(0, 0, edge.left() - work.right() - gap, 0),
-        ]
-        regions = [region for region in regions if not region.isEmpty()]
+    regions = outside(work, pet, gap)
+    if avoid is not None:
+        regions = [free for region in regions for free in outside(region, avoid, gap)]
+        if not regions:
+            return QRectF()
     region = next((region for region in regions
                    if region.width() >= preferred.width() and region.height() >= preferred.height()), None)
     if region is None:
@@ -110,6 +117,8 @@ class ProjectionOverlay(QWidget):
         self.model = None
         self.picture = QPixmap()
         self._rendered = None
+        self.wheel = None
+        self._wheel_clip = QRectF()
         self.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground)
         self.setAttribute(Qt.WidgetAttribute.WA_ShowWithoutActivating)
         self.setFocusPolicy(Qt.FocusPolicy.NoFocus)
@@ -134,7 +143,8 @@ class ProjectionOverlay(QWidget):
             return
         area = QRectF(screen.availableGeometry())
         manager = theme_manager()
-        card = place_card(area, QRectF(pet.geometry()), card_size(self.model, manager.dip))
+        avoid = QRectF(self.wheel.geometry()) if self.wheel is not None and self.wheel.isVisible() else None
+        card = place_card(area, QRectF(pet.geometry()), card_size(self.model, manager.dip), avoid)
         if card.isEmpty():
             self.hide()
             return
@@ -150,9 +160,12 @@ class ProjectionOverlay(QWidget):
         bounds = card.united(beam).adjusted(-4, -4, 4, 4).intersected(area).toAlignedRect()
         card = card.translated(-bounds.x(), -bounds.y())
         eye -= QPointF(bounds.topLeft())
-        geometry_changed = self.geometry() != bounds or self.card != card or self.eye != eye
+        wheel_clip = avoid.translated(-bounds.x(), -bounds.y()) if avoid is not None else QRectF()
+        geometry_changed = (self.geometry() != bounds or self.card != card or self.eye != eye
+                            or self._wheel_clip != wheel_clip)
         if geometry_changed or not self.isVisible():
             self.card, self.eye = card, eye
+            self._wheel_clip = wheel_clip
             with present_surface(self):
                 if self.geometry() != bounds:
                     self.setGeometry(bounds)
@@ -164,6 +177,8 @@ class ProjectionOverlay(QWidget):
     def paintEvent(self, event):
         p = QPainter(self)
         p.setRenderHint(QPainter.RenderHint.Antialiasing)
+        if not self._wheel_clip.isEmpty():
+            p.setClipRegion(QRegion(self.rect()) - QRegion(self._wheel_clip.toAlignedRect()))
         left, right = beam_edge(self.card, self.eye)
         middle = (left + right) / 2
         tint = QColor(theme_manager().active.colors["hologram"])

@@ -721,5 +721,15 @@
   "Âmbar": "Amber",
   "Ícone inválido.": "Invalid icon.",
   "● R2 / TRANSMISSÃO": "● R2 / TRANSMISSION",
-  "✓ Temporizador #{0} concluído. Seu intervalo chegou ao fim.": "✓ Timer #{0} complete. Your interval has ended."
+  "✓ Temporizador #{0} concluído. Seu intervalo chegou ao fim.": "✓ Timer #{0} complete. Your interval has ended.",
+  "Mantém o mascote visível e segue suas preferências de movimento e som.": "Keeps the mascot visible and follows your movement and sound preferences.",
+  "Mantém o mascote visível e pausa passeios e sons espontâneos.": "Keeps the mascot visible and pauses roaming and spontaneous sounds.",
+  "Oculta o mascote e as projeções e silencia os avisos. Use Mostrar mascote na bandeja para voltar.": "Hides the mascot and projections and silences notifications. Use Show mascot in the system tray to return.",
+  "Reiniciar Companion": "Restart Companion",
+  "Não foi possível salvar os dados para reiniciar o Companion.": "Could not save the data required to restart Companion.",
+  "Não foi possível reiniciar o Companion. Consulte companion.log.": "Could not restart Companion. See companion.log.",
+  "Restaurar tarefas e notas": "Restore tasks and notes",
+  "Restaurar somente notas": "Restore notes only",
+  "Restaurar somente tarefas": "Restore tasks only",
+  "Encerrar projeção de música": "End music projection"
 }

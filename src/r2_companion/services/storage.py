@@ -35,11 +35,11 @@ class ConfigStore(QObject):
             self.read_only = True
             self.notices.append(tr("Diretório indisponível: alterações ficarão somente nesta sessão."))
 
-    def acquire(self) -> bool:
+    def acquire(self, wait_ms=0) -> bool:
         if self.read_only:
             return True
         self.lock = QLockFile(str(self.directory / "companion.lock"))
-        if self.lock.tryLock(0):
+        if self.lock.tryLock(wait_ms):
             return True
         if self.lock.error() == QLockFile.LockError.PermissionError:
             self.read_only = True

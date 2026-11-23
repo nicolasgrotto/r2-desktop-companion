@@ -1,6 +1,8 @@
 from string import Formatter
+import sys
 
-from PySide6.QtCore import Qt
+from PySide6.QtCore import QPoint, QPointF, Qt
+from PySide6.QtGui import QWheelEvent
 from PySide6.QtTest import QTest
 from PySide6.QtWidgets import QDialogButtonBox
 
@@ -77,3 +79,47 @@ def test_language_restart_keeps_actions_and_user_text(pet, qapp, monkeypatch):
         activate_language(qapp, "pt-BR")
     saved = CompanionStateStore.read_document_file(directory / "companion_state.json")
     assert saved["appearance"]["language"] == "pt-BR"
+
+
+def test_restart_button_saves_language_and_hands_off_the_same_profile(pet, monkeypatch):
+    pet.show_settings()
+    dialog = pet.settings_dialog
+    dialog.language_choice.setCurrentIndex(1)
+    calls = []
+
+    def launch(command, **kwargs):
+        calls.append(command)
+        assert pet.store.lock.isLocked()
+        if len(calls) == 1:
+            raise OSError("mock failure")
+
+    monkeypatch.setattr("r2_companion.app.subprocess.Popen", launch)
+    dialog.language_restart.click()
+    assert not pet.closed and "Não foi possível reiniciar" in dialog.language_status.text()
+    assert pet.companion_state.data["appearance"]["language"] == "en"
+    dialog.language_restart.click()
+    assert pet.closed and not pet.store.lock.isLocked()
+    assert calls[0] == calls[1]
+    assert calls[1][0] == sys.executable
+    assert calls[1][-3:] == ["--data-dir", str(pet.store.directory.resolve()), "--restart-wait"]
+
+
+def test_scrolling_over_preference_preserves_value_and_scrolls_page(pet, qapp):
+    pet.show_settings()
+    dialog = pet.settings_dialog
+    dialog.resize(600, 360)
+    qapp.processEvents()
+    area = dialog.tabs.widget(0)
+    bar = area.verticalScrollBar()
+    combo = dialog.presence_mode
+    combo.setFocus()
+    bar.setValue(0)
+    event = QWheelEvent(QPointF(combo.rect().center()), QPointF(combo.mapToGlobal(combo.rect().center())),
+                        QPoint(), QPoint(0, -120), Qt.MouseButton.NoButton, Qt.KeyboardModifier.NoModifier,
+                        Qt.ScrollPhase.NoScrollPhase, False)
+    qapp.sendEvent(combo, event)
+    assert combo.currentData() == "free"
+    assert bar.value() > 0
+    QTest.keyClick(combo, Qt.Key.Key_End)
+    assert combo.currentData() == "presentation"
+    assert "Oculta o mascote" in dialog.presence_description.text()

@@ -15,6 +15,7 @@ from r2_companion.services.audio import AudioService
 from r2_companion.ui.productivity import NotesPage, TasksPage
 from r2_companion.pet.animation import load_clips
 from r2_companion.pet.state import State
+from r2_companion.pet.presence import PresenceContext, PresencePolicy
 
 
 class Effect(QObject):
@@ -41,6 +42,9 @@ class Effect(QObject):
     def play(self):
         self.playing = True
         self.plays += 1
+
+    def isPlaying(self):
+        return self.playing
 
     def stop(self):
         self.playing = False
@@ -78,6 +82,8 @@ def test_audio_volume_mute_cooldowns_variants_and_single_voice(audio, clock):
     first = audio.previous["reactions"]
     assert not audio.play("movement")
     clock.advance(4)
+    assert not audio.play("reactions", "click")
+    audio.active_effect.stop()
     assert audio.play("reactions", "click")
     assert first != audio.previous["reactions"]
     assert sum(e.playing for values in audio.effects.values() for _, e in values) == 1
@@ -110,10 +116,20 @@ def test_sleep_fullscreen_disabled_categories_and_missing_device(audio, clock):
 
 def test_idle_category_has_long_cooldown(audio, clock):
     assert audio.play("idle")
+    audio.active_effect.stop()
     clock.advance(30)
     assert not audio.play("idle")
     clock.advance(61)
     assert audio.play("idle")
+
+
+def test_click_voice_finishes_with_wheel_open_but_stops_when_hidden(audio):
+    assert audio.vocalize("greeting")
+    voice = audio.active_effect
+    audio.set_presence(PresencePolicy.evaluate(PresenceContext(sound_enabled=True, transient_gates={"radial"})))
+    assert voice.isPlaying()
+    audio.set_presence(PresencePolicy.evaluate(PresenceContext(sound_enabled=True, hidden=True)))
+    assert not voice.isPlaying()
 
 
 @pytest.mark.parametrize("raw", [

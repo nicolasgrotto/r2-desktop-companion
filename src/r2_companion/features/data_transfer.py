@@ -7,7 +7,7 @@ from pathlib import Path
 from ..core.config import FutureSchemaError, Settings
 from ..services.companion_state import MAX_BYTES as STATE_LIMIT, validate_document as validate_state
 from ..services.storage import ConfigStore
-from .productivity import MAX_BYTES as PRODUCTIVITY_LIMIT, validate_document as validate_productivity
+from .productivity import COLLECTION_LIMITS, MAX_BYTES as PRODUCTIVITY_LIMIT, validate_document as validate_productivity
 from ..core.language import tr
 
 
@@ -37,6 +37,7 @@ class PreparedRestore:
     backup: Backup
     backup_version: tuple | None
     current_version: tuple | None
+    collection: str | None = None
 
 
 class OversizedDocumentError(ValueError):
@@ -130,13 +131,15 @@ class DataTransfer:
         lock = self.config.lock
         return bool(lock and lock.isLocked() and not self.config.read_only and not self.stores[group].read_only)
 
-    def restore(self, backup):
+    def restore(self, backup, collection=None):
         if not self.can_restore(backup.group):
             raise OSError(tr("Os dados estão em modo somente leitura."))
-        return self.apply_restore(self.prepare_restore(backup))
+        return self.apply_restore(self.prepare_restore(backup, collection))
 
-    def prepare_restore(self, backup):
+    def prepare_restore(self, backup, collection=None):
         group = backup.group
+        if collection is not None and (group != "tools" or collection not in COLLECTION_LIMITS):
+            raise ValueError(tr("Coleção inválida."))
         store = self.stores[group]
         backup_version = current_version(store.backup)
         contents, _ = read_contents(group, store.backup)
@@ -152,7 +155,7 @@ class DataTransfer:
         except ValueError:
             # An invalid current file can be repaired using the validated live snapshot.
             pass
-        return PreparedRestore(backup, backup_version, version)
+        return PreparedRestore(backup, backup_version, version, collection)
 
     def apply_restore(self, prepared):
         backup = prepared.backup
@@ -174,6 +177,11 @@ class DataTransfer:
 
         if group == "config":
             self.restore_configuration(backup.data, lambda data: write(encode_document(group, data)))
+        elif prepared.collection is not None:
+            collection = prepared.collection
+            merged = validate_productivity(previous | {collection: backup.data[collection]})
+            write(encode_checked(group, merged))
+            store.accept_restored(merged, collection)
         else:
             write(backup.encoded)
             store.accept_restored(backup.data)

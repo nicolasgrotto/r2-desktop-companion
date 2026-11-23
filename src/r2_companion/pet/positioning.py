@@ -112,14 +112,18 @@ class Positioner(QObject):
         if self.movement and not self.reduced_motion:
             self.movement.displaced(self.window.x() - previous.x(), self.window.y() - previous.y(), manual=True)
 
-    def restore(self, saved: WindowSettings) -> None:
+    def restore(self, saved: WindowSettings, *, animate=False) -> None:
         screens = QGuiApplication.screens()
         if not screens:
             return
         matches = [s for s in screens if saved.screen and fingerprint(s) == saved.screen]
         screen = matches[0] if matches else QGuiApplication.primaryScreen()
         self.fit(screen)
-        self.place(from_normalized(saved.u, saved.v, QRectF(screen.availableGeometry()), QSizeF(self.window.size())), screen)
+        destination = from_normalized(saved.u, saved.v, QRectF(screen.availableGeometry()), QSizeF(self.window.size()))
+        if animate and not self.reduced_motion and screen == self.screen:
+            if self.walk_toward(destination, 0.9, None, max_distance=None):
+                return
+        self.place(destination, screen)
 
     def snapshot(self) -> WindowSettings | None:
         if self.screen not in QGuiApplication.screens():
@@ -146,15 +150,15 @@ class Positioner(QObject):
     def walk(self, distance: float, duration: float, token: int) -> bool:
         return self.walk_toward(QPointF(self.window.pos()) + QPointF(distance, 0), duration, token)
 
-    def walk_toward(self, destination: QPointF, duration: float, token: int) -> bool:
+    def walk_toward(self, destination: QPointF, duration: float, token: int | None, *, max_distance=110) -> bool:
         self.stop()
         if self.screen not in QGuiApplication.screens():
             return False
         self.origin = QPointF(self.window.pos())
         delta = destination - self.origin
         length = (delta.x() ** 2 + delta.y() ** 2) ** 0.5
-        if length > 110:
-            destination = self.origin + delta * (110 / length)
+        if max_distance is not None and length > max_distance:
+            destination = self.origin + delta * (max_distance / length)
         self.destination = clamp(destination, QRectF(self.screen.availableGeometry()), QSizeF(self.window.size()))
         if (self.destination - self.origin).manhattanLength() < 4:
             return False
@@ -174,7 +178,8 @@ class Positioner(QObject):
         if progress >= 1:
             self.timer.stop()
             self.settle()
-            self.movement_finished.emit(self.token)
+            if self.token is not None:
+                self.movement_finished.emit(self.token)
 
     def stop(self):
         self.timer.stop()

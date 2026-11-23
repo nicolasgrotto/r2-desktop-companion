@@ -307,6 +307,7 @@ def test_garage_filters_actual_clips_can_play_stop_and_show_frames(pet):
 def test_audio_profiles_preview_volume_and_cleanup(audio, registry, clock):
     profile = registry.get("dark_astromech")
     assert audio.vocalize("greeting")
+    audio.active_effect.stop()
     clock.advance(4)
     settings = deepcopy(audio.settings)
     settings.volume = 0.14

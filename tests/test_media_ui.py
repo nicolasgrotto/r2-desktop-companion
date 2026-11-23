@@ -101,8 +101,7 @@ def test_keyboard_music_journey_and_stale_click(pet, qapp):
     page.controls[MediaCommand.NEXT].click()
     until(qapp, lambda: pet.media.view.error == "session_missing")
     assert player.calls == [(B, MediaCommand.PLAY)]
-    assert pet.window.projection_kind == "music"
-    assert "Sessão indisponível" in pet.window.projection_text
+    assert pet.window.projection_kind is None and not page.end_project.isVisible()
     QTest.keyClick(tools, Qt.Key.Key_Escape)
     assert not tools.isVisible()
     player.change_playback(A, "playing")
@@ -111,6 +110,29 @@ def test_keyboard_music_journey_and_stale_click(pet, qapp):
     pet.end_projection()
     pet.shutdown()
     assert player.closed and player.calls == [(B, MediaCommand.PLAY)]
+
+
+def test_music_projection_ends_on_request_or_playback_stop(pet, qapp):
+    player = Player()
+    player.states[A] = "playing"
+    pet.media._factory = lambda: player
+    pet.show_tools_page("media")
+    page = pet.tools.media_page
+    page.enabled.click()
+    until(qapp, lambda: page.project.isEnabled())
+    page.project.click()
+    assert page.end_project.isVisible() and pet.window.projection_kind == "music"
+    page.end_project.click()
+    assert page.project.isVisible() and pet.window.projection_kind is None
+    page.project.click()
+    player.change_playback(A, "paused")
+    until(qapp, lambda: pet.media.view.snapshot.playback == "paused")
+    assert pet.window.projection_kind == "music"
+    pet.window.projection.set_blocked("test", True)
+    player.change_playback(A, "stopped")
+    until(qapp, lambda: pet.window.projection_kind is None)
+    pet.window.projection.set_blocked("test", False)
+    assert pet.window.projection.model is None and not page.project.isEnabled()
 
 
 def test_music_presence_real_edges_sleep_visibility_resume_and_droid_swaps(pet, qapp, monkeypatch):

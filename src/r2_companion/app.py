@@ -6,12 +6,14 @@ import logging
 from logging.handlers import RotatingFileHandler
 from math import ceil
 from pathlib import Path
+import subprocess
 import sys
 import time
 
 from PySide6.QtCore import QEvent, QObject, QPointF, QRectF, QSizeF, QStandardPaths, QTimer, QUrl, Qt, qVersion
-from PySide6.QtGui import QDesktopServices, QGuiApplication, QIcon
-from PySide6.QtWidgets import QApplication, QMessageBox, QSystemTrayIcon
+from PySide6.QtGui import QDesktopServices, QGuiApplication, QIcon, QWheelEvent
+from PySide6.QtWidgets import (QAbstractScrollArea, QAbstractSlider, QAbstractSpinBox, QApplication, QComboBox,
+                              QMessageBox, QScrollBar, QSystemTrayIcon, QTabBar)
 
 from . import __version__
 from .core.actions import ActionRegistry
@@ -42,7 +44,7 @@ from .pet.presence_runtime import PresenceRuntime
 from .services.system_info import SystemInfo
 from .services.tasks import LocalTasks
 from .services.navigation_trace import NavigationTrace
-from .services.updates import UpdateService, confirm_startup, runtime_identity
+from .services.updates import UpdateService, confirm_startup, independent_environment, runtime_identity
 from .services.windows import (SessionEvents, StartupService, foreground_fullscreen, idle_seconds,
                                packaged_executable, uptime, foreground_window_rect)
 from .services.windows import reveal_requested_window
@@ -143,6 +145,9 @@ class Companion(QObject):
         self.window.projection.providers["focus"] = self.focus_projection_model
         self.window.projection.providers["music"] = lambda: music_projection(self.media.view)
         self.window.projection.changed.connect(self.tools.show_projection_details)
+        self.window.projection.selection_changed.connect(
+            lambda kind: self.tools.media_page.set_projecting(kind == "music"))
+        self.window.projection_overlay.wheel = self.radial
         self.countdown.changed.connect(self.update_timer_projection)
         self.tools.project_timer.toggled.connect(self.timer_projection_toggled)
         self.navigation_trace = NavigationTrace(store.directory)
@@ -199,7 +204,7 @@ class Companion(QObject):
         self.productivity.warning.connect(self.tools.completion.setText)
         self.productivity.task_completed.connect(self.task_completed)
         self.productivity.task_reopened.connect(self.reactions.forget_task_completion)
-        self.productivity.restored.connect(self.reactions.tasks_restored)
+        self.productivity.tasks_restored.connect(self.reactions.tasks_restored)
         self.tray.activated.connect(self.tray_activated)
         self.idle_timer = QTimer(self)
         self.idle_timer.setInterval(5000)
@@ -229,6 +234,7 @@ class Companion(QObject):
         self.tools.focus_page.projection_requested.connect(self.project_focus)
         self.tools.media_page.enable_requested.connect(self.set_media_enabled)
         self.tools.media_page.projection_requested.connect(self.project_music)
+        self.tools.media_page.projection_end_requested.connect(lambda: self.window.projection.end("music"))
         self.media.changed.connect(self.update_media)
         self.update_media()
         initial_position = deepcopy(store.settings.window)
@@ -238,7 +244,7 @@ class Companion(QObject):
         self.controller.start()
         self.window.show()
         self.initializing = False
-        self.check_desktop()
+        self.check_desktop(animate_corner=False)
         if self.window.windowHandle() is not None:
             self.window.windowHandle().screenChanged.connect(lambda screen: self.positioning.reconcile())
         self.session_events.bind(int(self.window.winId()))
@@ -281,6 +287,13 @@ class Companion(QObject):
         return action
 
     def eventFilter(self, obj, event):
+        kind = event.type()
+        if (kind == QEvent.Type.Wheel and isinstance(obj, (QAbstractSpinBox, QAbstractSlider, QComboBox, QTabBar))
+                and not isinstance(obj, QScrollBar)):
+            self.scroll_containing_area(obj, event)
+            return True
+        if obj is self.radial and kind in {QEvent.Type.Show, QEvent.Type.Hide, QEvent.Type.Move, QEvent.Type.Resize}:
+            self.window.projection_overlay.reposition()
         if event.type() in {QEvent.Type.Show, QEvent.Type.Hide, QEvent.Type.WindowActivate,
                             QEvent.Type.WindowDeactivate, QEvent.Type.WindowStateChange, QEvent.Type.Close, QEvent.Type.Expose}:
             for role, widget in (("pet", self.window), ("tools", self.tools),
@@ -294,6 +307,21 @@ class Companion(QObject):
                             widget.windowHandle() and widget.windowHandle().isExposed()), **context)
                     break
         return False
+
+    def scroll_containing_area(self, control, event):
+        parent = control.parentWidget()
+        while parent is not None:
+            if isinstance(parent, QAbstractScrollArea):
+                viewport = parent.viewport()
+                position = viewport.mapFromGlobal(event.globalPosition())
+                forwarded = QWheelEvent(position, event.globalPosition(), event.pixelDelta(), event.angleDelta(),
+                                        event.buttons(), event.modifiers(), event.phase(), event.inverted(),
+                                        event.source(), event.pointingDevice())
+                self.qt_app.sendEvent(viewport, forwarded)
+                if forwarded.isAccepted():
+                    break
+            parent = parent.parentWidget()
+        event.accept()
 
     def apply_interface_preferences(self, document):
         theme_manager().set_ui_scale(document["accessibility"]["ui_scale"])
@@ -557,7 +585,7 @@ class Companion(QObject):
         effects = self.presence.decision.continuous_effects
         self.window.sleep_effect.set_active(state == State.SLEEP and effects)
         self.window.steam.set_active(state == State.OVERHEAT and effects)
-        if state == State.INTERACT:
+        if state == State.INTERACT and self.window.hologram.isNull() and self.window.projection.model is None:
             self.present_bubble(tr("Bip! Pronto para acompanhar você."))
 
     def present_bubble(self, message):
@@ -792,7 +820,7 @@ class Companion(QObject):
         seconds = idle_seconds()
         self.controller.update_inactivity(seconds if seconds is not None else time.monotonic() - self.last_activity)
 
-    def check_desktop(self):
+    def check_desktop(self, *, animate_corner=True):
         if self.closed:
             return
         self.quiet_active = quiet_now(self.store.settings)
@@ -811,10 +839,13 @@ class Companion(QObject):
             self.radial.hide()
             self.bubble.stop()
         self.controller.set_gate("fullscreen", active)
-        if action == "corner" and previous_action != action and not self.window.dragging:
-            self.positioning.restore(self.store.settings.manual_position)
-            self.positioning.settle()
+        if previous_action == "corner" and action != "corner":
+            self.positioning.stop()
         self.update_visibility()
+        if action == "corner" and previous_action != action and not self.window.dragging:
+            self.positioning.restore(self.store.settings.manual_position, animate=animate_corner and self.window.isVisible())
+            if not self.positioning.timer.isActive():
+                self.positioning.settle()
         if not active:
             foreground = QApplication.activeWindow()
             if foreground is not None and foreground is not self.window and foreground.isVisible() and foreground is not self.radial:
@@ -1008,6 +1039,7 @@ class Companion(QObject):
         dialog.presence_original = self.presence.context.manual_mode.value
         dialog.presence_mode.setCurrentIndex(dialog.presence_mode.findData(dialog.presence_original))
         dialog.presence_applied.connect(self.presence.select_mode)
+        dialog.restart_requested.connect(self.restart)
         dialog.reduced_motion.setChecked(self.presence.context.reduced_motion)
         dialog.accessibility_applied.connect(self.save_accessibility)
         self.settings_dialog = dialog
@@ -1090,7 +1122,7 @@ class Companion(QObject):
         self.companion_state.update("media", {"enabled": enabled}, immediate=True)
 
     def project_music(self):
-        if self.store.settings.holograms and self.media.view.snapshot is not None:
+        if self.store.settings.holograms and music_projection(self.media.view) is not None:
             self.window.show_projection("music")
 
     def update_media(self):
@@ -1103,7 +1135,7 @@ class Companion(QObject):
         if self.presence.context.media_playing != view.playing:
             self.presence.refresh()
         if self.window.projection_kind == "music":
-            if view.status == "disabled":
+            if music_projection(view) is None:
                 self.window.projection.end("music")
             else:
                 self.window.refresh_projection()
@@ -1113,6 +1145,26 @@ class Companion(QObject):
         elif (previous.playback in {"paused", "stopped", "opened"} and self.presence.decision.character_visible
               and self.controller.state != State.SLEEP and not self.controller.inactive):
             self.reactions.start_scene("media_started", key=str(snapshot.generation))
+
+    def restart(self):
+        if self.closed:
+            return
+        status = self.settings_dialog.language_status
+        if not all(store.flush() for store in (self.store, self.productivity, self.companion_state)):
+            status.setText(tr("Não foi possível salvar os dados para reiniciar o Companion."))
+            return
+        command = [sys.executable]
+        if not getattr(sys, "frozen", False):
+            launcher = Path(__file__).resolve().parents[2] / "run_companion.py"
+            command.extend([str(launcher)] if launcher.is_file() else ["-m", "r2_companion"])
+        command.extend(["--data-dir", str(self.store.directory.resolve()), "--restart-wait"])
+        try:
+            subprocess.Popen(command, env=independent_environment())
+        except OSError:
+            log.exception("Não foi possível iniciar o novo processo")
+            status.setText(tr("Não foi possível reiniciar o Companion. Consulte companion.log."))
+            return
+        self.shutdown()
 
     def shutdown(self):
         if self.closed:
@@ -1199,6 +1251,7 @@ def main(argv=None) -> int:
     parser.add_argument("--resume-update", type=Path)
     parser.add_argument("--update-ready-file", type=Path)
     parser.add_argument("--startup-ready-file", type=Path)
+    parser.add_argument("--restart-wait", action="store_true", help=argparse.SUPPRESS)
     args = parser.parse_args(argv)
     if args.update_center:
         from .ui.updates import run_update_center
@@ -1220,7 +1273,7 @@ def main(argv=None) -> int:
     app.setQuitOnLastWindowClosed(False)
     directory = args.data_dir.resolve() if args.data_dir else Path(QStandardPaths.writableLocation(QStandardPaths.StandardLocation.AppLocalDataLocation))
     store = ConfigStore(directory)
-    if not store.acquire():
+    if not store.acquire(15000 if args.restart_wait else 0):
         if args.smoke_test or args.startup_ready_file:
             return 2
         QMessageBox.information(None, "R2 Companion", tr("Já existe uma instância usando este diretório de dados."))

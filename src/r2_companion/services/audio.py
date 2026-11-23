@@ -32,6 +32,8 @@ class AudioService(QObject):
         self.closed = False
         self.presence = None
         self.spontaneous = False
+        self.active_effect = None
+        self.active_spontaneous = False
         self.voices = {}
         self.voice_directory = None
         self.factory = factory
@@ -113,6 +115,8 @@ class AudioService(QObject):
 
     def release_bank(self, bank):
         for effect in self.bank_effects(bank):
+            if effect is self.active_effect:
+                self.active_effect = None
             effect.stop()
             effect.setSource(QUrl())
             if hasattr(effect, "deleteLater"):
@@ -165,6 +169,13 @@ class AudioService(QObject):
         if suppressed or sleeping:
             self.stop()
 
+    def set_presence(self, decision):
+        self.presence = decision
+        if self.active_effect is not None:
+            allowed = decision.spontaneous_audio if self.active_spontaneous else decision.explicit_audio
+            if not allowed:
+                self.stop()
+
     def play(self, category="notifications", cue=None) -> bool:
         options = [(name, effect) for name, effect in self.effects.get(category, [])
                    if cue is None or name.startswith(cue)]
@@ -189,12 +200,14 @@ class AudioService(QObject):
         options = [(name, effect) for name, effect in options if effect.status() == QSoundEffect.Status.Ready]
         options = [(n, e) for n, e in options if n != self.previous.get(category)] or options
         try:
-            if not options or not self.available():
+            if (not options or not self.available()
+                    or self.active_effect is not None and self.active_effect.isPlaying()):
                 return False
             name, effect = self.rng.choice(options)
-            self.stop()
             effect.setVolume(settings.volume)
             effect.play()
+            self.active_effect = effect
+            self.active_spontaneous = spontaneous
             self.last_play = now
             self.history[category] = now
             self.previous[category] = name
@@ -204,8 +217,9 @@ class AudioService(QObject):
             return False
 
     def stop(self):
-        for effect in self.all_effects():
-            effect.stop()
+        if self.active_effect is not None:
+            self.active_effect.stop()
+            self.active_effect = None
 
     def close(self):
         if self.closed:

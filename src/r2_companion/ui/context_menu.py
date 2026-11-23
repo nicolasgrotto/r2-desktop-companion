@@ -4,6 +4,7 @@ from .theme import apply_theme
 from .navigation import NAVIGATION
 from ..core.actions import ACTIONS
 from ..core.language import tr
+from ..pet.presence import PRESENCE_DESCRIPTIONS
 
 
 def create_menu(parent, actions: dict, settings, screens, tray_available: bool, *, registry=None, dispatch=None) -> QMenu:
@@ -43,12 +44,14 @@ def create_menu(parent, actions: dict, settings, screens, tray_available: bool, 
         menu.status_summary.setEnabled(False)
     if "presence_mode" in actions:
         presence = submenu(tr("Modo de presença"))
+        presence.setToolTipsVisible(True)
         group = QActionGroup(presence)
         group.setExclusive(True)
         menu.presence_actions = {}
         for mode, title in (("free", tr("Livre")), ("focus", tr("Foco")), ("presentation", tr("Apresentação"))):
             action = add(presence, "presence_" + mode, title,
                          lambda mode=mode: actions["presence_mode"](mode))
+            action.setToolTip(tr(PRESENCE_DESCRIPTIONS[mode]))
             action.setCheckable(True)
             group.addAction(action)
             menu.presence_actions[mode] = action

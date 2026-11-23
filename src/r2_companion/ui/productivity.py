@@ -95,7 +95,7 @@ class TasksPage(QWidget):
         self.status = label("", "muted")
         self.undo_button.message.connect(self.status.setText)
         store.entry_restored.connect(self.entry_restored)
-        store.restored.connect(self.render)
+        store.tasks_restored.connect(self.render)
         layout.addWidget(self.status)
         self.render()
 
@@ -204,7 +204,7 @@ class NotesPage(QWidget):
         self.status = label(tr("Salvamento automático local · Até 50.000 caracteres por nota."), "muted")
         self.undo_button.message.connect(self.status.setText)
         store.entry_restored.connect(self.entry_restored)
-        store.restored.connect(self.refresh_from_store)
+        store.notes_restored.connect(self.refresh_from_store)
         store.saved.connect(lambda: self.status.setText(tr("Salvo neste computador.")))
         store.warning.connect(self.status.setText)
         layout.addWidget(self.status)

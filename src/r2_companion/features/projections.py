@@ -27,6 +27,7 @@ def clock_model(kind):
 
 class ProjectionController(QObject):
     changed = Signal(object)
+    selection_changed = Signal(object)
 
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -48,16 +49,19 @@ class ProjectionController(QObject):
     def select(self, kind, *, automatic=False):
         if kind not in self.providers or (automatic and self.selected not in (None, kind)):
             return False
-        self.selected = kind
+        if self.selected != kind:
+            self.selected = kind
+            self.selection_changed.emit(kind)
         self.refresh()
         return True
 
     def end(self, kind=None):
-        if kind is not None and self.selected != kind:
+        if self.selected is None or kind is not None and self.selected != kind:
             return
         self.selected = None
         self.timer.stop()
         self._publish(None)
+        self.selection_changed.emit(None)
 
     def set_blocked(self, reason, blocked):
         if blocked == (reason in self.blockers):

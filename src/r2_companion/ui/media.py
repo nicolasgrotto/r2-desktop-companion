@@ -31,11 +31,9 @@ def playback_label(snapshot):
 
 
 def music_projection(view):
-    if view.status == "disabled":
-        return None
     snapshot = view.snapshot
-    if snapshot is None:
-        return ProjectionModel("music", tr("Música"), (tr("Sessão indisponível"),))
+    if view.status != "ready" or snapshot is None or snapshot.playback in {"stopped", "closed"}:
+        return None
     lines = tuple(value for value in (snapshot.title, snapshot.artist) if value)
     return ProjectionModel("music", tr("Música"), (*lines, playback_label(snapshot)))
 
@@ -43,11 +41,13 @@ def music_projection(view):
 class MediaPage(QWidget):
     enable_requested = Signal(bool)
     projection_requested = Signal()
+    projection_end_requested = Signal()
 
     def __init__(self, service):
         super().__init__()
         self.service = service
         self.projections_enabled = True
+        self.projecting = False
         self._shown = None
         self._options = None
         self._command_feedback = ""
@@ -91,10 +91,13 @@ class MediaPage(QWidget):
         tools = ActionRow()
         self.project = QPushButton(tr("Projetar música"))
         self.project.clicked.connect(self.projection_requested.emit)
+        self.end_project = QPushButton(tr("Encerrar projeção de música"))
+        self.end_project.clicked.connect(self.projection_end_requested.emit)
         self.retry = QPushButton(tr("Tentar novamente"))
         self.retry.setAccessibleDescription(tr("Atualiza a conexão ou a sessão de mídia."))
         self.retry.clicked.connect(self._retry)
         tools.addWidget(self.project)
+        tools.addWidget(self.end_project)
         tools.addWidget(self.retry)
         contents.addWidget(tools)
         service.changed.connect(self.refresh)
@@ -122,6 +125,20 @@ class MediaPage(QWidget):
         self._command_feedback = ""
         self.service.retry()
         self.refresh()
+
+    def set_projecting(self, projecting):
+        if self.projecting != projecting:
+            previous = self.end_project if self.projecting else self.project
+            focused = previous.hasFocus()
+            self.projecting = projecting
+            self.update_projection_controls()
+            if focused:
+                (self.end_project if projecting else self.project).setFocus()
+
+    def update_projection_controls(self):
+        self.project.setVisible(not self.projecting)
+        self.project.setEnabled(self.projections_enabled and music_projection(self.service.view) is not None)
+        self.end_project.setVisible(self.projecting)
 
     def _sessions(self, view):
         options = (view.sessions, view.pinned)
@@ -173,6 +190,6 @@ class MediaPage(QWidget):
         self.feedback.setVisible(bool(feedback))
         for action, button in self.controls.items():
             button.setEnabled(bool(snapshot and snapshot.capabilities.allows(action) and not pending))
-        self.project.setEnabled(snapshot is not None and self.projections_enabled)
+        self.update_projection_controls()
         self.retry.setEnabled(not pending and view.status in {"ready", "unavailable"} and
                               (bool(feedback) or snapshot is None))

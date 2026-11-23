@@ -15,6 +15,13 @@ class PresenceMode(StrEnum):
     PRESENTATION = "presentation"
 
 
+PRESENCE_DESCRIPTIONS = {
+    PresenceMode.FREE: "Mantém o mascote visível e segue suas preferências de movimento e som.",
+    PresenceMode.FOCUS: "Mantém o mascote visível e pausa passeios e sons espontâneos.",
+    PresenceMode.PRESENTATION: "Oculta o mascote e as projeções e silencia os avisos. Use Mostrar mascote na bandeja para voltar.",
+}
+
+
 class FullscreenAction(StrEnum):
     NONE = "none"
     HIDE = "hide"
@@ -126,10 +133,12 @@ class PresencePolicy:
                        or mode == PresenceMode.PRESENTATION and not recovery
                        or context.fullscreen == FullscreenAction.HIDE and not recovery)
         interactive = visible and not recovery and not fullscreen and not context.transient_gates
+        radial_only = context.transient_gates == {"radial"}
+        passive = visible and not recovery and not fullscreen and (interactive or radial_only)
         initiative = (interactive and context.autonomy_enabled
                       and not context.paused and not context.quiet_hours)
         audio = interactive and context.sound_enabled and not context.muted and not context.quiet_hours
-        passive = interactive
+        explicit_audio = passive and context.sound_enabled and not context.muted and not context.quiet_hours
         # The first active restriction is a stable, content-free status reason.
         reasons = (
             (context.suspended, "suspended", tr("Sessão suspensa ou bloqueada")),
@@ -155,11 +164,11 @@ class PresencePolicy:
             spontaneous_audio=(audio and initiative and mode == PresenceMode.FREE
                                and not context.media_playing),
             explicit_reactions=interactive,
-            explicit_audio=audio,
+            explicit_audio=explicit_audio,
             notifications=interactive and not context.quiet_hours,
             character_visible=visible,
             passive_surfaces=passive,
-            continuous_effects=passive and not context.reduced_motion,
+            continuous_effects=interactive and not context.reduced_motion,
             reason=reason,
             reason_text=text,
         )

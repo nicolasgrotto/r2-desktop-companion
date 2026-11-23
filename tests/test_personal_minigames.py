@@ -7,7 +7,7 @@ from PySide6.QtWidgets import QDialogButtonBox, QMessageBox
 from r2_companion.features.minigames import GAMES, game_url, load_thumbnail, new_entry, open_game, personal_games, save_game, thumbnail_image
 from r2_companion.services.companion_state import CompanionStateStore, validate_document
 from r2_companion.services.storage import ConfigStore
-from r2_companion.ui.minigames import GameEditor, MinigamesPage
+from r2_companion.ui.minigames import GameEditor, MinigamesPage, game_icon
 from test_context_v03 import pet
 from test_focus_ui import tab_to
 from test_data_transfer import wait_for_backups
@@ -18,6 +18,12 @@ from test_data_transfer import wait_for_backups
 def test_game_url_requires_valid_https_without_credentials(url):
     with pytest.raises(ValueError, match="HTTPS"):
         game_url(url)
+
+
+def test_exploration_icon_differs_from_game_icon(qapp):
+    play = game_icon("play", "").pixmap(48, 48).toImage()
+    compass = game_icon("explore", "").pixmap(48, 48).toImage()
+    assert not compass.isNull() and compass != play
 
 
 @pytest.fixture

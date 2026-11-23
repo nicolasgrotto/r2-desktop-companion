@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from PySide6.QtWidgets import QFileDialog, QMessageBox, QPushButton, QScrollArea, QVBoxLayout, QWidget
+from PySide6.QtWidgets import QFileDialog, QMenu, QMessageBox, QPushButton, QScrollArea, QVBoxLayout, QWidget
 
 from ..core.config import FutureSchemaError
 from ..features.data_transfer import BACKUP_LABELS
@@ -39,7 +39,16 @@ class DataPage(QScrollArea):
             restore = QPushButton(tr("Restaurar backup"))
             restore.setAccessibleName(tr("Restaurar backup de {0}", title.lower()))
             restore.setEnabled(False)
-            restore.clicked.connect(lambda checked=False, key=group: self.restore(key))
+            if group == "tools":
+                choices = QMenu(restore)
+                for collection, caption in ((None, "Restaurar tarefas e notas"),
+                                            ("notes", "Restaurar somente notas"),
+                                            ("tasks", "Restaurar somente tarefas")):
+                    choice = choices.addAction(tr(caption))
+                    choice.triggered.connect(lambda checked=False, key=collection: self.restore("tools", key))
+                restore.setMenu(choices)
+            else:
+                restore.clicked.connect(lambda checked=False, key=group: self.restore(key))
             content.addWidget(restore)
             layout.addWidget(panel)
             self.rows[group] = state, restore
@@ -116,19 +125,19 @@ class DataPage(QScrollArea):
         else:
             self.status.setText(tr("Tarefas e notas exportadas."))
 
-    def restore(self, group):
+    def restore(self, group, collection=None):
         if self.restoring or not self.transfer.can_restore(group):
             return
-        if self.tasks.submit(lambda: self.transfer.inspect(group), self.confirm_restore):
+        if self.tasks.submit(lambda: self.transfer.inspect(group), lambda backup: self.confirm_restore(backup, collection)):
             self.restoring = True
             self.status.setText(tr("Conferindo o backup…"))
             self.update_buttons()
 
-    def confirm_restore(self, backup):
+    def confirm_restore(self, backup, collection=None):
         if isinstance(backup, Exception):
             self.finish_restore(backup)
             return
-        title = tr(BACKUP_LABELS[backup.group])
+        title = tr({"notes": "Notas", "tasks": "Tarefas"}.get(collection, BACKUP_LABELS[backup.group]))
         message = (tr("Substituir os dados atuais de {0} pelo backup? O Companion guardará uma cópia recuperável dos dados atuais.", title.lower()))
         answer = QMessageBox.question(self, tr("Restaurar backup"), message, defaultButton=QMessageBox.StandardButton.No)
         if answer != QMessageBox.StandardButton.Yes:
@@ -137,7 +146,7 @@ class DataPage(QScrollArea):
             self.update_buttons()
             return
         self.status.setText(tr("Restaurando backup…"))
-        self.tasks.submit(lambda: self.transfer.prepare_restore(backup), self.finish_restore)
+        self.tasks.submit(lambda: self.transfer.prepare_restore(backup, collection), self.finish_restore)
 
     def finish_restore(self, prepared):
         try:

@@ -10,6 +10,7 @@ from ..core.config import Settings, Shortcut, Target
 from ..features.launcher import validate_executable
 from ..features.locations import validate_location
 from ..pet.personality import apply_profile
+from ..pet.presence import PRESENCE_DESCRIPTIONS
 from .targets import TargetDelegate, filter_targets, target_item
 from .theme import (ActionRow, apply_character_name, apply_theme, card, configure_form, form_row,
                     header, icon, label, scrollable)
@@ -20,6 +21,7 @@ class SettingsDialog(QDialog):
     applied = Signal(object, object)
     presence_applied = Signal(str)
     accessibility_applied = Signal(int, bool)
+    restart_requested = Signal()
 
     def __init__(self, settings: Settings, startup_available: bool, startup_enabled: bool, startup_status: str,
                  droid_profile=None, *, ui_scale=100, shortcut_settings=None, language_store=None):
@@ -54,7 +56,13 @@ class SettingsDialog(QDialog):
         self.presence_mode = QComboBox()
         for caption, value in ((tr("Livre"), "free"), (tr("Foco"), "focus"), (tr("Apresentação"), "presentation")):
             self.presence_mode.addItem(caption, value)
+            self.presence_mode.setItemData(self.presence_mode.count() - 1, tr(PRESENCE_DESCRIPTIONS[value]),
+                                           Qt.ItemDataRole.ToolTipRole)
         form_row(form, tr("Modo de presença"), self.presence_mode)
+        self.presence_description = label("", "muted")
+        self.presence_mode.currentIndexChanged.connect(self.describe_presence)
+        self.describe_presence()
+        form.addRow(self.presence_description)
         self.presence_status = label(tr("Livre"), "muted")
         self.presence_status.setWordWrap(True)
         form.addRow(self.presence_status)
@@ -81,8 +89,12 @@ class SettingsDialog(QDialog):
             form_row(form, "Idioma / Language", self.language_choice)
             row = ActionRow()
             row.addWidget(self.language_save)
-            row.addWidget(self.language_status, 1)
+            self.language_restart = QPushButton(tr("Reiniciar Companion"))
+            self.language_restart.setAutoDefault(False)
+            self.language_restart.clicked.connect(lambda: self.restart_with_language(language_store))
+            row.addWidget(self.language_restart)
             form.addRow(row)
+            form.addRow(self.language_status)
         if shortcut_settings is not None:
             form.addRow(shortcut_settings)
         self.scale = QSpinBox()
@@ -347,15 +359,26 @@ class SettingsDialog(QDialog):
         self.draft.shortcuts = [t for t in self.draft.shortcuts if t.id != entry_id and t.target_id != entry_id]
         self.render_targets()
 
+    def describe_presence(self, *_):
+        description = tr(PRESENCE_DESCRIPTIONS[self.presence_mode.currentData()])
+        self.presence_description.setText(description)
+        self.presence_mode.setAccessibleDescription(description)
+
+    def restart_with_language(self, store):
+        if self.save_language(store):
+            self.restart_requested.emit()
+
     def save_language(self, store):
         requested = self.language_choice.currentData()
         if not store.save_language(requested):
             saved = store.data["appearance"]["language"]
             self.language_status.setText(tr("Não foi possível salvar. O Companion voltará a abrir em {0}.", LANGUAGES[saved]))
+            return False
         elif requested == active_language():
             self.language_status.setText(tr("Idioma salvo · {0}", LANGUAGES[requested]))
         else:
             self.language_status.setText(tr("Idioma salvo. Reinicie o Companion para usar {0}.", LANGUAGES[requested]))
+        return True
 
     def apply(self, close: bool):
         self.draft.personality = self.personality.currentData()

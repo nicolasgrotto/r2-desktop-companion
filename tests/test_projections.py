@@ -6,6 +6,7 @@ from PySide6.QtTest import QSignalSpy, QTest
 from r2_companion.droids.themes import theme_manager
 
 from r2_companion.features.projections import ProjectionController, ProjectionModel
+from r2_companion.pet.state import State
 from r2_companion.ui.projection import card_size, place_card, render_card
 from test_context_v03 import pet
 
@@ -74,6 +75,23 @@ def test_projection_swap_reanchors_without_replacing_view_or_taking_focus(pet, q
     eye = overlay.eye + QPointF(overlay.pos())
     assert eye.x() == pytest.approx(pet.window.x() + pet.window.width() * x)
     assert eye.y() == pytest.approx(pet.window.y() + pet.window.height() * y)
+
+
+def test_wheel_preserves_projection_without_covering_it_or_greeting(pet, qapp, monkeypatch):
+    pet.positioning.place(QPointF(500, 500))
+    overlay = pet.window.projection_overlay
+    greetings = []
+    monkeypatch.setattr(pet.bubble, "present", lambda message, _: greetings.append(message))
+    assert pet.project_tool("date") and overlay.isVisible()
+    pet.controller.enter(State.INTERACT)
+    assert not greetings
+    pet.radial.popup_near(pet.window)
+    assert pet.radial.isVisible() and overlay.isVisible()
+    assert pet.window.projection_kind == "date" and pet.window.projection.timer.isActive()
+    assert not overlay.card.translated(QPointF(overlay.pos())).intersects(QRectF(pet.radial.geometry()))
+    assert not overlay._wheel_clip.isEmpty()
+    pet.radial.hide()
+    assert overlay.isVisible() and overlay._wheel_clip.isEmpty()
 
 
 @pytest.mark.parametrize(("x", "y"), [(-1580, -310), (-1300, -310), (-620, 80), (-1500, 210)])

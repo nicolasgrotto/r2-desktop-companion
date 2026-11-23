@@ -63,15 +63,12 @@ def test_escape_chooses_a_visible_destination_outside_window(obstacle):
 def test_robot_walks_out_of_obstructed_window_using_existing_controller(pet):
     pet.positioning.place(QPointF(400, 300))
     obstacle = QRectF(300, 200, 400, 400)
-    for _ in range(8):
-        if not QRectF(pet.window.geometry()).intersects(obstacle):
-            break
-        pet.controller.enter(State.IDLE)
-        assert pet.awareness.avoid_window(obstacle)
-        assert pet.controller.state == State.WALK
-        assert pet.positioning.timer.isActive()
-        pet.positioning.started -= 10
-        pet.positioning.tick()
+    pet.controller.enter(State.IDLE)
+    assert pet.awareness.avoid_window(obstacle)
+    assert pet.controller.state == State.WALK
+    assert pet.positioning.timer.isActive() and pet.positioning.duration < 2
+    pet.positioning.started -= 2
+    pet.positioning.tick()
     assert not QRectF(pet.window.geometry()).intersects(obstacle)
 
 

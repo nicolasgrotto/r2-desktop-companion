@@ -257,12 +257,21 @@ def _colored_icon(name: str, color: str) -> QIcon:
         elif name == "pause":
             p.drawRoundedRect(QRectF(8, 6, 5, 20), 1, 1)
             p.drawRoundedRect(QRectF(19, 6, 5, 20), 1, 1)
-        elif name in {"play", "explore"}:
+        elif name == "play":
             path = QPainterPath(QPointF(10, 6))
             path.lineTo(25, 16)
             path.lineTo(10, 26)
             path.closeSubpath()
             p.drawPath(path)
+        elif name == "explore":
+            p.drawEllipse(QRectF(4, 4, 24, 24))
+            compass = QPainterPath(QPointF(22, 10))
+            compass.lineTo(18, 18)
+            compass.lineTo(10, 22)
+            compass.lineTo(14, 14)
+            compass.closeSubpath()
+            p.drawPath(compass)
+            p.drawLine(QPointF(14, 14), QPointF(18, 18))
         elif name == "duel":
             p.drawLine(QPointF(7, 5), QPointF(25, 27))
             p.drawLine(QPointF(25, 5), QPointF(7, 27))

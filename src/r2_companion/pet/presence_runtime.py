@@ -76,13 +76,11 @@ class PresenceRuntime:
             c.positioning.reduced_motion = reduced
             c.controller.set_presence(d)
             c.animation.set_reduced_motion(reduced)
-            c.audio.presence = d
+            c.audio.set_presence(d)
             c.audio.spontaneous = c.controller.action_spontaneous
             c.audio.set_context(bool(c.controller.gates - {"radial", "hidden"}) or c.fullscreen_active
                                 or not d.character_visible or d.mode == PresenceMode.PRESENTATION,
                                 c.controller.state == State.SLEEP or c.controller.inactive)
-            if not (d.spontaneous_audio if c.audio.spontaneous else d.explicit_audio):
-                c.audio.stop()
             c.tray.notifications_enabled = d.notifications
             if not d.notifications:
                 c.tray.notice.stop()

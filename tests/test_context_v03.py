@@ -65,7 +65,7 @@ def test_fullscreen_hides_and_restores_with_no_motion_audio_or_bubble(pet, monke
     assert not pet.audio.suppressed
 
 
-def test_manual_corner_survives_save_load_and_fullscreen(pet, monkeypatch):
+def test_manual_corner_survives_save_load_and_fullscreen(pet, monkeypatch, clock):
     pet.positioning.place(QPointF(-100000, -100000))
     pet.drag_started()
     assert pet.controller.state == State.DRAG
@@ -77,9 +77,13 @@ def test_manual_corner_survives_save_load_and_fullscreen(pet, monkeypatch):
     restored.load()
     assert restored.settings.manual_position == manual
     pet.positioning.place(QPointF(500, 500))
+    pet.positioning.clock = clock
     monkeypatch.setattr("r2_companion.app.foreground_fullscreen", lambda hwnd: True)
     pet.check_desktop()
     assert pet.window.isVisible() and pet.fullscreen_action == "corner"
+    assert pet.positioning.timer.isActive() and pet.positioning.duration < 1.5
+    clock.advance(1.5)
+    pet.positioning.tick()
     assert detect_corner(QPointF(pet.window.pos()), QRectF(pet.positioning.screen.availableGeometry()), QSizeF(pet.window.size())) == "top_left"
     before = pet.window.pos()
     pet.awareness.observe(QPointF(700, 700))

@@ -107,7 +107,12 @@ class PetController(QObject):
             if self.next_destination is not None:
                 destination = self.next_destination
                 self.next_destination = None
-                if self.positioning.walk_toward(destination, 4, self.token):
+                escaping = self.reactions.active is not None and self.reactions.active.source == "obstacle"
+                if escaping:
+                    started = self.positioning.walk_toward(destination, 1.25, self.token, max_distance=None)
+                else:
+                    started = self.positioning.walk_toward(destination, 4, self.token)
+                if started:
                     return
                 self.enter(State.IDLE)
                 return

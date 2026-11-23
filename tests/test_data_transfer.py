@@ -70,6 +70,29 @@ def test_exports_valid_utf8_and_protects_internal_files(transfer, tmp_path, monk
     assert text.read_bytes() == "Primeira linha\nSegunda — 日本語".encode()
 
 
+@pytest.mark.parametrize("collection,other", [("tasks", "notes"), ("notes", "tasks")])
+def test_partial_tools_restore_keeps_live_other_collection(transfer, collection, other):
+    tools = transfer.productivity
+    task = tools.add_task("Backup")
+    note = tools.add_note()
+    tools.edit_note(note, "Backup", "Texto do backup")
+    assert tools.flush()
+    tools.set_done(task, True)
+    tools.edit_note(note, "Atual", "Texto atual")
+    assert tools.flush()
+    tools.remove(other, note if other == "notes" else task)
+    current = tools.data
+    backup = transfer.inspect("tools")
+
+    recovery = transfer.restore(backup, collection)
+
+    assert tools.data[collection] == backup.data[collection]
+    assert tools.data[other] == current[other] == []
+    assert tools.undo_collection == other and not tools.dirty
+    assert tools.read(tools.path) == tools.data
+    assert tools.read(recovery) == current
+
+
 def test_backup_inspection_enforces_schema_size_and_confirmed_contents(transfer, tmp_path):
     tools = transfer.productivity
     valid = b'{"schema_version":1,"tasks":[],"notes":[]}'
@@ -109,7 +132,10 @@ def test_cancel_and_atomic_restore_failure_leave_current_data_and_backup(transfe
     monkeypatch.setattr(QMessageBox, "question", lambda *args, **kwargs: QMessageBox.StandardButton.No)
     page.refresh()
     wait_for_backups(page)
-    page.rows["tools"][1].click()
+    choices = page.rows["tools"][1].menu().actions()
+    assert [choice.text() for choice in choices] == ["Restaurar tarefas e notas", "Restaurar somente notas",
+                                                     "Restaurar somente tarefas"]
+    choices[0].trigger()
     wait_for_backups(page)
     assert page.status.text() == "Restauração cancelada."
     assert tools.path.read_bytes() == document and not transfer.recovery_path(tools).exists()

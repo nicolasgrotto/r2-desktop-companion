@@ -73,6 +73,8 @@ class ProductivityStore(QObject):
     undo_changed = Signal()
     entry_restored = Signal(str, str)
     restored = Signal()
+    tasks_restored = Signal()
+    notes_restored = Signal()
 
     def __init__(self, directory: Path, read_only=False):
         super().__init__()
@@ -218,10 +220,16 @@ class ProductivityStore(QObject):
             self._deleted_entry = None
             self.undo_changed.emit()
 
-    def accept_restored(self, data):
+    def accept_restored(self, data, collection=None):
         self.data = data
         self.timer.stop()
         self.dirty = False
-        self.discard_undo()
-        self.tasks_changed.emit()
-        self.restored.emit()
+        if collection is None or self.undo_collection == collection:
+            self.discard_undo()
+        if collection != "notes":
+            self.tasks_restored.emit()
+            self.tasks_changed.emit()
+        if collection != "tasks":
+            self.notes_restored.emit()
+        if collection is None:
+            self.restored.emit()

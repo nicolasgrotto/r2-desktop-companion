@@ -63,8 +63,8 @@ def test_transient_gates_block_new_actions_without_hiding_character(gate):
     result = decision(transient_gates={gate}, sound_enabled=True)
     assert result.character_visible
     assert not any((result.autonomous_movement, result.initiative, result.spontaneous_audio,
-                    result.explicit_audio, result.explicit_reactions, result.notifications,
-                    result.passive_surfaces, result.continuous_effects))
+                    result.explicit_reactions, result.notifications, result.continuous_effects))
+    assert result.explicit_audio == result.passive_surfaces == (gate == "radial")
     assert result.reason == "transient"
 
 
