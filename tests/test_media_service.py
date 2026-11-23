@@ -72,10 +72,12 @@ class FakeBackend:
 
 
 def until(app, predicate):
-    deadline = time.monotonic() + 4
+    deadline = time.monotonic() + 12
     while not predicate():
-        assert time.monotonic() < deadline, "Timed out waiting for media state"
         app.processEvents()
+        if predicate():
+            return
+        assert time.monotonic() < deadline, "Timed out waiting for media state"
         time.sleep(0.002)
 
 

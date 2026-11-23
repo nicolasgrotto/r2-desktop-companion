@@ -140,6 +140,7 @@ def test_scaled_preferences_radial_menu_and_tools_on_windows(pet):
     initial_pet_size = pet.window.size()
     pet.show_settings()
     settings = pet.settings_dialog
+    assert QTest.qWaitForWindowActive(settings)
     try:
         settings.ui_scale.setFocus()
         QTest.keyClick(settings.ui_scale, Qt.Key.Key_End)
@@ -163,7 +164,7 @@ def test_scaled_preferences_radial_menu_and_tools_on_windows(pet):
             pet.companion_state.update("accessibility", {"ui_scale": 100})
         pet.radial.popup_near(pet.window)
         wheel = pet.radial
-        QTest.qWaitForWindowActive(wheel, 1000)
+        assert QTest.qWaitForWindowActive(wheel)
         QTest.keyClick(wheel.buttons["tools"], Qt.Key.Key_Return)
         assert wheel.level == "tools"
         QTest.keyClick(wheel.buttons["tools_center"], Qt.Key.Key_Tab)
@@ -177,7 +178,7 @@ def test_scaled_preferences_radial_menu_and_tools_on_windows(pet):
 
         pet.show_menu(pet.window.geometry().center())
         menu = pet.menu
-        action = next(action for action in menu.action_refs if action.data() == "notes")
+        action = next(action for action in menu.actions() if action.data() == "notes")
         menu.setActiveAction(action)
         QTest.keyClick(menu, Qt.Key.Key_Return)
         assert not menu.isVisible() and pet.tools.tabs.currentWidget() is pet.tools.pages["notes"]

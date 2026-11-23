@@ -93,15 +93,25 @@ def save_game(store, game, entry):
 def load_thumbnail(path):
     file = Path(path)
     try:
-        within_limit = file.is_file() and file.stat().st_size <= MAX_IMAGE_BYTES
-    except OSError:
-        within_limit = False
-    if not within_limit:
+        with file.open("rb") as handle:
+            contents = handle.read(MAX_IMAGE_BYTES + 1)
+    except OSError as error:
+        raise ValueError(tr("Não foi possível ler a imagem.")) from error
+    if len(contents) > MAX_IMAGE_BYTES:
         raise ValueError(tr("Escolha uma imagem PNG ou JPEG de até 16 MiB."))
-    reader = QImageReader(str(file))
-    reader.setDecideFormatFromContent(True)
+    if contents.startswith(b"\x89PNG\r\n\x1a\n"):
+        image_format = b"png"
+    elif contents.startswith(b"\xff\xd8\xff"):
+        image_format = b"jpeg"
+    else:
+        raise ValueError(tr("A imagem deve estar no formato PNG ou JPEG."))
+    data = QByteArray(contents)
+    source = QBuffer(data)
+    source.open(QIODevice.OpenModeFlag.ReadOnly)
+    reader = QImageReader(source, image_format)
+    reader.setAutoDetectImageFormat(False)
     size = reader.size()
-    if reader.format().data() not in (b"png", b"jpeg") or not size.isValid():
+    if not size.isValid():
         raise ValueError(tr("A imagem deve estar no formato PNG ou JPEG."))
     if size.width() * size.height() > MAX_IMAGE_PIXELS:
         raise ValueError(tr("A imagem excede o limite de 16 megapixels."))

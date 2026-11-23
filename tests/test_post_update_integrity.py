@@ -10,6 +10,7 @@ from r2_companion import __version__
 from r2_companion.app import Companion
 from r2_companion.services.storage import ConfigStore
 from r2_companion.services.updates import confirm_startup, independent_environment, runtime_identity, UpdateService
+from r2_companion.ui.navigation import NAVIGATION
 from r2_companion.ui.updates import UpdateCenter
 from test_navigation_v111 import click_item
 
@@ -106,10 +107,15 @@ def test_update_lifecycle_preserves_all_droids_and_rebuilds_working_navigation(q
         confirm_startup(tmp_path / "updates" / ("startup-" + "c" * 32 + ".json"), tmp_path)
         QTest.qWait(80)
         for page in current.tools.pages:
-            current.radial.popup_near(current.window)
-            if page not in {"minigames", "diagnostics"}:
-                click_item(current, "tools")
-            click_item(current, page)
+            level = next((level for level in ("main", "tools")
+                          if any(action.id == page for action in NAVIGATION[level])), None)
+            if level is None:
+                next(action for action in current.menu.action_refs if action.data() == page).trigger()
+            else:
+                current.radial.popup_near(current.window)
+                if level != "main":
+                    click_item(current, level)
+                click_item(current, page)
             assert current.tools.isVisible() and current.tools.tabs.currentWidget() is current.tools.pages[page]
             current.tools.close()
             assert not current.tools.clock_timer.isActive() and not current.monitor.timer.isActive()

@@ -54,7 +54,7 @@ def test_wheel_has_registered_levels_and_blocks_duplicates_during_real_animation
     assert wheel.transitioning and wheel.transition.state() == QAbstractAnimation.State.Running
     wheel.select("minigames")
     wheel.back()
-    QTest.qWait(50)
+    wheel.transition.setCurrentTime(50)
     assert any(button.geometry() != initial.get(key) for key, button in wheel.buttons.items())
     wait_transition(wheel)
     assert wheel.level == "tools" and selected.count() == 0

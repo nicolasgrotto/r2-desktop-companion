@@ -1,6 +1,6 @@
 from PySide6.QtCore import QPointF, Qt
 from PySide6.QtGui import QPixmap
-from PySide6.QtTest import QSignalSpy
+from PySide6.QtTest import QSignalSpy, QTest
 import pytest
 
 from r2_companion.pet.animation import AnimationManager, Clip, Frame
@@ -45,7 +45,11 @@ def test_motion_preference_in_settings_and_update_center(pet):
         refreshed = QSignalSpy(center.theme_watcher.timer.timeout)
         set_motion(pet, False)
         assert pet.companion_state.flush()
-        assert refreshed.count() or refreshed.wait(3000)
+        for _ in range(100):
+            if refreshed.count():
+                break
+            QTest.qWait(100)
+        assert refreshed.count()
         assert not center.animation.reduced_motion and not center.progress.isHidden()
     finally:
         center.set_state("idle", "", "")

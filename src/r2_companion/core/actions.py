@@ -39,7 +39,7 @@ ACTIONS = {action.id: action for action in (
     Action("project_clock", "Projetar relógio", "clock", "Exibir a hora no holograma."),
     Action("project_date", "Projetar horário e data", "clock", "Exibir a hora e a data no holograma."),
     Action("project_stop", "Encerrar projeção", "close", "Fechar o cartão holográfico."),
-    Action("settings", "Preferências", "settings", "Abrir as configurações do Companion."),
+    Action("settings", "Configurações", "settings", "Abrir as configurações do Companion."),
     Action("audio", "Central de Áudio", "system", "Ajustar os sons do Companion."),
     Action("updates", "Atualizações", "system", "Abrir a Central de Atualizações."),
     Action("apps", "Aplicativos", "apps", "Abrir o painel de aplicativos."),
