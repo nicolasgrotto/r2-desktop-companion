@@ -6,6 +6,7 @@ from PySide6.QtGui import QColor, QGuiApplication, QIcon, QPainter, QPainterPath
 from PySide6.QtWidgets import (QBoxLayout, QFormLayout, QFrame, QHBoxLayout, QLabel, QLayout,
                                QScrollArea, QVBoxLayout, QWidget)
 from ..droids.themes import COLOR_TOKENS, color as theme_color, color, styled, theme_manager
+from ..core.language import tr
 
 NAVY = "#102c48"
 BLUE = "#216eea"
@@ -164,7 +165,7 @@ def header(title: str, subtitle: str) -> QWidget:
     layout.addWidget(brand)
     text = QVBoxLayout()
     text.setSpacing(3)
-    text.addWidget(label("COMPANION / CONTROLE LOCAL", "eyebrow"))
+    text.addWidget(label(tr("COMPANION / CONTROLE LOCAL"), "eyebrow"))
     text.addWidget(label(title, "heading"))
     subtitle_label = label(subtitle, "muted")
     subtitle_label.setWordWrap(True)

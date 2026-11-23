@@ -62,6 +62,7 @@ from .droids.controller import DroidController
 from .droids.movement import create_movement
 from .droids.visuals import load_profile_clips
 from .droids.themes import resolve_theme, theme_manager
+from .core.language import activate_language, tr
 
 ASSETS = Path(__file__).resolve().parent / "assets"
 log = logging.getLogger(__name__)
@@ -86,10 +87,12 @@ class Companion(QObject):
         self._switching_droid = False
         self.droid_error = ""
         self.garage_dialog = self.audio_dialog = None
+        self.companion_state = CompanionStateStore(store)
+        activate_language(qt_app, self.companion_state.data["appearance"]["language"])
         self.droids = DroidRegistry(ASSETS)
         identifier = store.settings.active_droid
         if identifier not in self.droids.profiles:
-            store.notices.append("Personagem salvo indisponível; o padrão foi restaurado e suas preferências foram preservadas.")
+            store.notices.append(tr("Personagem salvo indisponível; o padrão foi restaurado e suas preferências foram preservadas."))
             identifier = self.droids.default_id
         candidates = list(dict.fromkeys([identifier, self.droids.default_id, *self.droids.profiles]))
         for candidate in candidates:
@@ -98,15 +101,14 @@ class Companion(QObject):
                 clips = load_profile_clips(profile)
                 self.audio = AudioService(ASSETS / "sounds", profile=profile.audio)
             except (OSError, ValueError, RuntimeError, KeyError, TypeError):
-                store.notices.append("Recursos de um personagem indisponíveis; usando outro perfil válido.")
+                store.notices.append(tr("Recursos de um personagem indisponíveis; usando outro perfil válido."))
                 continue
             self.droids.active_id = candidate
             self.profile = profile
             break
         else:
-            raise ValueError("Nenhum personagem possui recursos válidos para iniciar.")
+            raise ValueError(tr("Nenhum personagem possui recursos válidos para iniciar."))
         store.apply(select_droid(store.settings, self.profile), notify=False)
-        self.companion_state = CompanionStateStore(store)
         self.media = MediaService(self)
         self.companion_state.changed.connect(self.apply_media_preference)
         self.apply_media_preference(self.companion_state.data)
@@ -216,7 +218,7 @@ class Companion(QObject):
         self.first_steps_dismissed = None
         self.hotkey = GlobalHotkey()
         self.hotkey_preference = None
-        self.hotkey_status = "Atalho desativado."
+        self.hotkey_status = tr("Atalho desativado.")
         self.session_events.signals.hotkey.connect(self.on_hotkey, Qt.ConnectionType.QueuedConnection)
         self.companion_state.changed.connect(self.apply_discovery_preferences)
         self.apply_discovery_preferences(self.companion_state.data)
@@ -249,7 +251,7 @@ class Companion(QObject):
         self.greeting_timer.timeout.connect(self.awareness.greet)
         self.greeting_timer.start(750)
         for notice in store.notices + self.productivity.notices + self.companion_state.notices:
-            QTimer.singleShot(100, lambda message=notice: self.warning(message))
+            QTimer.singleShot(100, lambda message=tr(notice): self.warning(message))
         self.radial.record("companion_ready")
 
     def trace_navigation(self, event, **fields):
@@ -344,12 +346,12 @@ class Companion(QObject):
 
     def droid_diagnostics(self):
         result = collect_diagnostics(self.awareness.info, self.audio)
-        result.update({"Personagem": f"{self.profile.name} ({self.profile.id})",
-                       "Locomoção": type(self.positioning.movement).__name__,
-                       "Renderizador": self.profile.renderer, "Animações registradas": str(len(self.profile.animations)),
-                       "Perfil vocal": self.audio.profile_id, "Tema": theme_manager().active.name,
-                       "Tema original": self.profile.theme.name,
-                       "Arte": self.profile.art_status, "Perfis rejeitados": str(len(self.droids.errors))})
+        result.update({tr("Personagem"): f"{self.profile.name} ({self.profile.id})",
+                       tr("Locomoção"): type(self.positioning.movement).__name__,
+                       tr("Renderizador"): self.profile.renderer, tr("Animações registradas"): str(len(self.profile.animations)),
+                       tr("Perfil vocal"): self.audio.profile_id, tr("Tema"): theme_manager().active.name,
+                       tr("Tema original"): self.profile.theme.name,
+                       tr("Arte"): self.profile.art_status, tr("Perfis rejeitados"): str(len(self.droids.errors))})
         return result
 
     def show_droid_dialog(self, attribute, factory):
@@ -380,7 +382,7 @@ class Companion(QObject):
 
     def equip_droid(self, identifier, preferences=None, *, recovery=None):
         if self.closed or self._switching_droid or self.window.dragging:
-            self.droid_error = "Aguarde o término do arrasto ou da troca em andamento."
+            self.droid_error = tr("Aguarde o término do arrasto ou da troca em andamento.")
             return False
         prepared = None
         try:
@@ -392,7 +394,7 @@ class Companion(QObject):
                 prepared.movement.close()
                 prepared.movement.deleteLater()
                 self.audio.release_bank(prepared.audio_bank)
-            self.droid_error = f"Não foi possível preparar o personagem: {error}"
+            self.droid_error = tr("Não foi possível preparar o personagem: {0}", error)
             return False
         previous = deepcopy(self.store.settings)
         previous_dirty = self.store.dirty
@@ -426,7 +428,7 @@ class Companion(QObject):
             if recovery is None:
                 self.store.apply(selected, notify=False)
                 if not self.store.flush():
-                    raise OSError("Falha ao persistir a troca; o personagem anterior foi mantido.")
+                    raise OSError(tr("Falha ao persistir a troca; o personagem anterior foi mantido."))
             else:
                 recovery[1](selected)
                 self.store.accept_restored(selected)
@@ -461,7 +463,7 @@ class Companion(QObject):
                 self.positioning.restore(position)
             self.controller.inactive = previous_inactive
             self.controller.enter(previous_state if previous_state != State.WALK else State.IDLE)
-            self.droid_error = f"Troca cancelada: {error}"
+            self.droid_error = tr("Troca cancelada: {0}", error)
             log.warning("%s", self.droid_error)
             return False
         finally:
@@ -495,7 +497,7 @@ class Companion(QObject):
             return None
         remaining = self.countdown.remaining
         progress = 1 - ceil(remaining) / self.countdown.duration
-        return ProjectionModel("timer", "Temporizador", (timer_text(remaining), self.countdown.state.value), progress)
+        return ProjectionModel("timer", tr("Temporizador"), (timer_text(remaining), tr(self.countdown.state.value)), progress)
 
     def update_timer_projection(self, force=False):
         new_run = self._timer_projection_run != self.countdown.run_id
@@ -531,8 +533,8 @@ class Companion(QObject):
                 or session.state not in (TimerState.RUNNING, TimerState.PAUSED)):
             return None
         remaining = self.countdown.remaining
-        title = "Foco" if session.phase == FocusPhase.FOCUS else "Intervalo"
-        lines = (timer_text(remaining), session.state.value)
+        title = tr("Foco") if session.phase == FocusPhase.FOCUS else tr("Intervalo")
+        lines = (timer_text(remaining), tr(session.state.value))
         task = self.productivity.task(session.task_id)
         if task:
             lines += (task["text"],)
@@ -556,7 +558,7 @@ class Companion(QObject):
         self.window.sleep_effect.set_active(state == State.SLEEP and effects)
         self.window.steam.set_active(state == State.OVERHEAT and effects)
         if state == State.INTERACT:
-            self.present_bubble("Bip! Pronto para acompanhar você.")
+            self.present_bubble(tr("Bip! Pronto para acompanhar você."))
 
     def present_bubble(self, message):
         if (self.presence.decision.notifications and self.store.settings.bubbles
@@ -638,14 +640,14 @@ class Companion(QObject):
 
     def tray_unavailable(self):
         if not QSystemTrayIcon.isSystemTrayAvailable():
-            return "A bandeja do Windows está indisponível."
+            return tr("A bandeja do Windows está indisponível.")
         return None
 
     def projection_unavailable(self):
         if not self.store.settings.holograms:
-            return "Ative as projeções nas Configurações."
+            return tr("Ative as projeções nas Configurações.")
         if self.fullscreen_hidden or self.session_hidden or self.user_hidden:
-            return "O mascote está oculto."
+            return tr("O mascote está oculto.")
         return None
 
     def toggle_pass_through(self):
@@ -666,7 +668,7 @@ class Companion(QObject):
         if self.companion_state.save_action_preferences("onboarding", {"dismissed": True}):
             self.first_steps.panel.hide()
         else:
-            self.first_steps.status.setText("Não foi possível gravar a dispensa da ajuda.")
+            self.first_steps.status.setText(tr("Não foi possível gravar a dispensa da ajuda."))
 
     def apply_discovery_preferences(self, document):
         if self.closed:
@@ -697,13 +699,13 @@ class Companion(QObject):
 
         try:
             accepted = self.hotkey.configure(enabled, shortcut, save)
-            status = (f"Atalho ativo · {shortcut}" if enabled else "Atalho desativado.") if accepted else (
-                "Não foi possível gravar. O atalho anterior foi preservado.")
+            status = (tr("Atalho ativo · {0}", shortcut) if enabled else tr("Atalho desativado.")) if accepted else (
+                tr("Não foi possível gravar. O atalho anterior foi preservado."))
         except ValueError as error:
             accepted = False
             status = str(error)
             if self.hotkey.active:
-                status += " O atalho anterior continua ativo."
+                status += tr(" O atalho anterior continua ativo.")
         if not accepted:
             self.hotkey_preference = previous
         self.hotkey_status = status
@@ -937,14 +939,14 @@ class Companion(QObject):
             self.radial.record("window_presentation", component=type(dialog).__name__, **native)
             if not native["native_visible"]:
                 dialog.close()
-                raise RuntimeError("A janela solicitada não foi exibida pelo Windows")
+                raise RuntimeError(tr("A janela solicitada não foi exibida pelo Windows"))
 
     def project_tool(self, kind):
         if kind not in {"clock", "date"}:
             return False
         self.radial.hide()
         if not self.store.settings.holograms:
-            self.present_bubble("Ative as projeções holográficas nas Configurações.")
+            self.present_bubble(tr("Ative as projeções holográficas nas Configurações."))
             return False
         if self.fullscreen_hidden or self.session_hidden or self.user_hidden:
             return False
@@ -968,10 +970,10 @@ class Companion(QObject):
     def launch_minigame(self, game_id):
         try:
             if not open_game(game_id, games=self.tools.minigames_page.games):
-                self.warning("O Windows não aceitou abrir o jogo no navegador.")
+                self.warning(tr("O Windows não aceitou abrir o jogo no navegador."))
                 return False
         except (ValueError, OSError):
-            self.warning("Não foi possível abrir o endereço do minigame.")
+            self.warning(tr("Não foi possível abrir o endereço do minigame."))
             return False
         self.reactions.start("game")
         return True
@@ -980,7 +982,7 @@ class Companion(QObject):
         try:
             return self.updates.launch_center()
         except (OSError, ValueError) as error:
-            QMessageBox.information(self.tools if self.tools.isVisible() else None, "Atualizações do R2", str(error))
+            QMessageBox.information(self.tools if self.tools.isVisible() else None, tr("Atualizações do R2"), str(error))
             return False
 
     def show_settings(self):
@@ -992,16 +994,17 @@ class Companion(QObject):
             return
         try:
             enabled = self.startup.enabled()
-            status = ("Registro do Companion ativo. O Windows pode desabilitá-lo em Aplicativos de inicialização."
-                      if enabled else "Registro do Companion desativado.")
+            status = (tr("Registro do Companion ativo. O Windows pode desabilitá-lo em Aplicativos de inicialização.")
+                      if enabled else tr("Registro do Companion desativado."))
         except (OSError, ValueError):
             enabled = False
-            status = "Registro indisponível ou conflitante; outros registros serão preservados."
+            status = tr("Registro indisponível ou conflitante; outros registros serão preservados.")
         if not self.startup.available:
-            status = "Para inicialização automática, copie a versão empacotada para um local estável fora de dist/build."
+            status = tr("Para inicialização automática, copie a versão empacotada para um local estável fora de dist/build.")
         shortcut = ShortcutSettings(*self.hotkey_preference, self.hotkey_status, self.configure_hotkey)
         dialog = SettingsDialog(self.store.settings, self.startup.available, enabled, status, self.profile,
-                                ui_scale=theme_manager().ui_scale, shortcut_settings=shortcut)
+                                ui_scale=theme_manager().ui_scale, shortcut_settings=shortcut,
+                                language_store=self.companion_state)
         dialog.presence_original = self.presence.context.manual_mode.value
         dialog.presence_mode.setCurrentIndex(dialog.presence_mode.findData(dialog.presence_original))
         dialog.presence_applied.connect(self.presence.select_mode)
@@ -1029,12 +1032,12 @@ class Companion(QObject):
     def save_accessibility(self, ui_scale, reduced_motion):
         if not self.companion_state.update("accessibility", {"ui_scale": ui_scale, "reduced_motion": reduced_motion},
                                            immediate=True):
-            self.settings_dialog.error.setText("Acessibilidade aplicada nesta sessão; não foi possível gravar o arquivo.")
+            self.settings_dialog.error.setText(tr("Acessibilidade aplicada nesta sessão; não foi possível gravar o arquivo."))
 
     def save_settings(self, settings, startup_request):
         try:
             if settings.active_droid != self.store.settings.active_droid:
-                raise ValueError("O personagem mudou. Reabra Configurações para editar o personagem equipado.")
+                raise ValueError(tr("O personagem mudou. Reabra Configurações para editar o personagem equipado."))
             settings.droid_preferences = deepcopy(self.store.settings.droid_preferences)
             settings.window = replace(self.store.settings.window, topmost=settings.window.topmost)
             settings.manual_position = deepcopy(self.store.settings.manual_position)
@@ -1043,7 +1046,7 @@ class Companion(QObject):
                 settings.startup = startup_request
             self.store.apply(settings)
             if not self.store.flush():
-                self.settings_dialog.error.setText("Preferências aplicadas nesta sessão; não foi possível gravar o arquivo.")
+                self.settings_dialog.error.setText(tr("Preferências aplicadas nesta sessão; não foi possível gravar o arquivo."))
         except (OSError, ValueError) as error:
             self.settings_dialog.error.setText(str(error))
 
@@ -1057,19 +1060,19 @@ class Companion(QObject):
                 self.warning(str(result))
             elif target.kind == "app":
                 if not result:
-                    self.warning("O Windows não aceitou iniciar o aplicativo.")
+                    self.warning(tr("O Windows não aceitou iniciar o aplicativo."))
             elif not QDesktopServices.openUrl(QUrl.fromLocalFile(str(result))):
-                self.warning("O Windows não aceitou abrir o local.")
+                self.warning(tr("O Windows não aceitou abrir o local."))
         if not self.tasks.submit(operation, deliver):
-            self.warning("Aguarde a operação local em andamento.")
+            self.warning(tr("Aguarde a operação local em andamento."))
 
     def timer_completed(self, run_id):
         if self.focus.session is not None or self.countdown.run_id != run_id:
             return
-        self.notify_countdown(f"timer-{run_id}", f"Temporizador #{run_id} concluído.")
+        self.notify_countdown(f"timer-{run_id}", tr("Temporizador #{0} concluído.", run_id))
 
     def focus_completed(self, session):
-        message = "Sessão de foco concluída." if session.phase == FocusPhase.FOCUS else "Intervalo de foco concluído."
+        message = tr("Sessão de foco concluída.") if session.phase == FocusPhase.FOCUS else tr("Intervalo de foco concluído.")
         self.notify_countdown(f"focus-{session.run_id}", message)
 
     def notify_countdown(self, event_id, message):
@@ -1220,7 +1223,7 @@ def main(argv=None) -> int:
     if not store.acquire():
         if args.smoke_test or args.startup_ready_file:
             return 2
-        QMessageBox.information(None, "R2 Companion", "Já existe uma instância usando este diretório de dados.")
+        QMessageBox.information(None, "R2 Companion", tr("Já existe uma instância usando este diretório de dados."))
         return 2
     configure_logging(directory)
     sys.excepthook = log_callback_error
@@ -1233,7 +1236,7 @@ def main(argv=None) -> int:
         log.exception("Falha ao iniciar")
         store.close()
         if not args.smoke_test and not args.startup_ready_file:
-            QMessageBox.critical(None, "R2 Companion", "Não foi possível iniciar. Consulte companion.log no diretório de dados.")
+            QMessageBox.critical(None, "R2 Companion", tr("Não foi possível iniciar. Consulte companion.log no diretório de dados."))
         return 1
     if args.startup_ready_file:
         def ready():
@@ -1291,7 +1294,7 @@ def main(argv=None) -> int:
                 navigation_checks["timer_projection"] = (companion.window.projection_kind == "timer"
                     and "01:00" in companion.window.projection_text)
                 companion.countdown.pause()
-                navigation_checks["timer_projection_pause"] = "Pausado" in companion.window.projection_text
+                navigation_checks["timer_projection_pause"] = tr("Pausado") in companion.window.projection_text
                 companion.window.projection_overlay.grab().save(str(directory / "projection-timer.png"))
                 companion.tools.stop_button.click()
                 navigation_checks["timer_stop"] = (companion.countdown.state == TimerState.STOPPED

@@ -3,6 +3,7 @@ from enum import Enum
 import math
 
 from PySide6.QtCore import QObject, QTimer, Signal
+from ..core.language import tr
 
 
 class TimerState(str, Enum):
@@ -39,7 +40,7 @@ class Countdown(QObject):
     def start(self, seconds: float, *, owner: object | None = None) -> int:
         """Attach optional run metadata before notifying synchronous listeners."""
         if not math.isfinite(seconds) or not 1 <= seconds <= 86400:
-            raise ValueError("Escolha uma duração entre 1 segundo e 24 horas.")
+            raise ValueError(tr("Escolha uma duração entre 1 segundo e 24 horas."))
         self.run_id += 1
         run_id = self.run_id
         self.owner = owner

@@ -2,6 +2,7 @@ from PySide6.QtCore import QTimer, Signal
 from PySide6.QtWidgets import QFormLayout, QPushButton, QScrollArea, QVBoxLayout, QWidget
 
 from .theme import card, label
+from ..core.language import tr
 
 
 class DiagnosticsPage(QScrollArea):
@@ -15,14 +16,14 @@ class DiagnosticsPage(QScrollArea):
         self.setWidget(body)
         layout = QVBoxLayout(body)
         panel, content = card()
-        content.addWidget(label("Autodiagnóstico", "heading"))
-        self.message = label("Uma verificação rápida dos componentes locais do R2.", "muted")
+        content.addWidget(label(tr("Autodiagnóstico"), "heading"))
+        self.message = label(tr("Uma verificação rápida dos componentes locais do R2."), "muted")
         self.message.setWordWrap(True)
         content.addWidget(self.message)
         self.form = QFormLayout()
         self.fields = {}
         content.addLayout(self.form)
-        self.button = QPushButton("Iniciar diagnóstico")
+        self.button = QPushButton(tr("Iniciar diagnóstico"))
         self.button.setProperty("role", "primary")
         self.button.clicked.connect(self.start)
         content.addWidget(self.button)
@@ -38,7 +39,7 @@ class DiagnosticsPage(QScrollArea):
             return
         self.provider()
         self.button.setEnabled(False)
-        self.message.setText("Verificando CPU, memória, bateria e áudio…")
+        self.message.setText(tr("Verificando CPU, memória, bateria e áudio…"))
         self.scan_requested.emit()
         self.timer.start()
 
@@ -46,13 +47,13 @@ class DiagnosticsPage(QScrollArea):
         if self.provider is None:
             return
         report = self.provider()
-        if "Tema" in report and "Tema original" in report:
-            report = report | {"Tema da interface": f"{report['Tema']} · Original: {report['Tema original']}"}
-        for key in ("Personagem", "Tema da interface", "Versão", "Sistema", "CPU", "Memória RAM", "Bateria",
-                    "Carregamento", "Áudio", "Som do R2"):
+        if tr("Tema") in report and tr("Tema original") in report:
+            report = report | {tr("Tema da interface"): f"{report[tr("Tema")]} · Original: {report[tr("Tema original")]}"}
+        for key in (tr("Personagem"), tr("Tema da interface"), tr("Versão"), tr("Sistema"), "CPU", tr("Memória RAM"), tr("Bateria"),
+                    tr("Carregamento"), tr("Áudio"), tr("Som do R2")):
             if key not in report:
                 continue
-            value = report[key].split(" (")[0] if key == "Personagem" else report[key]
+            value = report[key].split(" (")[0] if key == tr("Personagem") else report[key]
             if key not in self.fields:
                 self.fields[key] = label("")
                 self.fields[key].setWordWrap(True)
@@ -64,7 +65,7 @@ class DiagnosticsPage(QScrollArea):
                     caption.setText(key.replace("R2", getattr(self, "character_name", "R2")))
             self.fields[key].setText(value)
         self.button.setEnabled(True)
-        self.message.setText("Verificação concluída. A ausência de bateria é normal em um desktop.")
+        self.message.setText(tr("Verificação concluída. A ausência de bateria é normal em um desktop."))
 
     def stop(self):
         self.timer.stop()

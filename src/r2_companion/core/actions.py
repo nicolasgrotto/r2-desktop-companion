@@ -1,13 +1,22 @@
 from dataclasses import dataclass
 import unicodedata
+from .language import tr
 
 
 @dataclass(frozen=True)
 class Action:
     id: str
-    title: str
+    title_source: str
     glyph: str
-    description: str = ""
+    description_source: str = ""
+
+    @property
+    def title(self):
+        return tr(self.title_source)
+
+    @property
+    def description(self):
+        return tr(self.description_source)
 
 
 ACTIONS = {action.id: action for action in (
@@ -60,7 +69,7 @@ class ActionRegistry:
 
     def reason(self, key):
         if not callable(self.callbacks.get(key)):
-            return "Ação indisponível."
+            return tr("Ação indisponível.")
         check = self.restrictions.get(key)
         return check() if check else None
 

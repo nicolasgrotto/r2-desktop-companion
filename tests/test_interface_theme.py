@@ -43,7 +43,9 @@ def test_theme_save_preserves_unknown_fields_backup_and_read_only(qapp, tmp_path
         saved = state.path.read_bytes()
         assert state.save_theme_override("r2_default", None)
         assert state.backup.read_bytes() == saved
-        assert state.data["appearance"] == {"theme_overrides": {"pico": "unavailable"}, "future_option": [3]}
+        assert state.data["appearance"] == {
+            "theme_overrides": {"pico": "unavailable"}, "future_option": [3], "language": "pt-BR",
+        }
         assert state.data["accessibility"]["ui_scale"] == 125
 
         previous = state.data

@@ -5,6 +5,7 @@ from PySide6.QtWidgets import (QDialog, QLineEdit, QListWidget, QListWidgetItem,
 
 from .theme import ActionRow, apply_theme, header, icon, label, scrollable
 from ..droids.themes import color, styled, theme_manager
+from ..core.language import tr
 
 KINDS = {"app": ("Aplicativo", "apps"), "folder": ("Pasta", "folder"),
          "file": ("Arquivo", "file"), "alias": ("Atalho", "apps")}
@@ -24,7 +25,7 @@ class TargetDelegate(QStyledItemDelegate):
         painter.setPen(QColor(color("focus" if selected else "border")))
         painter.drawRoundedRect(rect, 11, 11)
         details = index.data(Qt.ItemDataRole.UserRole + 1) or {}
-        kind, glyph = KINDS.get(details.get("kind"), ("Destino", "file"))
+        kind, glyph = KINDS.get(details.get("kind"), (tr("Destino"), "file"))
         avatar = QRect(rect.x() + dip(13), rect.y() + dip(15), dip(40), dip(40))
         painter.setPen(Qt.PenStyle.NoPen)
         painter.setBrush(QColor(color("selected")))
@@ -80,7 +81,7 @@ class LaunchpadDialog(QDialog):
         self.mode = mode
         self.entries = {}
         self.resize(620, 570)
-        self.setWindowTitle(("Aplicativos" if mode == "apps" else "Meus locais") + " · R2 Companion")
+        self.setWindowTitle((tr("Aplicativos") if mode == "apps" else tr("Meus locais")) + " · R2 Companion")
         apply_theme(self)
         outer = QVBoxLayout(self)
         outer.setContentsMargins(0, 0, 0, 0)
@@ -89,16 +90,16 @@ class LaunchpadDialog(QDialog):
         layout = QVBoxLayout(body)
         layout.setContentsMargins(26, 24, 26, 22)
         layout.setSpacing(16)
-        layout.addWidget(header("Seus aplicativos" if mode == "apps" else "Seus lugares favoritos",
-                                "Um clique para abrir o que faz parte do seu dia."))
+        layout.addWidget(header(tr("Seus aplicativos") if mode == "apps" else tr("Seus lugares favoritos"),
+                                tr("Um clique para abrir o que faz parte do seu dia.")))
         self.search = QLineEdit()
-        self.search.setAccessibleName("Buscar por nome ou caminho")
-        self.search.setPlaceholderText("Buscar por nome ou caminho…")
+        self.search.setAccessibleName(tr("Buscar por nome ou caminho"))
+        self.search.setPlaceholderText(tr("Buscar por nome ou caminho…"))
         self.search.addAction(icon("search"), QLineEdit.ActionPosition.LeadingPosition)
         self.search.textChanged.connect(self.filter)
         layout.addWidget(self.search)
         self.list = QListWidget()
-        self.list.setAccessibleName("Aplicativos favoritos" if mode == "apps" else "Locais e atalhos favoritos")
+        self.list.setAccessibleName(tr("Aplicativos favoritos") if mode == "apps" else tr("Locais e atalhos favoritos"))
         self.list.setItemDelegate(TargetDelegate(self.list))
         self.list.itemActivated.connect(lambda item: self.open_selected())
         self.list.itemSelectionChanged.connect(self.update_selection)
@@ -109,11 +110,11 @@ class LaunchpadDialog(QDialog):
         styled(self.empty, "color: #718ba1; padding: 28px; font-size: 15px;")
         layout.addWidget(self.empty, 1)
         row = ActionRow()
-        add = QPushButton("Gerenciar favoritos")
+        add = QPushButton(tr("Gerenciar favoritos"))
         add.setIcon(icon("settings"))
         add.clicked.connect(self.configure)
         row.addWidget(add)
-        self.open_button = QPushButton("Abrir selecionado")
+        self.open_button = QPushButton(tr("Abrir selecionado"))
         self.open_button.setProperty("role", "primary")
         self.open_button.clicked.connect(self.open_selected)
         row.addWidget(self.open_button)
@@ -142,9 +143,9 @@ class LaunchpadDialog(QDialog):
         self.empty.setVisible(count == 0)
         self.list.setVisible(count != 0)
         if self.list.count() == 0:
-            self.empty.setText("Seu painel está pronto para receber favoritos.\nUse Gerenciar favoritos para adicionar o primeiro.")
+            self.empty.setText(tr("Seu painel está pronto para receber favoritos.\nUse Gerenciar favoritos para adicionar o primeiro."))
         else:
-            self.empty.setText("Nenhum resultado para essa busca.\nTente outro nome ou parte do caminho.")
+            self.empty.setText(tr("Nenhum resultado para essa busca.\nTente outro nome ou parte do caminho."))
         current = self.list.currentItem()
         if current is not None and current.isHidden():
             self.list.setCurrentItem(None)

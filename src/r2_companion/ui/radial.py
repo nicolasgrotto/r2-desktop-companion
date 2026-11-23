@@ -9,6 +9,7 @@ from ..pet.positioning import clamp
 from .theme import icon
 from .navigation import NAVIGATION
 from ..droids.themes import color, styled, theme_manager
+from ..core.language import tr
 
 
 class RadialButton(QPushButton):
@@ -39,8 +40,8 @@ class RadialMenu(QWidget):
     def __init__(self):
         super().__init__()
         self.registry = None
-        self.setWindowTitle("Acesso rápido · R2 Companion")
-        self.setAccessibleName("Roda de acesso rápido")
+        self.setWindowTitle(tr("Acesso rápido · R2 Companion"))
+        self.setAccessibleName(tr("Roda de acesso rápido"))
         self.setWindowFlags(Qt.WindowType.Tool | Qt.WindowType.FramelessWindowHint)
         self.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground)
         self.setFocusPolicy(Qt.FocusPolicy.StrongFocus)
@@ -71,8 +72,8 @@ class RadialMenu(QWidget):
         self.center.setObjectName("center")
         self.center.clicked.connect(self.back)
         self.close_button = RadialButton("×", self)
-        self.close_button.setAccessibleName("Fechar acesso rápido")
-        self.close_button.setToolTip("Fechar acesso rápido · Esc")
+        self.close_button.setAccessibleName(tr("Fechar acesso rápido"))
+        self.close_button.setToolTip(tr("Fechar acesso rápido · Esc"))
         self.close_button.clicked.connect(lambda: self.dismiss("close_button"))
         self.render_level()
         self.resize_wheel()
@@ -137,10 +138,10 @@ class RadialMenu(QWidget):
         self.buttons = {}
         items = NAVIGATION[self.level]
         for index, item in enumerate(items):
-            title = "Continuar" if item.id == "pause" and self.paused else item.title
+            title = tr("Continuar") if item.id == "pause" and self.paused else item.title
             glyph = "play" if item.id == "pause" and self.paused else item.glyph
-            display_title = {"tools_center": "Central de\nferramentas",
-                             "project_date": "Projetar horário\ne data"}.get(item.id, title)
+            display_title = {"tools_center": tr("Central de\nferramentas"),
+                             "project_date": tr("Projetar horário\ne data")}.get(item.id, title)
             button = RadialButton(display_title, self)
             if len(items) > 6:
                 styled(button, "padding: 2px;")
@@ -162,8 +163,8 @@ class RadialMenu(QWidget):
             self.buttons[item.id] = button
             button.show()
         self.center.setText(self.center_text if self.level == "main" else "↶")
-        self.center.setToolTip("Fechar acesso rápido · Esc" if self.level == "main" else "Voltar à camada anterior · Esc para fechar")
-        self.center.setAccessibleName("Fechar acesso rápido" if self.level == "main" else "Voltar à camada anterior")
+        self.center.setToolTip(tr("Fechar acesso rápido · Esc") if self.level == "main" else tr("Voltar à camada anterior · Esc para fechar"))
+        self.center.setAccessibleName(tr("Fechar acesso rápido") if self.level == "main" else tr("Voltar à camada anterior"))
         order = (*self.buttons.values(), self.center, self.close_button)
         for current, following in zip(order, order[1:]):
             QWidget.setTabOrder(current, following)
@@ -315,7 +316,7 @@ class RadialMenu(QWidget):
         font.setPixelSize(10)
         font.setWeight(QFont.Weight.DemiBold)
         p.setFont(font)
-        p.drawText(QRectF(122, 229, 124, 22), Qt.AlignmentFlag.AlignCenter, "ACESSO RÁPIDO")
+        p.drawText(QRectF(122, 229, 124, 22), Qt.AlignmentFlag.AlignCenter, tr("ACESSO RÁPIDO"))
         p.setPen(QColor(color("hero_muted", self)))
         p.drawText(QRectF(122, 248, 124, 18), Qt.AlignmentFlag.AlignCenter, "ESC · FECHAR")
 

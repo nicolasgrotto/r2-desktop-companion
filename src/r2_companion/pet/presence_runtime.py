@@ -6,6 +6,7 @@ from PySide6.QtWidgets import QSystemTrayIcon
 
 from .presence import FullscreenAction, PresenceContext, PresenceMode, PresencePolicy
 from .state import State
+from ..core.language import tr
 
 class PresenceRuntime:
     def __init__(self, companion):
@@ -106,7 +107,7 @@ class PresenceRuntime:
                 c.animation.play(c.controller.state, c.controller.token)
             if update.decision_changed:
                 c.tray.setToolTip(f"{c.profile.name} · {d.reason_text}")
-                c.window.setToolTip(f"{c.profile.name} · {d.reason_text}\nBotão direito para opções")
+                c.window.setToolTip(tr("{0} · {1}\nBotão direito para opções", c.profile.name, d.reason_text))
             self.update_controls()
         finally:
             self.refreshing = False

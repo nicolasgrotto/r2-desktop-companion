@@ -4,6 +4,7 @@ from PySide6.QtWidgets import QComboBox, QFormLayout, QMessageBox, QPushButton, 
 from ..features.focus import CountdownConflict, FOCUS_SECONDS, FocusPhase
 from ..features.timer import TimerState
 from .theme import ActionRow, card, configure_form, form_row, label
+from ..core.language import tr
 
 
 def confirm_countdown(parent, command, *, report):
@@ -11,10 +12,10 @@ def confirm_countdown(parent, command, *, report):
     try:
         result = command()
         if isinstance(result, CountdownConflict):
-            current = "uma sessão de foco" if result.session_id else "um temporizador"
+            current = tr("uma sessão de foco") if result.session_id else tr("um temporizador")
             answer = QMessageBox.question(
-                parent, "Substituir contagem?",
-                f"Já existe {current} com contagem em andamento ou em pausa. Deseja substituir essa contagem?",
+                parent, tr("Substituir contagem?"),
+                tr("Já existe {0} com contagem em andamento ou em pausa. Deseja substituir essa contagem?", current),
                 QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
                 QMessageBox.StandardButton.No,
             )
@@ -22,7 +23,7 @@ def confirm_countdown(parent, command, *, report):
                 return None
             result = command(replace_run_id=result.run_id)
             if not isinstance(result, int):
-                report("A contagem mudou. Acione o controle novamente para continuar.")
+                report(tr("A contagem mudou. Acione o controle novamente para continuar."))
                 return None
         return result
     except ValueError as error:
@@ -42,7 +43,7 @@ class FocusPage(QWidget):
         layout = QVBoxLayout(self)
         panel, body = card()
         layout.addWidget(panel)
-        self.summary = label("Foco", "title")
+        self.summary = label(tr("Foco"), "title")
         body.addWidget(self.summary)
         self.task_caption = label("", "muted")
         body.addWidget(self.task_caption)
@@ -58,29 +59,29 @@ class FocusPage(QWidget):
         self.duration.setRange(1, 1440)
         self.duration.setValue(FOCUS_SECONDS // 60)
         self.duration.setSuffix(" min")
-        form_row(form, "&Tarefa da sessão de foco", self.task)
-        form_row(form, "&Duração do foco em minutos", self.duration)
+        form_row(form, tr("&Tarefa da sessão de foco"), self.task)
+        form_row(form, tr("&Duração do foco em minutos"), self.duration)
         body.addWidget(self.setup)
 
         actions = ActionRow()
-        self.start_button = QPushButton("Iniciar foco")
+        self.start_button = QPushButton(tr("Iniciar foco"))
         self.start_button.setProperty("role", "primary")
         self.start_button.clicked.connect(self.start)
-        self.pause_button = QPushButton("Pausar foco")
+        self.pause_button = QPushButton(tr("Pausar foco"))
         self.pause_button.clicked.connect(self.toggle_pause)
-        self.stop_button = QPushButton("Encerrar sessão")
+        self.stop_button = QPushButton(tr("Encerrar sessão"))
         self.stop_button.clicked.connect(self.stop)
-        self.projection_button = QPushButton("Projetar foco")
+        self.projection_button = QPushButton(tr("Projetar foco"))
         self.projection_button.clicked.connect(self.projection_requested)
-        self.next_button = QPushButton("Iniciar intervalo")
+        self.next_button = QPushButton(tr("Iniciar intervalo"))
         self.next_button.clicked.connect(self.start_next)
-        self.finish_task_button = QPushButton("Concluir tarefa")
+        self.finish_task_button = QPushButton(tr("Concluir tarefa"))
         self.finish_task_button.clicked.connect(self.finish_task)
-        self.dismiss_button = QPushButton("Fechar indicação")
+        self.dismiss_button = QPushButton(tr("Fechar indicação"))
         self.dismiss_button.clicked.connect(self.dismiss)
-        self.recover_button = QPushButton("Recuperar sessão")
+        self.recover_button = QPushButton(tr("Recuperar sessão"))
         self.recover_button.clicked.connect(self.recover)
-        self.discard_button = QPushButton("Descartar recuperação")
+        self.discard_button = QPushButton(tr("Descartar recuperação"))
         self.discard_button.clicked.connect(self.discard_recovery)
         for button in (self.start_button, self.pause_button, self.stop_button, self.projection_button,
                        self.next_button, self.finish_task_button, self.dismiss_button,
@@ -100,7 +101,7 @@ class FocusPage(QWidget):
     def refresh_tasks(self):
         selected = self.task.currentData()
         self.task.clear()
-        self.task.addItem("Sem tarefa", None)
+        self.task.addItem(tr("Sem tarefa"), None)
         for task in self.focus.productivity.data["tasks"]:
             self.task.addItem(task["text"], task["id"])
         self.select_task(selected)
@@ -112,8 +113,8 @@ class FocusPage(QWidget):
     def refresh_time(self):
         session = self.focus.session
         if session:
-            phase = "Foco" if session.phase == FocusPhase.FOCUS else "Intervalo"
-            text = f"{phase} · {session.state.value} · {self.format_time(self.focus.countdown.remaining)}"
+            phase = tr("Foco") if session.phase == FocusPhase.FOCUS else tr("Intervalo")
+            text = f"{phase} · {tr(session.state.value)} · {self.format_time(self.focus.countdown.remaining)}"
             if text != self.summary.text():
                 self.summary.setText(text)
 
@@ -126,28 +127,28 @@ class FocusPage(QWidget):
         self.task_caption.setText(task["text"] if task else "")
         self.task_caption.setVisible(task is not None)
         if offer:
-            phase = "Foco" if offer.phase == FocusPhase.FOCUS else "Intervalo"
-            status = f"{self.format_time(offer.remaining)} restantes" if offer.remaining else "Sessão concluída"
-            self.summary.setText(f"Recuperação disponível · {phase} · {status}")
+            phase = tr("Foco") if offer.phase == FocusPhase.FOCUS else tr("Intervalo")
+            status = f"{self.format_time(offer.remaining)} restantes" if offer.remaining else tr("Sessão concluída")
+            self.summary.setText(tr("Recuperação disponível · {0} · {1}", phase, status))
         elif session:
             self.refresh_time()
         else:
-            self.summary.setText("Configurar sessão de foco")
+            self.summary.setText(tr("Configurar sessão de foco"))
         ready = session is None and offer is None
         self.setup.setVisible(ready)
         self.start_button.setVisible(ready)
         self.recover_button.setVisible(offer is not None)
         self.discard_button.setVisible(offer is not None)
-        action = "Retomar" if active and session.state == TimerState.PAUSED else "Pausar"
-        self.pause_button.setText(f"{action} sessão")
+        action = tr("Retomar") if active and session.state == TimerState.PAUSED else tr("Pausar")
+        self.pause_button.setText(tr("{0} sessão", action))
         self.pause_button.setVisible(active)
         self.stop_button.setVisible(active)
         self.projection_button.setVisible(active)
         self.projection_button.setEnabled(self.projections_enabled)
         self.dismiss_button.setVisible(done)
         self.next_button.setVisible(done)
-        self.next_button.setText("Iniciar intervalo" if done and session.next_phase == FocusPhase.BREAK
-                                 else "Iniciar novo ciclo")
+        self.next_button.setText(tr("Iniciar intervalo") if done and session.next_phase == FocusPhase.BREAK
+                                 else tr("Iniciar novo ciclo"))
         self.finish_task_button.setVisible(bool(done and session.phase == FocusPhase.FOCUS and task and not task["done"]))
 
     def start(self):
@@ -202,5 +203,5 @@ class FocusPage(QWidget):
         if session := self.focus.session:
             if self.focus.complete_task(session.run_id):
                 self.task_finished.emit()
-                self.message.setText("Tarefa concluída.")
+                self.message.setText(tr("Tarefa concluída."))
                 self.next_button.setFocus()

@@ -5,6 +5,7 @@ from PySide6.QtCore import QObject, QPointF, QRectF, QSizeF, Qt, QTimer, Signal
 from PySide6.QtGui import QGuiApplication
 
 from ..core.config import WindowSettings
+from ..core.language import tr
 
 
 def legal_bounds(area: QRectF, size: QSizeF, margin: float = 8) -> tuple[float, float, float, float]:
@@ -32,7 +33,7 @@ def from_normalized(u: float, v: float, area: QRectF, size: QSizeF) -> QPointF:
 
 def nearest_index(point: QPointF, areas: list[QRectF]) -> int:
     if not areas:
-        raise ValueError("Nenhum monitor disponível.")
+        raise ValueError(tr("Nenhum monitor disponível."))
     def distance(rect):
         dx = max(rect.x() - point.x(), 0, point.x() - (rect.x() + rect.width()))
         dy = max(rect.y() - point.y(), 0, point.y() - (rect.y() + rect.height()))

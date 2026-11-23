@@ -13,9 +13,11 @@ import re
 from PySide6.QtCore import QObject, QTimer, Signal
 
 from ..core.config import FutureSchemaError
+from ..core.language import DEFAULT_LANGUAGE, interface_language
 from ..features.minigames import validate_entries
 from .hotkeys import DEFAULT_SHORTCUT
 from .storage import ConfigStore
+from ..core.language import tr
 
 log = logging.getLogger(__name__)
 MAX_BYTES = 1024 * 1024
@@ -27,7 +29,7 @@ def default_document():
         "schema_version": 1,
         "presence": {"mode": "free"},
         "accessibility": {"reduced_motion": False, "ui_scale": 100},
-        "appearance": {"theme_overrides": {}},
+        "appearance": {"theme_overrides": {}, "language": DEFAULT_LANGUAGE},
         "media": {"enabled": False},
         "focus": {"session": None},
         "onboarding": {"dismissed": False},
@@ -39,7 +41,7 @@ def default_document():
 def _json_value(value):
     if isinstance(value, dict):
         if any(not isinstance(key, str) for key in value):
-            raise ValueError("Chave de documento inválida.")
+            raise ValueError(tr("Chave de documento inválida."))
         for child in value.values():
             _json_value(child)
     elif isinstance(value, list):
@@ -48,35 +50,35 @@ def _json_value(value):
     elif value is None or type(value) in (str, bool, int):
         return
     elif type(value) is not float or not math.isfinite(value):
-        raise ValueError("Valor de documento inválido.")
+        raise ValueError(tr("Valor de documento inválido."))
 
 
 def _reference(value):
     if (not isinstance(value, str) or not 1 <= len(value) <= 80
             or any(ord(character) < 32 for character in value)):
-        raise ValueError("Referência de sessão inválida.")
+        raise ValueError(tr("Referência de sessão inválida."))
 
 
 def _number(value, minimum, maximum):
     if type(value) not in (int, float) or not math.isfinite(value) or not minimum <= value <= maximum:
-        raise ValueError("Duração de sessão inválida.")
+        raise ValueError(tr("Duração de sessão inválida."))
 
 
 def _encode(data):
     contents = json.dumps(data, ensure_ascii=False, indent=2, allow_nan=False).encode("utf-8")
     if len(contents) > MAX_BYTES:
-        raise ValueError("Estado complementar excede 1 MiB.")
+        raise ValueError(tr("Estado complementar excede 1 MiB."))
     return contents
 
 
 def validate_document(raw):
     """Validate known fields, fill defaults and retain unknown JSON fields."""
     if not isinstance(raw, dict) or type(raw.get("schema_version")) is not int:
-        raise ValueError("Documento complementar inválido.")
+        raise ValueError(tr("Documento complementar inválido."))
     if raw["schema_version"] > 1:
-        raise FutureSchemaError("Estado complementar de uma versão futura; arquivo preservado.")
+        raise FutureSchemaError(tr("Estado complementar de uma versão futura; arquivo preservado."))
     if raw["schema_version"] != 1:
-        raise ValueError("Versão do estado complementar inválida.")
+        raise ValueError(tr("Versão do estado complementar inválida."))
     try:
         _json_value(raw)
         result = deepcopy(raw)
@@ -85,35 +87,36 @@ def validate_document(raw):
                 continue
             values = result.setdefault(group, {})
             if not isinstance(values, dict):
-                raise ValueError("Grupo do estado complementar inválido.")
+                raise ValueError(tr("Grupo do estado complementar inválido."))
             for key, value in defaults.items():
                 values.setdefault(key, deepcopy(value))
         if result["presence"]["mode"] not in ("free", "focus", "presentation"):
-            raise ValueError("Modo de presença inválido.")
+            raise ValueError(tr("Modo de presença inválido."))
         scale = result["accessibility"]["ui_scale"]
         if type(scale) is not int or scale not in (100, 125, 150):
-            raise ValueError("Escala da interface inválida.")
+            raise ValueError(tr("Escala da interface inválida."))
         for group, field in (("accessibility", "reduced_motion"), ("media", "enabled"),
                              ("onboarding", "dismissed"), ("actions", "global_shortcut_enabled")):
             if type(result[group][field]) is not bool:
-                raise ValueError("Preferência booleana inválida.")
+                raise ValueError(tr("Preferência booleana inválida."))
         overrides = result["appearance"]["theme_overrides"]
+        result["appearance"]["language"] = interface_language(result["appearance"]["language"])
         shortcut = result["actions"]["global_shortcut"]
         if not isinstance(shortcut, str) or not 1 <= len(shortcut) <= 64:
-            raise ValueError("Preferência de atalho inválida.")
+            raise ValueError(tr("Preferência de atalho inválida."))
         if not isinstance(overrides, dict) or len(overrides) > 100:
-            raise ValueError("Preferências de tema inválidas.")
+            raise ValueError(tr("Preferências de tema inválidas."))
         for identifier, theme in overrides.items():
             if (not isinstance(identifier, str) or not PROFILE_ID.fullmatch(identifier)
                     or not isinstance(theme, str) or not PROFILE_ID.fullmatch(theme)):
-                raise ValueError("Referência de tema inválida.")
+                raise ValueError(tr("Referência de tema inválida."))
         session = result["focus"]["session"]
         if session is not None:
             if not isinstance(session, dict):
-                raise ValueError("Sessão de foco inválida.")
+                raise ValueError(tr("Sessão de foco inválida."))
             _reference(session.get("id"))
             if session.get("phase") not in ("focus", "break"):
-                raise ValueError("Fase de foco inválida.")
+                raise ValueError(tr("Fase de foco inválida."))
             duration = session.get("duration_seconds")
             _number(duration, 1, 86400)
             remaining = session.get("remaining_seconds")
@@ -121,14 +124,14 @@ def validate_document(raw):
             if "state" in session:
                 state = session["state"]
                 if state not in ("running", "paused", "completed") or (state == "completed") != (remaining == 0):
-                    raise ValueError("Estado da sessão de foco inválido.")
+                    raise ValueError(tr("Estado da sessão de foco inválido."))
             if session.setdefault("task_id", None) is not None:
                 _reference(session["task_id"])
         validate_entries(result["minigames"]["entries"])
         _encode(result)
         return result
     except (TypeError, RecursionError, OverflowError) as error:
-        raise ValueError("Documento complementar inválido.") from error
+        raise ValueError(tr("Documento complementar inválido.")) from error
 
 
 class OversizedStateError(ValueError):
@@ -173,7 +176,7 @@ class CompanionStateStore(QObject):
         with path.open("rb") as handle:
             contents = handle.read(MAX_BYTES + 1)
         if len(contents) > MAX_BYTES:
-            raise OversizedStateError("Estado complementar excede o limite de leitura.")
+            raise OversizedStateError(tr("Estado complementar excede o limite de leitura."))
         return validate_document(json.loads(contents.decode("utf-8"))), contents
 
     @classmethod
@@ -186,21 +189,21 @@ class CompanionStateStore(QObject):
             try:
                 self._data, _ = self._read(path)
                 if path == self.backup:
-                    self.notices.append("Estado complementar recuperado do backup.")
+                    self.notices.append(tr("Estado complementar recuperado do backup."))
                     self.dirty = True
                 break
             except FileNotFoundError:
                 continue
             except FutureSchemaError:
                 self._protected = True
-                self.notices.append("Estado complementar de versão futura; usando padrões nesta sessão, sem sobrescrever o arquivo.")
+                self.notices.append(tr("Estado complementar de versão futura; usando padrões nesta sessão, sem sobrescrever o arquivo."))
                 return
             except (OversizedStateError, OSError):
                 # Do not overwrite data whose schema could not be safely read.
                 self._protected = True
-                self.notices.append("Estado complementar inacessível ou extenso demais; arquivo preservado em somente leitura.")
+                self.notices.append(tr("Estado complementar inacessível ou extenso demais; arquivo preservado em somente leitura."))
             except (ValueError, RecursionError):
-                self.notices.append("Estado complementar inválido; tentando backup ou valores padrão.")
+                self.notices.append(tr("Estado complementar inválido; tentando backup ou valores padrão."))
         else:
             self.dirty = True  # Persist defaults on first writable startup.
         if self.dirty and not self.read_only:
@@ -208,7 +211,7 @@ class CompanionStateStore(QObject):
 
     def apply(self, data, *, immediate=False, notify=True):
         if self._closed:
-            raise RuntimeError("Armazenamento complementar encerrado.")
+            raise RuntimeError(tr("Armazenamento complementar encerrado."))
         checked = validate_document(data)
         if checked != self._data:
             self._data = checked
@@ -220,7 +223,7 @@ class CompanionStateStore(QObject):
 
     def update(self, group, values, *, immediate=False):
         if group not in default_document() or group == "schema_version" or not isinstance(values, dict):
-            raise ValueError("Grupo de preferências inválido.")
+            raise ValueError(tr("Grupo de preferências inválido."))
         data = self.data
         data[group].update(deepcopy(values))
         return self.apply(data, immediate=immediate)
@@ -252,6 +255,11 @@ class CompanionStateStore(QObject):
         candidate[group].update(values)
         return self._save_candidate(candidate)
 
+    def save_language(self, language):
+        candidate = self.data
+        candidate["appearance"]["language"] = interface_language(language)
+        return self._save_candidate(candidate)
+
     def _save_candidate(self, candidate):
         if candidate == self._data:
             return True
@@ -277,7 +285,7 @@ class CompanionStateStore(QObject):
 
     def _write(self, data):
         if self._closed or self.read_only:
-            self.warning.emit("Estado complementar somente nesta sessão; arquivos originais preservados.")
+            self.warning.emit(tr("Estado complementar somente nesta sessão; arquivos originais preservados."))
             return False
         try:
             previous = None
@@ -292,7 +300,7 @@ class CompanionStateStore(QObject):
                     continue
                 except (FutureSchemaError, OversizedStateError):
                     self._protected = True
-                    self.warning.emit("Estado complementar incompatível; arquivos preservados em somente leitura.")
+                    self.warning.emit(tr("Estado complementar incompatível; arquivos preservados em somente leitura."))
                     return False
                 except (ValueError, RecursionError):
                     continue  # Keep a valid recovery backup instead of rotating corrupt data.
@@ -303,7 +311,7 @@ class CompanionStateStore(QObject):
             return True
         except (OSError, ValueError) as error:
             log.warning("Falha ao salvar estado complementar (%s)", type(error).__name__)
-            self.warning.emit("Não foi possível salvar o estado complementar; dados anteriores preservados.")
+            self.warning.emit(tr("Não foi possível salvar o estado complementar; dados anteriores preservados."))
             return False
 
     def close(self):

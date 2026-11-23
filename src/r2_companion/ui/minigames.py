@@ -7,6 +7,7 @@ from ..droids.themes import theme_manager
 from ..features.minigames import (GAMES, MAX_DESCRIPTION, MAX_NAME, MAX_URL, PRESET_ICONS,
                                   load_thumbnail, new_entry, personal_games, save_game, thumbnail_image)
 from .theme import ActionRow, apply_theme, card, configure_form, fit_dialog, form_row, icon, label
+from ..core.language import tr
 
 
 def game_icon(glyph, thumbnail):
@@ -21,7 +22,7 @@ class GameEditor(QDialog):
         super().__init__(parent)
         self.store, self.game = store, game
         self.thumbnail = game.thumbnail if game else ""
-        self.setWindowTitle("Editar minigame" if game else "Adicionar minigame")
+        self.setWindowTitle(tr("Editar minigame") if game else tr("Adicionar minigame"))
         layout = QVBoxLayout(self)
         form = QFormLayout()
         configure_form(form)
@@ -32,32 +33,32 @@ class GameEditor(QDialog):
         self.url.setPlaceholderText("https://")
         self.description = QLineEdit(game.description if game else "")
         self.description.setMaxLength(MAX_DESCRIPTION)
-        for title, control in (("&Nome", self.name), ("&Endereço HTTPS", self.url), ("&Descrição opcional", self.description)):
+        for title, control in ((tr("&Nome"), self.name), (tr("&Endereço HTTPS"), self.url), (tr("&Descrição opcional"), self.description)):
             form_row(form, title, control)
 
         self.icons = QComboBox()
         for glyph, title in PRESET_ICONS.items():
-            self.icons.addItem(title, glyph)
+            self.icons.addItem(tr(title), glyph)
         self.icons.setCurrentIndex(max(0, self.icons.findData(game.glyph if game else "play")))
         self.icons.activated.connect(self.use_preset)
-        form_row(form, "&Ícone predefinido", self.icons)
+        form_row(form, tr("&Ícone predefinido"), self.icons)
         layout.addLayout(form)
         row = ActionRow()
         self.preview = label("")
-        self.preview.setAccessibleName("Prévia do ícone")
+        self.preview.setAccessibleName(tr("Prévia do ícone"))
         row.addWidget(self.preview)
-        image = QPushButton("Escolher imagem PNG ou JPEG…")
+        image = QPushButton(tr("Escolher imagem PNG ou JPEG…"))
         image.clicked.connect(self.choose_image)
         row.addWidget(image, 1)
-        preset = QPushButton("Usar ícone predefinido")
+        preset = QPushButton(tr("Usar ícone predefinido"))
         preset.clicked.connect(self.use_preset)
         row.addWidget(preset, 1)
         layout.addWidget(row)
         self.feedback = label("", "muted")
         layout.addWidget(self.feedback)
         buttons = QDialogButtonBox(QDialogButtonBox.StandardButton.Save | QDialogButtonBox.StandardButton.Cancel)
-        buttons.button(QDialogButtonBox.StandardButton.Save).setText("Salvar")
-        buttons.button(QDialogButtonBox.StandardButton.Cancel).setText("Cancelar")
+        buttons.button(QDialogButtonBox.StandardButton.Save).setText(tr("Salvar"))
+        buttons.button(QDialogButtonBox.StandardButton.Cancel).setText(tr("Cancelar"))
         buttons.accepted.connect(self.save)
         buttons.rejected.connect(self.reject)
         layout.addWidget(buttons)
@@ -70,7 +71,7 @@ class GameEditor(QDialog):
     def render_icon(self):
         side = theme_manager().dip(52)
         self.preview.setPixmap(game_icon(self.icons.currentData(), self.thumbnail).pixmap(side, side))
-        title = "Imagem própria" if not thumbnail_image(self.thumbnail).isNull() else self.icons.currentText()
+        title = tr("Imagem própria") if not thumbnail_image(self.thumbnail).isNull() else self.icons.currentText()
         self.preview.setAccessibleDescription(title)
 
     def use_preset(self):
@@ -78,7 +79,7 @@ class GameEditor(QDialog):
         self.render_icon()
 
     def choose_image(self):
-        path, _ = QFileDialog.getOpenFileName(self, "Escolher ícone", "", "Imagens PNG e JPEG (*.png *.jpg *.jpeg)")
+        path, _ = QFileDialog.getOpenFileName(self, tr("Escolher ícone"), "", tr("Imagens PNG e JPEG (*.png *.jpg *.jpeg)"))
         if path:
             try:
                 self.thumbnail = load_thumbnail(path)
@@ -98,7 +99,7 @@ class GameEditor(QDialog):
         except ValueError as error:
             self.feedback.setText(str(error))
             return
-        self.feedback.setText("Não foi possível salvar. O catálogo anterior foi preservado.")
+        self.feedback.setText(tr("Não foi possível salvar. O catálogo anterior foi preservado."))
 
 
 class MinigamesPage(QScrollArea):
@@ -117,7 +118,7 @@ class MinigamesPage(QScrollArea):
         layout = QVBoxLayout(body)
         layout.setContentsMargins(0, 16, 0, 0)
         if store is not None:
-            self.add_game = QPushButton("Adicionar minigame")
+            self.add_game = QPushButton(tr("Adicionar minigame"))
             self.add_game.clicked.connect(lambda: self.edit(None))
             layout.addWidget(self.add_game)
             store.changed.connect(self.refresh)
@@ -127,7 +128,7 @@ class MinigamesPage(QScrollArea):
         layout.addWidget(self.feedback)
         self.cards = QVBoxLayout()
         layout.addLayout(self.cards)
-        layout.addWidget(label("Os jogos abrem no navegador padrão.", "muted"))
+        layout.addWidget(label(tr("Os jogos abrem no navegador padrão."), "muted"))
         layout.addStretch()
         self.refresh(force=True)
         theme_manager().scale_changed.connect(self.rescale)
@@ -153,7 +154,7 @@ class MinigamesPage(QScrollArea):
         if self.store is not None:
             self.add_game.setEnabled(not read_only)
             if read_only:
-                self.feedback.setText("Catálogo em modo somente leitura.")
+                self.feedback.setText(tr("Catálogo em modo somente leitura."))
                 self.feedback.show()
         while self.cards.count():
             widget = self.cards.takeAt(0).widget()
@@ -168,7 +169,7 @@ class MinigamesPage(QScrollArea):
             preview.setIcon(game_icon(game.glyph, game.thumbnail))
             preview.setIconSize(QSize(side, side))
             preview.setFixedSize(side + theme_manager().dip(16), side + theme_manager().dip(16))
-            preview.setAccessibleName("Abrir " + game.name)
+            preview.setAccessibleName(tr("Abrir ") + game.name)
             preview.setFocusPolicy(Qt.FocusPolicy.ClickFocus)
             preview.clicked.connect(lambda checked=False, key=game.id: self.game_requested.emit(key))
             header = ActionRow()
@@ -176,17 +177,18 @@ class MinigamesPage(QScrollArea):
             header.addWidget(title, 1)
             content.addWidget(header)
             if game.description:
-                content.addWidget(label(game.description, "muted"))
+                description = tr(game.description) if game in self.builtin else game.description
+                content.addWidget(label(description, "muted"))
             row = ActionRow()
-            play = QPushButton("Jogar no navegador")
-            play.setAccessibleName("Jogar " + game.name + " no navegador")
+            play = QPushButton(tr("Jogar no navegador"))
+            play.setAccessibleName(tr("Jogar ") + game.name + tr(" no navegador"))
             play.setProperty("role", "primary")
             play.clicked.connect(lambda checked=False, key=game.id: self.game_requested.emit(key))
             row.addWidget(play)
             if game in self.personal:
-                edit, remove = QPushButton("Editar"), QPushButton("Remover")
-                edit.setAccessibleName("Editar " + game.name)
-                remove.setAccessibleName("Remover " + game.name)
+                edit, remove = QPushButton(tr("Editar")), QPushButton(tr("Remover"))
+                edit.setAccessibleName(tr("Editar ") + game.name)
+                remove.setAccessibleName(tr("Remover ") + game.name)
                 edit.clicked.connect(lambda checked=False, game=game: self.edit(game))
                 remove.clicked.connect(lambda checked=False, game=game: self.remove(game))
                 for button in (edit, remove):
@@ -206,7 +208,7 @@ class MinigamesPage(QScrollArea):
     def remove(self, game):
         self.feedback.hide()
         buttons = QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.Cancel
-        if QMessageBox.question(self, "Remover minigame", "Remover este minigame do catálogo pessoal?",
+        if QMessageBox.question(self, tr("Remover minigame"), tr("Remover este minigame do catálogo pessoal?"),
                                 buttons, QMessageBox.StandardButton.Cancel) == QMessageBox.StandardButton.Yes:
             try:
                 if save_game(self.store, game, None):

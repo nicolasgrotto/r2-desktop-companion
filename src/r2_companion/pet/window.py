@@ -4,6 +4,7 @@ from PySide6.QtWidgets import QApplication, QWidget
 
 from ..droids.themes import theme_manager
 from ..features.projections import ProjectionController
+from ..core.language import tr
 
 
 class PetWindow(QWidget):
@@ -20,7 +21,7 @@ class PetWindow(QWidget):
 
     def __init__(self):
         super().__init__()
-        self.setWindowTitle("R2 Companion — placeholder de desenvolvimento")
+        self.setWindowTitle(tr("R2 Companion — placeholder de desenvolvimento"))
         self.setWindowFlags(Qt.WindowType.Tool | Qt.WindowType.FramelessWindowHint
                             | Qt.WindowType.WindowDoesNotAcceptFocus)
         from ..ui.window_layers import WindowLayerPolicy
@@ -30,7 +31,7 @@ class PetWindow(QWidget):
         self.setAttribute(Qt.WidgetAttribute.WA_ShowWithoutActivating)
         self.setFocusPolicy(Qt.FocusPolicy.NoFocus)
         self.setAutoFillBackground(False)
-        self.setToolTip("R2 Companion · arte provisória\nArraste para mover · botão direito para opções")
+        self.setToolTip(tr("R2 Companion · arte provisória\nArraste para mover · botão direito para opções"))
         self.frame = QPixmap()
         self.visual = None
         self.articulation = {}
@@ -220,7 +221,7 @@ class PetWindow(QWidget):
         self.set_motion(0, 0, 0)
         self.set_articulation({})
         self.setWindowTitle(f"{profile.name} · R2 Companion")
-        self.setToolTip(f"{profile.name}\nArraste para mover · botão direito para opções\n{profile.art_status}")
+        self.setToolTip(tr("{0}\nArraste para mover · botão direito para opções\n{1}", profile.name, profile.art_status))
         custom = profile.customizations(preferences.customization)
         self.illumination = None
         if "illumination" in custom:

@@ -6,6 +6,7 @@ This module never changes timers, windows, external playback or stored settings.
 """
 from dataclasses import dataclass, replace
 from enum import StrEnum
+from ..core.language import tr
 
 
 class PresenceMode(StrEnum):
@@ -44,7 +45,7 @@ class PresenceContext:
         object.__setattr__(self, "fullscreen", FullscreenAction(self.fullscreen))
         gates = frozenset(self.transient_gates)
         if any(not isinstance(gate, str) or not gate for gate in gates):
-            raise ValueError("Bloqueio transitório inválido.")
+            raise ValueError(tr("Bloqueio transitório inválido."))
         object.__setattr__(self, "transient_gates", gates)
         if self.focus_session_id is not None:
             _validate_session_id(self.focus_session_id)
@@ -73,7 +74,7 @@ class PresenceContext:
 def _validate_session_id(value):
     if (not isinstance(value, str) or not 1 <= len(value) <= 80
             or any(ord(character) < 32 for character in value)):
-        raise ValueError("Referência de sessão inválida.")
+        raise ValueError(tr("Referência de sessão inválida."))
 
 
 @dataclass(frozen=True)
@@ -131,19 +132,19 @@ class PresencePolicy:
         passive = interactive
         # The first active restriction is a stable, content-free status reason.
         reasons = (
-            (context.suspended, "suspended", "Sessão suspensa ou bloqueada"),
-            (context.hidden, "hidden", "Personagem oculto"),
-            (recovery, "presentation_recovery", "Apresentação: bandeja indisponível; mascote visível para acesso"),
-            (mode == PresenceMode.PRESENTATION, "presentation", "Em apresentação"),
-            (context.quiet_hours, "quiet_hours", "Horário de silêncio"),
-            (fullscreen, "fullscreen", "Tela cheia"),
-            (bool(context.transient_gates), "transient", "Interação em andamento"),
-            (context.paused, "paused", "Autonomia pausada"),
-            (mode == PresenceMode.FOCUS, "focus", "Em foco"),
-            (context.reduced_motion, "reduced_motion", "Movimento reduzido"),
-            (context.media_playing, "media_playing", "Música em reprodução"),
-            (not context.autonomy_enabled, "autonomy_disabled", "Autonomia desativada"),
-            (True, "free", "Livre"),
+            (context.suspended, "suspended", tr("Sessão suspensa ou bloqueada")),
+            (context.hidden, "hidden", tr("Personagem oculto")),
+            (recovery, "presentation_recovery", tr("Apresentação: bandeja indisponível; mascote visível para acesso")),
+            (mode == PresenceMode.PRESENTATION, "presentation", tr("Em apresentação")),
+            (context.quiet_hours, "quiet_hours", tr("Horário de silêncio")),
+            (fullscreen, "fullscreen", tr("Tela cheia")),
+            (bool(context.transient_gates), "transient", tr("Interação em andamento")),
+            (context.paused, "paused", tr("Autonomia pausada")),
+            (mode == PresenceMode.FOCUS, "focus", tr("Em foco")),
+            (context.reduced_motion, "reduced_motion", tr("Movimento reduzido")),
+            (context.media_playing, "media_playing", tr("Música em reprodução")),
+            (not context.autonomy_enabled, "autonomy_disabled", tr("Autonomia desativada")),
+            (True, "free", tr("Livre")),
         )
         _, reason, text = next(item for item in reasons if item[0])
         return PresenceDecision(

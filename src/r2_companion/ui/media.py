@@ -4,6 +4,7 @@ from PySide6.QtWidgets import QCheckBox, QComboBox, QPushButton, QVBoxLayout, QW
 from ..features.projections import ProjectionModel
 from ..services.media import MediaCommand
 from .theme import ActionRow, card, label
+from ..core.language import tr
 
 
 PLAYBACK = {
@@ -26,7 +27,7 @@ ERRORS = {
 
 
 def playback_label(snapshot):
-    return PLAYBACK.get(snapshot.playback, "Estado de reprodução indisponível")
+    return tr(PLAYBACK.get(snapshot.playback, "Estado de reprodução indisponível"))
 
 
 def music_projection(view):
@@ -34,9 +35,9 @@ def music_projection(view):
         return None
     snapshot = view.snapshot
     if snapshot is None:
-        return ProjectionModel("music", "Música", ("Sessão indisponível",))
+        return ProjectionModel("music", tr("Música"), (tr("Sessão indisponível"),))
     lines = tuple(value for value in (snapshot.title, snapshot.artist) if value)
-    return ProjectionModel("music", "Música", (*lines, playback_label(snapshot)))
+    return ProjectionModel("music", tr("Música"), (*lines, playback_label(snapshot)))
 
 
 class MediaPage(QWidget):
@@ -56,17 +57,17 @@ class MediaPage(QWidget):
         panel, contents = card()
         layout.addWidget(panel)
         layout.addStretch()
-        self.enabled = QCheckBox("Ativar controle musical do Windows")
+        self.enabled = QCheckBox(tr("Ativar controle musical do Windows"))
         self.enabled.toggled.connect(self.enable_requested.emit)
         contents.addWidget(self.enabled)
 
         self.sessions = QComboBox()
-        self.sessions.setAccessibleName("Sessão de mídia")
-        self.sessions.setAccessibleDescription("Automático acompanha a sessão indicada pelo Windows.")
+        self.sessions.setAccessibleName(tr("Sessão de mídia"))
+        self.sessions.setAccessibleDescription(tr("Automático acompanha a sessão indicada pelo Windows."))
         self.sessions.setSizeAdjustPolicy(QComboBox.SizeAdjustPolicy.AdjustToMinimumContentsLengthWithIcon)
         self.sessions.setMinimumContentsLength(18)
         self.sessions.activated.connect(self._select)
-        caption = label("&Sessão de mídia")
+        caption = label(tr("&Sessão de mídia"))
         caption.setBuddy(self.sessions)
         contents.addWidget(caption)
         contents.addWidget(self.sessions)
@@ -80,18 +81,18 @@ class MediaPage(QWidget):
 
         transport = ActionRow()
         self.controls = {}
-        for action, title in ((MediaCommand.PREVIOUS, "Anterior"), (MediaCommand.PLAY, "Reproduzir"),
-                              (MediaCommand.PAUSE, "Pausar"), (MediaCommand.NEXT, "Próxima")):
+        for action, title in ((MediaCommand.PREVIOUS, tr("Anterior")), (MediaCommand.PLAY, tr("Reproduzir")),
+                              (MediaCommand.PAUSE, tr("Pausar")), (MediaCommand.NEXT, tr("Próxima"))):
             button = QPushButton(title)
             button.clicked.connect(lambda checked=False, action=action: self._command(action))
             self.controls[action] = button
             transport.addWidget(button)
         contents.addWidget(transport)
         tools = ActionRow()
-        self.project = QPushButton("Projetar música")
+        self.project = QPushButton(tr("Projetar música"))
         self.project.clicked.connect(self.projection_requested.emit)
-        self.retry = QPushButton("Tentar novamente")
-        self.retry.setAccessibleDescription("Atualiza a conexão ou a sessão de mídia.")
+        self.retry = QPushButton(tr("Tentar novamente"))
+        self.retry.setAccessibleDescription(tr("Atualiza a conexão ou a sessão de mídia."))
         self.retry.clicked.connect(self._retry)
         tools.addWidget(self.project)
         tools.addWidget(self.retry)
@@ -108,13 +109,13 @@ class MediaPage(QWidget):
         if snapshot is not None:
             self._command_feedback = ""
             if not self.service.command(snapshot, action):
-                self._command_feedback = ERRORS["stale"]
+                self._command_feedback = tr(ERRORS["stale"])
                 self.refresh()
 
     def _finished(self, snapshot, result):
         shown = self._shown
         if shown and shown.generation == snapshot.generation and shown.session == snapshot.session:
-            self._command_feedback = ERRORS.get(result, "")
+            self._command_feedback = tr(ERRORS.get(result, ""))
             self.refresh()
 
     def _retry(self):
@@ -129,11 +130,11 @@ class MediaPage(QWidget):
         self._options = options
         with QSignalBlocker(self.sessions):
             self.sessions.clear()
-            self.sessions.addItem("Automático", None)
+            self.sessions.addItem(tr("Automático"), None)
             for session in view.sessions:
-                self.sessions.addItem(session.source or "Origem indisponível", session)
+                self.sessions.addItem(session.source or tr("Origem indisponível"), session)
             if view.pinned and view.pinned not in view.sessions:
-                self.sessions.addItem("Sessão fixada indisponível", view.pinned)
+                self.sessions.addItem(tr("Sessão fixada indisponível"), view.pinned)
             index = self.sessions.findData(view.pinned) if view.pinned else 0
             self.sessions.setCurrentIndex(index)
 
@@ -161,13 +162,13 @@ class MediaPage(QWidget):
                 status = f"{status} · {source}"
         else:
             status = {
-                "disabled": "Ative para controlar o aplicativo que publica mídia no Windows.",
-                "connecting": "Conectando ao controle de mídia do Windows…",
-                "unavailable": "Controle musical indisponível",
-            }.get(view.status, "Nenhuma sessão de mídia disponível")
+                "disabled": tr("Ative para controlar o aplicativo que publica mídia no Windows."),
+                "connecting": tr("Conectando ao controle de mídia do Windows…"),
+                "unavailable": tr("Controle musical indisponível"),
+            }.get(view.status, tr("Nenhuma sessão de mídia disponível"))
         self.status.setText(status)
         error = view.error or (snapshot.metadata_error if snapshot else None)
-        feedback = "Aguardando resposta do aplicativo…" if pending else self._command_feedback or ERRORS.get(error, "")
+        feedback = tr("Aguardando resposta do aplicativo…") if pending else self._command_feedback or tr(ERRORS.get(error, ""))
         self.feedback.setText(feedback)
         self.feedback.setVisible(bool(feedback))
         for action, button in self.controls.items():

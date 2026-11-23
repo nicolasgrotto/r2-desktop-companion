@@ -4,6 +4,7 @@ from PySide6.QtWidgets import (QCheckBox, QDialog, QKeySequenceEdit, QLineEdit, 
                                QPushButton, QVBoxLayout, QWidget)
 
 from .theme import ActionRow, apply_theme, card, label
+from ..core.language import tr
 
 
 class ShortcutSettings(QWidget):
@@ -13,14 +14,14 @@ class ShortcutSettings(QWidget):
         body.setContentsMargins(0, 0, 0, 0)
         panel, layout = card()
         body.addWidget(panel)
-        self.enabled = QCheckBox("Usar atalho global para buscar ações")
+        self.enabled = QCheckBox(tr("Usar atalho global para buscar ações"))
         self.enabled.setChecked(enabled)
         self.keys = QKeySequenceEdit(QKeySequence.fromString(shortcut, QKeySequence.SequenceFormat.PortableText))
         self.keys.setMaximumSequenceLength(1)
-        self.keys.setAccessibleName("Combinação do atalho global")
-        self.keys.setAccessibleDescription("Use Ctrl ou Alt com uma letra, número ou tecla de F1 a F11.")
+        self.keys.setAccessibleName(tr("Combinação do atalho global"))
+        self.keys.setAccessibleDescription(tr("Use Ctrl ou Alt com uma letra, número ou tecla de F1 a F11."))
         self.status = label(status, "muted")
-        save = QPushButton("Salvar atalho")
+        save = QPushButton(tr("Salvar atalho"))
         save.setAutoDefault(False)
         save.clicked.connect(lambda: self.status.setText(
             apply(self.enabled.isChecked(), self.keys.keySequence().toString(QKeySequence.SequenceFormat.PortableText))))
@@ -31,18 +32,18 @@ class ShortcutSettings(QWidget):
 class FirstSteps:
     def __init__(self, tools, registry, dispatch, dismiss):
         self.panel, content = card()
-        content.addWidget(label("Primeiros passos", "heading"))
-        content.addWidget(label("Arraste o mascote para movê-lo. Para recuperá-lo, abra o menu da bandeja e escolha Mostrar mascote."))
-        content.addWidget(label("Na Central de Áudio, use Silenciar este personagem para interromper seus sons."))
+        content.addWidget(label(tr("Primeiros passos"), "heading"))
+        content.addWidget(label(tr("Arraste o mascote para movê-lo. Para recuperá-lo, abra o menu da bandeja e escolha Mostrar mascote.")))
+        content.addWidget(label(tr("Na Central de Áudio, use Silenciar este personagem para interromper seus sons.")))
         row = ActionRow()
-        for key, title in (("search_actions", "Buscar ações"), ("audio", "Central de Áudio"),
-                           ("focus", "Foco"), ("media", "Música")):
+        for key, title in (("search_actions", tr("Buscar ações")), ("audio", tr("Central de Áudio")),
+                           ("focus", tr("Foco")), ("media", tr("Música"))):
             if registry.reason(key) is None:
                 button = QPushButton(title)
                 button.clicked.connect(lambda checked=False, key=key: dispatch(key))
                 row.addWidget(button)
         content.addWidget(row)
-        close = QPushButton("Dispensar primeiros passos")
+        close = QPushButton(tr("Dispensar primeiros passos"))
         close.clicked.connect(dismiss)
         content.addWidget(close)
         self.status = label("", "muted")
@@ -54,17 +55,17 @@ class ActionSearch(QDialog):
     def __init__(self, registry, dispatch):
         super().__init__()
         self.registry, self.dispatch = registry, dispatch
-        self.setWindowTitle("Buscar ações")
+        self.setWindowTitle(tr("Buscar ações"))
         self.resize(475, 405)
         apply_theme(self)
         layout = QVBoxLayout(self)
         self.query = QLineEdit()
-        self.query.setAccessibleName("Buscar ações")
-        self.query.setPlaceholderText("Digite o nome de uma ação")
+        self.query.setAccessibleName(tr("Buscar ações"))
+        self.query.setPlaceholderText(tr("Digite o nome de uma ação"))
         self.results = QListWidget()
-        self.results.setAccessibleName("Ações encontradas")
+        self.results.setAccessibleName(tr("Ações encontradas"))
         self.status = label("", "muted")
-        self.run = QPushButton("Executar")
+        self.run = QPushButton(tr("Executar"))
         self.run.setAutoDefault(False)
         for widget in (self.query, self.results, self.status, self.run):
             layout.addWidget(widget)
@@ -93,7 +94,7 @@ class ActionSearch(QDialog):
             reason = self.registry.reason(action.id)
             text = f"{action.title}\n{action.description}"
             if reason:
-                text += f"\nIndisponível · {reason}"
+                text += tr("\nIndisponível · {0}", reason)
             item = QListWidgetItem(text, self.results)
             item.setData(Qt.ItemDataRole.UserRole, action.id)
         self.results.setCurrentRow(0)
@@ -102,7 +103,7 @@ class ActionSearch(QDialog):
     def update_selection(self):
         item = self.results.currentItem()
         key = item.data(Qt.ItemDataRole.UserRole) if item else None
-        reason = self.registry.reason(key) if key else "Nenhuma ação encontrada."
+        reason = self.registry.reason(key) if key else tr("Nenhuma ação encontrada.")
         self.run.setEnabled(reason is None)
         self.status.setText(reason or "")
 

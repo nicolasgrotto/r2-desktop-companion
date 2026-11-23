@@ -8,6 +8,7 @@ from ..core.config import FutureSchemaError, Settings
 from ..services.companion_state import MAX_BYTES as STATE_LIMIT, validate_document as validate_state
 from ..services.storage import ConfigStore
 from .productivity import MAX_BYTES as PRODUCTIVITY_LIMIT, validate_document as validate_productivity
+from ..core.language import tr
 
 
 BACKUP_LABELS = {
@@ -52,7 +53,7 @@ def encode_checked(group, checked):
     values = checked.to_dict() if isinstance(checked, Settings) else checked
     contents = json.dumps(values, ensure_ascii=False, indent=2, allow_nan=False).encode("utf-8")
     if len(contents) > VALIDATORS[group][0]:
-        raise ValueError("O documento excede o limite de armazenamento.")
+        raise ValueError(tr("O documento excede o limite de armazenamento."))
     return contents
 
 
@@ -74,9 +75,9 @@ def read_contents(group, path):
         contents = handle.read(maximum + 1)
         stat = os.fstat(handle.fileno())
     if file_version(before) != file_version(stat):
-        raise OSError("O arquivo mudou durante a leitura. Consulte novamente.")
+        raise OSError(tr("O arquivo mudou durante a leitura. Consulte novamente."))
     if len(contents) > maximum:
-        raise OversizedDocumentError("O documento excede o limite de leitura.")
+        raise OversizedDocumentError(tr("O documento excede o limite de leitura."))
     return contents, stat
 
 
@@ -87,7 +88,7 @@ def read_document(group, path):
         data = validate(json.loads(contents.decode("utf-8")))
         encoded = encode_checked(group, data)
     except (TypeError, RecursionError, OverflowError) as error:
-        raise ValueError("O documento está inválido.") from error
+        raise ValueError(tr("O documento está inválido.")) from error
     return Backup(group, contents, data, encoded, stat.st_mtime)
 
 
@@ -105,7 +106,7 @@ class DataTransfer:
         data = validate_productivity(self.productivity.data)
         note = next((entry for entry in data["notes"] if entry["id"] == entry_id), None)
         if note is None:
-            raise ValueError("Selecione uma nota para exportar.")
+            raise ValueError(tr("Selecione uma nota para exportar."))
         self.export(destination, note["body"].encode("utf-8"))
 
     def export(self, destination, contents):
@@ -115,7 +116,7 @@ class DataTransfer:
         if destination == (self.config.directory / "companion.lock").resolve() or any(
             destination == path.resolve() for path in reserved
         ):
-            raise ValueError("Escolha um arquivo de destino diferente dos arquivos internos do Companion.")
+            raise ValueError(tr("Escolha um arquivo de destino diferente dos arquivos internos do Companion."))
         ConfigStore.atomic_write(destination, contents)
 
     @staticmethod
@@ -131,7 +132,7 @@ class DataTransfer:
 
     def restore(self, backup):
         if not self.can_restore(backup.group):
-            raise OSError("Os dados estão em modo somente leitura.")
+            raise OSError(tr("Os dados estão em modo somente leitura."))
         return self.apply_restore(self.prepare_restore(backup))
 
     def prepare_restore(self, backup):
@@ -140,7 +141,7 @@ class DataTransfer:
         backup_version = current_version(store.backup)
         contents, _ = read_contents(group, store.backup)
         if contents != backup.contents:
-            raise ValueError("O backup mudou. Consulte novamente antes de restaurar.")
+            raise ValueError(tr("O backup mudou. Consulte novamente antes de restaurar."))
         version = current_version(store.path)
         try:
             read_document(group, store.path)
@@ -158,11 +159,11 @@ class DataTransfer:
         group = backup.group
         store = self.stores[group]
         if not self.can_restore(group):
-            raise OSError("Os dados estão em modo somente leitura.")
+            raise OSError(tr("Os dados estão em modo somente leitura."))
         if current_version(store.backup) != prepared.backup_version:
-            raise ValueError("O backup mudou. Consulte novamente antes de restaurar.")
+            raise ValueError(tr("O backup mudou. Consulte novamente antes de restaurar."))
         if current_version(store.path) != prepared.current_version:
-            raise ValueError("Os dados atuais mudaram. Consulte novamente antes de restaurar.")
+            raise ValueError(tr("Os dados atuais mudaram. Consulte novamente antes de restaurar."))
         recovery = self.recovery_path(store)
         previous = store.settings if group == "config" else store.data
         previous_contents = encode_document(group, previous)

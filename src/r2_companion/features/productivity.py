@@ -9,6 +9,7 @@ from PySide6.QtCore import QObject, QTimer, Signal
 
 from ..core.config import FutureSchemaError
 from ..services.storage import ConfigStore
+from ..core.language import tr
 
 log = logging.getLogger(__name__)
 MAX_BYTES = 8 * 1024 * 1024
@@ -24,40 +25,40 @@ class DeletedEntry:
 
 def validate_document(raw):
     if not isinstance(raw, dict) or type(raw.get("schema_version")) is not int:
-        raise ValueError("Documento inválido.")
+        raise ValueError(tr("Documento inválido."))
     if raw["schema_version"] > 1:
-        raise FutureSchemaError("Tarefas e notas de uma versão futura; arquivo preservado.")
+        raise FutureSchemaError(tr("Tarefas e notas de uma versão futura; arquivo preservado."))
     if raw["schema_version"] != 1:
-        raise ValueError("Versão inválida.")
+        raise ValueError(tr("Versão inválida."))
     ids = set()
     result = {"schema_version": 1, "tasks": [], "notes": []}
     for key, (maximum, name) in COLLECTION_LIMITS.items():
         entries = raw.get(key)
         if not isinstance(entries, list):
-            raise ValueError("Lista inválida.")
+            raise ValueError(tr("Lista inválida."))
         if len(entries) > maximum:
-            raise ValueError(f"Limite de {maximum} {name} atingido.")
+            raise ValueError(tr("Limite de {0} {1} atingido.", maximum, name))
         for item in entries:
             if not isinstance(item, dict):
-                raise ValueError("Registro inválido.")
+                raise ValueError(tr("Registro inválido."))
             entry_id = item.get("id")
             if not isinstance(entry_id, str) or not entry_id or len(entry_id) > 80:
-                raise ValueError("Identificador inválido.")
+                raise ValueError(tr("Identificador inválido."))
             if entry_id in ids:
-                raise ValueError("Já existe um registro com o mesmo identificador.")
+                raise ValueError(tr("Já existe um registro com o mesmo identificador."))
             ids.add(entry_id)
             fields = {"text": 240} if key == "tasks" else {"title": 120, "body": 50000}
             record = {"id": entry_id}
             for field, limit in fields.items():
                 value = item.get(field)
                 if not isinstance(value, str) or len(value) > limit or "\x00" in value:
-                    raise ValueError("Texto inválido ou extenso demais.")
+                    raise ValueError(tr("Texto inválido ou extenso demais."))
                 if field != "body" and (not value.strip() or any(ord(c) < 32 for c in value)):
-                    raise ValueError("Título inválido.")
+                    raise ValueError(tr("Título inválido."))
                 record[field] = value
             if key == "tasks":
                 if type(item.get("done")) is not bool:
-                    raise ValueError("Estado da tarefa inválido.")
+                    raise ValueError(tr("Estado da tarefa inválido."))
                 record["done"] = item["done"]
             result[key].append(record)
     return result
@@ -91,7 +92,7 @@ class ProductivityStore(QObject):
     @staticmethod
     def read(path):
         if path.stat().st_size > MAX_BYTES:
-            raise ValueError("Dados excedem 8 MiB.")
+            raise ValueError(tr("Dados excedem 8 MiB."))
         return validate_document(json.loads(path.read_text(encoding="utf-8")))
 
     def load(self):
@@ -99,7 +100,7 @@ class ProductivityStore(QObject):
             try:
                 self.data = self.read(path)
                 if path == self.backup:
-                    self.notices.append("Tarefas e notas recuperadas do backup.")
+                    self.notices.append(tr("Tarefas e notas recuperadas do backup."))
                 return
             except FileNotFoundError:
                 continue
@@ -108,7 +109,7 @@ class ProductivityStore(QObject):
                 self.notices.append(str(error))
                 return
             except (OSError, ValueError, TypeError):
-                self.notices.append("Dados de ferramentas inválidos; usando backup ou lista vazia.")
+                self.notices.append(tr("Dados de ferramentas inválidos; usando backup ou lista vazia."))
                 if path == self.path and not self.read_only:
                     try:
                         ConfigStore.atomic_write(path.with_name("tools.corrupt.json"), path.read_bytes()[:MAX_BYTES])
@@ -118,7 +119,7 @@ class ProductivityStore(QObject):
     def change(self, data):
         checked = validate_document(data)
         if len(json.dumps(checked, ensure_ascii=False, indent=2).encode("utf-8")) > MAX_BYTES:
-            raise ValueError("Tarefas e notas atingiram o limite total de 8 MiB.")
+            raise ValueError(tr("Tarefas e notas atingiram o limite total de 8 MiB."))
         if checked != self.data:
             tasks_changed = checked["tasks"] != self.data["tasks"]
             self.data = checked
@@ -147,7 +148,7 @@ class ProductivityStore(QObject):
 
     def remove(self, key, entry_id):
         if key not in COLLECTION_LIMITS:
-            raise ValueError("Coleção inválida.")
+            raise ValueError(tr("Coleção inválida."))
         entries = self.data[key]
         for position, entry in enumerate(entries):
             if entry["id"] == entry_id:
@@ -174,14 +175,14 @@ class ProductivityStore(QObject):
         return deleted.collection
 
     def add_note(self):
-        entry = {"id": uuid4().hex, "title": "Nova anotação", "body": ""}
+        entry = {"id": uuid4().hex, "title": tr("Nova anotação"), "body": ""}
         self.change(self.data | {"notes": self.data["notes"] + [entry]})
         return entry["id"]
 
     def edit_note(self, entry_id, title, body):
         data = deepcopy(self.data)
         entry = next(item for item in data["notes"] if item["id"] == entry_id)
-        entry.update(title=title.strip() or "Sem título", body=body)
+        entry.update(title=title.strip() or tr("Sem título"), body=body)
         self.change(data)
 
     def flush(self):
@@ -189,7 +190,7 @@ class ProductivityStore(QObject):
         if not self.dirty:
             return True
         if self.read_only:
-            self.warning.emit("Tarefas e notas somente nesta sessão; arquivo original preservado.")
+            self.warning.emit(tr("Tarefas e notas somente nesta sessão; arquivo original preservado."))
             return False
         try:
             if self.path.exists():

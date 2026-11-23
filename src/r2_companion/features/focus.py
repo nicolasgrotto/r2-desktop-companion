@@ -8,6 +8,7 @@ from PySide6.QtCore import QObject, QTimer, Signal
 from ..services.companion_state import CompanionStateStore
 from .productivity import ProductivityStore
 from .timer import Countdown, TimerState
+from ..core.language import tr
 
 
 FOCUS_SECONDS = 25 * 60
@@ -180,7 +181,7 @@ class FocusSessionService(QObject):
         if conflict is not False:
             return conflict
         if owner is not None and owner.task_id is not None and self.productivity.task(owner.task_id) is None:
-            raise ValueError("A tarefa selecionada não existe.")
+            raise ValueError(tr("A tarefa selecionada não existe."))
         return self.countdown.start(seconds, owner=owner)
 
     def _conflict(self, replace_run_id):

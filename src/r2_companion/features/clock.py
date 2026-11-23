@@ -1,7 +1,8 @@
 from PySide6.QtCore import QDateTime, QLocale
+from ..core.language import locale
 
 
 def local_clock() -> str:
     now = QDateTime.currentDateTime()
-    locale = QLocale()
-    return locale.toString(now.time(), "HH:mm:ss") + "\n" + locale.toString(now.date(), QLocale.FormatType.LongFormat)
+    selected = locale()
+    return selected.toString(now.time(), "HH:mm:ss") + "\n" + selected.toString(now.date(), QLocale.FormatType.LongFormat)

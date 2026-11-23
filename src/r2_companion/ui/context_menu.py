@@ -3,11 +3,12 @@ from PySide6.QtWidgets import QMenu
 from .theme import apply_theme
 from .navigation import NAVIGATION
 from ..core.actions import ACTIONS
+from ..core.language import tr
 
 
 def create_menu(parent, actions: dict, settings, screens, tray_available: bool, *, registry=None, dispatch=None) -> QMenu:
     menu = QMenu(parent)
-    menu.setAccessibleName("Menu do R2 Companion")
+    menu.setAccessibleName(tr("Menu do R2 Companion"))
     apply_theme(menu)
     references = []
     submenus = []
@@ -33,19 +34,19 @@ def create_menu(parent, actions: dict, settings, screens, tray_available: bool, 
         child = menu.addMenu(title)
         submenus.append(child)
         return child
-    add(menu, "interact", "Interagir")
+    add(menu, "interact", tr("Interagir"))
     if "search_actions" in actions:
         add(menu, "search_actions")
     if "first_steps" in actions:
         add(menu, "first_steps")
-        menu.status_summary = menu.addAction("Livre")
+        menu.status_summary = menu.addAction(tr("Livre"))
         menu.status_summary.setEnabled(False)
     if "presence_mode" in actions:
-        presence = submenu("Modo de presença")
+        presence = submenu(tr("Modo de presença"))
         group = QActionGroup(presence)
         group.setExclusive(True)
         menu.presence_actions = {}
-        for mode, title in (("free", "Livre"), ("focus", "Foco"), ("presentation", "Apresentação")):
+        for mode, title in (("free", tr("Livre")), ("focus", tr("Foco")), ("presentation", tr("Apresentação"))):
             action = add(presence, "presence_" + mode, title,
                          lambda mode=mode: actions["presence_mode"](mode))
             action.setCheckable(True)
@@ -54,19 +55,19 @@ def create_menu(parent, actions: dict, settings, screens, tray_available: bool, 
         menu.presence_status = presence.addAction("")
         menu.presence_status.setEnabled(False)
         menu.presence_group = group
-    for key, title in (("garage", "Droid Garage"), ("audio", "Central de Áudio")):
+    for key, title in (("garage", "Droid Garage"), ("audio", tr("Central de Áudio"))):
         if key in actions:
             add(menu, key, title)
-    applications = submenu("Aplicativos")
+    applications = submenu(tr("Aplicativos"))
     if "apps" in actions:
-        add(applications, "apps", "Abrir painel de aplicativos")
+        add(applications, "apps", tr("Abrir painel de aplicativos"))
     for entry in settings.applications:
         add(applications, entry.id, entry.label, lambda entry=entry: actions["target"](entry))
     if not settings.applications:
-        add(applications, "settings", "Configure em Configurações…")
-    shortcuts = submenu("Atalhos")
+        add(applications, "settings", tr("Configure em Configurações…"))
+    shortcuts = submenu(tr("Atalhos"))
     if "locations" in actions:
-        add(shortcuts, "locations", "Abrir painel de locais")
+        add(shortcuts, "locations", tr("Abrir painel de locais"))
     for entry in settings.locations:
         add(shortcuts, entry.id, entry.label, lambda entry=entry: actions["target"](entry))
     targets = {t.id: t for t in settings.applications + settings.locations}
@@ -74,10 +75,10 @@ def create_menu(parent, actions: dict, settings, screens, tray_available: bool, 
         if alias.target_id in targets:
             add(shortcuts, alias.id, alias.label, lambda key=alias.target_id: actions["target"](targets[key]))
     if not settings.locations and not settings.shortcuts:
-        add(shortcuts, "settings", "Configure em Configurações…")
+        add(shortcuts, "settings", tr("Configure em Configurações…"))
     if "minigames" in actions:
-        tools = submenu("Ferramentas")
-        add(tools, "tools", "Central de ferramentas")
+        tools = submenu(tr("Ferramentas"))
+        add(tools, "tools", tr("Central de ferramentas"))
         for item in NAVIGATION["tools"][1:]:
             if item.id in actions:
                 add(tools, item.id, item.title)
@@ -86,37 +87,37 @@ def create_menu(parent, actions: dict, settings, screens, tray_available: bool, 
                 add(tools, key)
         menu.tools_ref = tools
     else:
-        add(menu, "tools", "Ferramentas · relógio, temporizador e sistema")
+        add(menu, "tools", tr("Ferramentas · relógio, temporizador e sistema"))
     if "tasks" in actions:
-        add(menu, "tasks", "Lista de tarefas")
-        add(menu, "notes", "Bloco de notas rápido")
+        add(menu, "tasks", tr("Lista de tarefas"))
+        add(menu, "notes", tr("Bloco de notas rápido"))
     if "project_clock" in actions:
-        projections = submenu("Projetar")
+        projections = submenu(tr("Projetar"))
         for item in NAVIGATION["project"]:
             add(projections, item.id, item.title.replace("\n", " "))
         menu.projections_ref = projections
-    add(menu, "settings", "Configurações…")
+    add(menu, "settings", tr("Configurações…"))
     if "updates" in actions:
-        add(menu, "updates", "Verificar atualizações")
+        add(menu, "updates", tr("Verificar atualizações"))
     menu.addSeparator()
-    add(menu, "show", "Mostrar mascote")
-    hide = add(menu, "hide", "Ocultar mascote")
+    add(menu, "show", tr("Mostrar mascote"))
+    hide = add(menu, "hide", tr("Ocultar mascote"))
     hide.setEnabled(tray_available)
-    pass_through = add(menu, "pass_through", "Deixar cliques atravessarem o mascote")
+    pass_through = add(menu, "pass_through", tr("Deixar cliques atravessarem o mascote"))
     pass_through.setCheckable(True)
     pass_through.setChecked(actions["passing"]())
     pass_through.setEnabled(tray_available)
-    pause = add(menu, "pause", "Pausar / continuar autonomia")
+    pause = add(menu, "pause", tr("Pausar / continuar autonomia"))
     pause.setCheckable(True)
     pause.setChecked(actions["paused"]())
-    add(menu, "restore", "Restaurar posição")
+    add(menu, "restore", tr("Restaurar posição"))
     if "explore" in actions:
-        add(menu, "explore", "Explorar")
-    monitor_menu = submenu("Mover para monitor")
+        add(menu, "explore", tr("Explorar"))
+    monitor_menu = submenu(tr("Mover para monitor"))
     for index, screen in enumerate(screens):
         add(monitor_menu, f"screen_{index}", f"{index + 1} · {screen.name()}", lambda screen=screen: actions["screen"](screen))
     menu.addSeparator()
-    add(menu, "exit", "Sair")
+    add(menu, "exit", tr("Sair"))
     menu.submenu_refs = tuple(submenus)
     menu.action_refs = tuple(references) + tuple(menu.actions())
     return menu

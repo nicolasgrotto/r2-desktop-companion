@@ -6,6 +6,7 @@ from pathlib import Path
 from PySide6.QtCore import QIODevice, QLockFile, QObject, QSaveFile, QTimer, Signal
 
 from ..core.config import FutureSchemaError, Settings
+from ..core.language import tr
 
 log = logging.getLogger(__name__)
 
@@ -32,7 +33,7 @@ class ConfigStore(QObject):
             directory.mkdir(parents=True, exist_ok=True)
         except OSError:
             self.read_only = True
-            self.notices.append("Diretório indisponível: alterações ficarão somente nesta sessão.")
+            self.notices.append(tr("Diretório indisponível: alterações ficarão somente nesta sessão."))
 
     def acquire(self) -> bool:
         if self.read_only:
@@ -42,13 +43,13 @@ class ConfigStore(QObject):
             return True
         if self.lock.error() == QLockFile.LockError.PermissionError:
             self.read_only = True
-            self.notices.append("Diretório sem permissão de gravação; alterações somente nesta sessão.")
+            self.notices.append(tr("Diretório sem permissão de gravação; alterações somente nesta sessão."))
             return True
         return False
 
     def _read(self, path: Path) -> Settings:
         if path.stat().st_size > 1024 * 1024:
-            raise ValueError("Configuração excede 1 MiB.")
+            raise ValueError(tr("Configuração excede 1 MiB."))
         return Settings.parse(json.loads(path.read_text(encoding="utf-8")))
 
     def load(self) -> None:
@@ -56,7 +57,7 @@ class ConfigStore(QObject):
             try:
                 self.settings = self._read(path)
                 if path == self.backup:
-                    self.notices.append("Configuração recuperada do backup.")
+                    self.notices.append(tr("Configuração recuperada do backup."))
                 return
             except FileNotFoundError:
                 continue
@@ -66,7 +67,7 @@ class ConfigStore(QObject):
                 return
             except (OSError, ValueError, TypeError) as error:
                 log.warning("Configuração inválida (%s)", type(error).__name__)
-                self.notices.append("Configuração inválida; usando backup ou valores padrão.")
+                self.notices.append(tr("Configuração inválida; usando backup ou valores padrão."))
                 if path == self.path and not self.read_only:
                     try:
                         self.atomic_write(self.directory / "config.corrupt.json", path.read_bytes()[:1024 * 1024])
@@ -107,7 +108,7 @@ class ConfigStore(QObject):
         if not self.dirty:
             return True
         if self.read_only:
-            self.warning.emit("Sem persistência nesta sessão; o arquivo original foi preservado.")
+            self.warning.emit(tr("Sem persistência nesta sessão; o arquivo original foi preservado."))
             return False
         try:
             if self.path.exists():
@@ -123,7 +124,7 @@ class ConfigStore(QObject):
             return True
         except OSError:
             log.exception("Não foi possível salvar a configuração")
-            self.warning.emit("Não foi possível salvar. A configuração anterior foi preservada.")
+            self.warning.emit(tr("Não foi possível salvar. A configuração anterior foi preservada."))
             return False
 
     def close(self) -> None:

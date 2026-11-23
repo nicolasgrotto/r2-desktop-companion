@@ -1,11 +1,12 @@
 from PySide6.QtWidgets import QSystemTrayIcon
 from .bubble import Bubble
+from ..core.language import tr
 
 
 class Tray(QSystemTrayIcon):
     def __init__(self, icon):
         super().__init__(icon)
-        self.setToolTip("R2 Companion · placeholder de desenvolvimento")
+        self.setToolTip(tr("R2 Companion · placeholder de desenvolvimento"))
         self.notice = Bubble()
         self.notifications_enabled = True
 

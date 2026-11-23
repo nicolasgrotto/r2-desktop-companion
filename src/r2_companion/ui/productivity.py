@@ -4,6 +4,7 @@ from PySide6.QtWidgets import (QApplication, QCheckBox, QFileDialog, QHBoxLayout
 
 from .theme import ActionRow, label
 from ..droids.themes import styled
+from ..core.language import locale, tr
 
 
 class NoteEditor(QPlainTextEdit):
@@ -38,17 +39,17 @@ class UndoDeletionButton(QPushButton):
 
     def refresh(self):
         kind = {"tasks": "tarefa", "notes": "nota"}.get(self.store.undo_collection)
-        self.setText(f"Desfazer exclusão da {kind}" if kind else "Desfazer exclusão")
+        self.setText(tr("Desfazer exclusão da {0}", kind) if kind else tr("Desfazer exclusão"))
         self.setEnabled(kind is not None)
 
     def restore(self):
         try:
             collection = self.store.undo_remove()
         except ValueError as error:
-            self.message.emit(f"Não foi possível desfazer a exclusão. {error}")
+            self.message.emit(tr("Não foi possível desfazer a exclusão. {0}", error))
             return
         if collection is not None:
-            self.message.emit("Tarefa restaurada." if collection == "tasks" else "Nota restaurada.")
+            self.message.emit(tr("Tarefa restaurada.") if collection == "tasks" else tr("Nota restaurada."))
 
 
 class TasksPage(QWidget):
@@ -61,31 +62,31 @@ class TasksPage(QWidget):
         row = QHBoxLayout()
         self.input = QLineEdit()
         self.input.setMaxLength(240)
-        self.input.setAccessibleName("Nova tarefa")
-        self.input.setPlaceholderText("Uma coisa para fazer…")
+        self.input.setAccessibleName(tr("Nova tarefa"))
+        self.input.setPlaceholderText(tr("Uma coisa para fazer…"))
         self.input.returnPressed.connect(self.add)
         row.addWidget(self.input, 1)
-        button = QPushButton("Adicionar")
+        button = QPushButton(tr("Adicionar"))
         button.clicked.connect(self.add)
         row.addWidget(button)
         layout.addLayout(row)
-        self.pending = QCheckBox("Apenas pendentes")
+        self.pending = QCheckBox(tr("Apenas pendentes"))
         self.pending.toggled.connect(self.render)
         layout.addWidget(self.pending)
         self.list = QListWidget()
-        self.list.setAccessibleName("Lista de tarefas")
+        self.list.setAccessibleName(tr("Lista de tarefas"))
         self.list.setWordWrap(True)
         style_list(self.list)
         self.list.itemChanged.connect(self.toggle)
         layout.addWidget(self.list, 1)
         actions = ActionRow()
         if focus_available:
-            self.focus_button = QPushButton("Iniciar foco")
-            self.focus_button.setAccessibleName("Iniciar foco na tarefa selecionada")
+            self.focus_button = QPushButton(tr("Iniciar foco"))
+            self.focus_button.setAccessibleName(tr("Iniciar foco na tarefa selecionada"))
             self.focus_button.clicked.connect(self.request_focus)
             self.list.currentItemChanged.connect(self.update_focus_button)
             actions.addWidget(self.focus_button)
-        button = QPushButton("Excluir selecionada")
+        button = QPushButton(tr("Excluir selecionada"))
         button.clicked.connect(self.remove)
         actions.addWidget(button)
         self.undo_button = UndoDeletionButton(store)
@@ -132,7 +133,9 @@ class TasksPage(QWidget):
 
     def update_status(self):
         remaining = sum(not task["done"] for task in self.store.data["tasks"])
-        self.status.setText(f"{remaining} pendentes · Marque para concluir; desmarque para reabrir.")
+        message = ("{0} tarefa pendente · Marque para concluir; desmarque para reabrir." if remaining == 1
+                   else "{0} tarefas pendentes · Marque para concluir; desmarque para reabrir.")
+        self.status.setText(tr(message, locale().toString(remaining)))
 
     def add(self):
         try:
@@ -153,7 +156,7 @@ class TasksPage(QWidget):
         item = self.list.currentItem()
         if item and self.store.remove("tasks", item.data(Qt.ItemDataRole.UserRole)):
             self.render()
-            self.status.setText("Tarefa excluída.")
+            self.status.setText(tr("Tarefa excluída."))
 
     def entry_restored(self, collection, entry_id):
         if collection == "tasks":
@@ -168,41 +171,41 @@ class NotesPage(QWidget):
         self.current_id = None
         layout = QVBoxLayout(self)
         self.list = QListWidget()
-        self.list.setAccessibleName("Lista de notas")
+        self.list.setAccessibleName(tr("Lista de notas"))
         style_list(self.list)
         self.list.setMaximumHeight(145)
         self.list.currentItemChanged.connect(self.select)
         layout.addWidget(self.list)
         row = ActionRow()
-        for title, callback in (("Nova", self.add), ("Excluir", self.remove), ("Copiar conteúdo", self.copy)):
+        for title, callback in ((tr("Nova"), self.add), (tr("Excluir"), self.remove), (tr("Copiar conteúdo"), self.copy)):
             button = QPushButton(title)
             button.clicked.connect(callback)
             row.addWidget(button)
         self.undo_button = UndoDeletionButton(store)
         row.addWidget(self.undo_button)
         if transfer is not None:
-            self.export_button = QPushButton("Exportar nota em TXT")
+            self.export_button = QPushButton(tr("Exportar nota em TXT"))
             self.export_button.clicked.connect(self.export_note)
             row.addWidget(self.export_button)
         layout.addWidget(row)
         self.title = QLineEdit()
         self.title.setMaxLength(120)
-        self.title.setAccessibleName("Título da nota")
-        self.title.setPlaceholderText("Título")
+        self.title.setAccessibleName(tr("Título da nota"))
+        self.title.setPlaceholderText(tr("Título"))
         self.body = NoteEditor()
-        self.body.setAccessibleName("Conteúdo da nota")
+        self.body.setAccessibleName(tr("Conteúdo da nota"))
         self.body.setTabChangesFocus(True)
-        self.body.setPlaceholderText("Escreva sua anotação…")
+        self.body.setPlaceholderText(tr("Escreva sua anotação…"))
         styled(self.body, "QPlainTextEdit { background: @panel; color: @text; padding: 10px; }")
         self.title.textEdited.connect(self.save)
         self.body.textChanged.connect(self.save)
         layout.addWidget(self.title)
         layout.addWidget(self.body, 1)
-        self.status = label("Salvamento automático local · Até 50.000 caracteres por nota.", "muted")
+        self.status = label(tr("Salvamento automático local · Até 50.000 caracteres por nota."), "muted")
         self.undo_button.message.connect(self.status.setText)
         store.entry_restored.connect(self.entry_restored)
         store.restored.connect(self.refresh_from_store)
-        store.saved.connect(lambda: self.status.setText("Salvo neste computador."))
+        store.saved.connect(lambda: self.status.setText(tr("Salvo neste computador.")))
         store.warning.connect(self.status.setText)
         layout.addWidget(self.status)
         self.render()
@@ -241,8 +244,8 @@ class NotesPage(QWidget):
                 self.body.setPlainText(body[:50000])
                 self.body.blockSignals(False)
             self.store.edit_note(self.current_id, self.title.text(), self.body.toPlainText())
-            item.setText(self.title.text().strip() or "Sem título")
-            self.status.setText("Salvando alterações…")
+            item.setText(self.title.text().strip() or tr("Sem título"))
+            self.status.setText(tr("Salvando alterações…"))
         except ValueError as error:
             self.status.setText(str(error))
 
@@ -261,7 +264,7 @@ class NotesPage(QWidget):
         self.select(None)
         if self.store.remove("notes", entry_id):
             self.render()
-            self.status.setText("Nota excluída.")
+            self.status.setText(tr("Nota excluída."))
 
     def entry_restored(self, collection, entry_id):
         if collection == "notes":
@@ -274,15 +277,15 @@ class NotesPage(QWidget):
         entry_id = self.current_id
         if entry_id is None:
             return
-        destination, _ = QFileDialog.getSaveFileName(self, "Exportar nota", "nota.txt", "Texto UTF-8 (*.txt)")
+        destination, _ = QFileDialog.getSaveFileName(self, tr("Exportar nota"), "nota.txt", tr("Texto UTF-8 (*.txt)"))
         if not destination:
             return
         try:
             self.transfer.export_note(entry_id, destination)
         except (OSError, ValueError, RuntimeError) as error:
-            self.status.setText(f"Não foi possível exportar a nota. {error}")
+            self.status.setText(tr("Não foi possível exportar a nota. {0}", error))
         else:
-            self.status.setText("Nota exportada como texto UTF-8.")
+            self.status.setText(tr("Nota exportada como texto UTF-8."))
 
     def copy(self):
         if self.current_id is not None:

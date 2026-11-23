@@ -3,6 +3,7 @@ from dataclasses import dataclass
 from PySide6.QtCore import QObject, QTimer, Signal
 
 from .clock import local_clock
+from ..core.language import tr
 
 
 @dataclass(frozen=True)
@@ -20,8 +21,8 @@ class ProjectionModel:
 def clock_model(kind):
     time, _, date = local_clock().partition("\n")
     if kind == "clock":
-        return ProjectionModel(kind, "Relógio", (time,))
-    return ProjectionModel(kind, "Horário e data", (time, date))
+        return ProjectionModel(kind, tr("Relógio"), (time,))
+    return ProjectionModel(kind, tr("Horário e data"), (time, date))
 
 
 class ProjectionController(QObject):

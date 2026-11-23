@@ -15,6 +15,7 @@ from .data_transfer import DataPage
 from .focus import FocusPage, confirm_countdown
 from .media import MediaPage
 from ..droids.themes import color, styled, theme_manager
+from ..core.language import tr
 
 
 def timer_text(seconds: float) -> str:
@@ -30,7 +31,7 @@ class TimerDial(QWidget):
         self.resize_dial()
         self.value = 300
         self.total = 300
-        self.status = "PRONTO"
+        self.status = tr("PRONTO")
 
     def resize_dial(self, *_):
         dip = theme_manager().dip
@@ -73,14 +74,14 @@ class ToolsDialog(QDialog):
     def __init__(self, countdown, monitor, duration: int, productivity=None, project_timer=False, data_transfer=None,
                  focus=None, media=None, companion_state=None):
         super().__init__()
-        self.setWindowTitle("Central de ferramentas · R2 Companion")
+        self.setWindowTitle(tr("Central de ferramentas · R2 Companion"))
         self.resize(760, 650)
         apply_theme(self)
         self.countdown, self.monitor = countdown, monitor
         self.focus = focus
-        self.project_timer = QCheckBox("Projetar timer")
+        self.project_timer = QCheckBox(tr("Projetar timer"))
         self.project_timer.setChecked(project_timer)
-        self.project_timer.setToolTip("Exibir a contagem no holograma do droide até terminar.")
+        self.project_timer.setToolTip(tr("Exibir a contagem no holograma do droide até terminar."))
         self.project_timer.setAccessibleDescription(self.project_timer.toolTip())
         self.battery = None
         outer = QVBoxLayout(self)
@@ -93,23 +94,23 @@ class ToolsDialog(QDialog):
         layout = QVBoxLayout(body)
         layout.setContentsMargins(14, 18, 14, 18)
         layout.setSpacing(14)
-        layout.addWidget(header("Central de ferramentas", "Seu tempo e seu computador, em sintonia."))
+        layout.addWidget(header(tr("Central de ferramentas"), tr("Seu tempo e seu computador, em sintonia.")))
         self.tabs = QTabWidget()
-        self.tabs.tabBar().setAccessibleName("Páginas da central de ferramentas")
-        self.tabs.addTab(self.overview(), icon("clock"), "Relógio")
-        self.tabs.addTab(self.timer_page(), icon("play"), "Temporizador")
-        self.tabs.addTab(self.system_page(), icon("system"), "Sistema")
+        self.tabs.tabBar().setAccessibleName(tr("Páginas da central de ferramentas"))
+        self.tabs.addTab(self.overview(), icon("clock"), tr("Relógio"))
+        self.tabs.addTab(self.timer_page(), icon("play"), tr("Temporizador"))
+        self.tabs.addTab(self.system_page(), icon("system"), tr("Sistema"))
         if productivity is not None:
             self.tasks_page = TasksPage(productivity, focus_available=focus is not None)
             self.notes_page = NotesPage(productivity, data_transfer)
             self.tasks_page.setProperty("characterLiteral", True)
             self.notes_page.setProperty("characterLiteral", True)
-            self.tabs.addTab(scrollable(self.tasks_page), "Tarefas")
-            self.tabs.addTab(scrollable(self.notes_page), "Notas")
+            self.tabs.addTab(scrollable(self.tasks_page), tr("Tarefas"))
+            self.tabs.addTab(scrollable(self.notes_page), tr("Notas"))
         self.minigames_page = MinigamesPage(store=companion_state)
         self.diagnostics_page = DiagnosticsPage()
         self.tabs.addTab(self.minigames_page, "Minigames")
-        self.tabs.addTab(self.diagnostics_page, "Diagnóstico")
+        self.tabs.addTab(self.diagnostics_page, tr("Diagnóstico"))
         self.pages = {"clock": self.tabs.widget(0), "timer": self.tabs.widget(1),
                       "system": self.tabs.widget(2), "minigames": self.minigames_page,
                       "diagnostics": self.diagnostics_page}
@@ -117,29 +118,29 @@ class ToolsDialog(QDialog):
             self.pages.update(tasks=self.tabs.widget(3), notes=self.tabs.widget(4))
         if data_transfer is not None:
             data_page = DataPage(data_transfer)
-            self.tabs.addTab(data_page, "Dados")
+            self.tabs.addTab(data_page, tr("Dados"))
             self.pages["data"] = data_page
         if focus is not None:
             self.focus_page = FocusPage(focus, timer_text)
             self.focus_page.setProperty("characterLiteral", True)
             self.pages["focus"] = scrollable(self.focus_page)
-            self.tabs.addTab(self.pages["focus"], "Foco")
+            self.tabs.addTab(self.pages["focus"], tr("Foco"))
             self.tasks_page.focus_requested.connect(self.start_task_focus)
             self.focus_page.task_finished.connect(self.tasks_page.render)
         if media is not None:
             self.media_page = MediaPage(media)
             self.media_page.setProperty("characterLiteral", True)
             self.pages["media"] = scrollable(self.media_page)
-            self.tabs.addTab(self.pages["media"], "Música")
+            self.tabs.addTab(self.pages["media"], tr("Música"))
         self.tabs.setUsesScrollButtons(True)
         layout.addWidget(self.tabs, 1)
-        self.completion = label("Tudo pronto. Escolha uma ferramenta para começar.", "muted")
+        self.completion = label(tr("Tudo pronto. Escolha uma ferramenta para começar."), "muted")
         self.completion.setWordWrap(True)
         layout.addWidget(self.completion)
         self.projection_details = QPlainTextEdit()
         self.projection_details.setReadOnly(True)
         self.projection_details.setTabChangesFocus(True)
-        self.projection_details.setAccessibleName("Conteúdo da projeção")
+        self.projection_details.setAccessibleName(tr("Conteúdo da projeção"))
         self.projection_details.setMaximumHeight(135)
         self.projection_details.hide()
         layout.addWidget(self.projection_details)
@@ -192,7 +193,7 @@ class ToolsDialog(QDialog):
         layout.setContentsMargins(0, 16, 0, 0)
         layout.setSpacing(16)
         hero, content = card("hero")
-        content.addWidget(label("HORA LOCAL / AGORA", "muted"))
+        content.addWidget(label(tr("HORA LOCAL / AGORA"), "muted"))
         self.clock_label = label("00:00:00")
         styled(self.clock_label, "font: 48px 'Consolas'; color: #f4faff;")
         content.addWidget(self.clock_label)
@@ -202,21 +203,21 @@ class ToolsDialog(QDialog):
         layout.addWidget(hero)
         row = ActionRow()
         quick, box = card()
-        box.addWidget(label("TEMPO PARA VOCÊ", "eyebrow"))
-        box.addWidget(label("Um intervalo na medida certa"))
-        self.timer_summary = label("Seu temporizador está pronto.", "muted")
+        box.addWidget(label(tr("TEMPO PARA VOCÊ"), "eyebrow"))
+        box.addWidget(label(tr("Um intervalo na medida certa")))
+        self.timer_summary = label(tr("Seu temporizador está pronto."), "muted")
         box.addWidget(self.timer_summary)
-        button = QPushButton("Abrir temporizador  →")
+        button = QPushButton(tr("Abrir temporizador  →"))
         button.setProperty("role", "primary")
         button.clicked.connect(lambda: self.tabs.setCurrentIndex(1))
         box.addWidget(button)
         row.addWidget(quick, 1)
         system, box = card()
-        box.addWidget(label("SEU COMPUTADOR", "eyebrow"))
-        self.metrics = label("CPU —\nMemória —")
+        box.addWidget(label(tr("SEU COMPUTADOR"), "eyebrow"))
+        self.metrics = label(tr("CPU —\nMemória —"))
         styled(self.metrics, "font-size: 19px; font-weight: 600;")
         box.addWidget(self.metrics)
-        button = QPushButton("Ver sistema  →")
+        button = QPushButton(tr("Ver sistema  →"))
         button.clicked.connect(lambda: self.tabs.setCurrentIndex(2))
         box.addWidget(button)
         row.addWidget(system, 1)
@@ -230,25 +231,25 @@ class ToolsDialog(QDialog):
         layout.setContentsMargins(0, 16, 0, 0)
         panel, content = card()
         content.setContentsMargins(14, 16, 14, 16)
-        content.addWidget(label("DEFINA SEU PRÓXIMO INTERVALO", "eyebrow"))
+        content.addWidget(label(tr("DEFINA SEU PRÓXIMO INTERVALO"), "eyebrow"))
         body = ActionRow()
         self.dial = TimerDial()
         body.addWidget(self.dial, 1)
         controls_widget = QWidget()
         controls = QVBoxLayout(controls_widget)
         controls.setContentsMargins(0, 0, 0, 0)
-        controls.addWidget(label("Quanto tempo você precisa?"))
+        controls.addWidget(label(tr("Quanto tempo você precisa?")))
         durations = QHBoxLayout()
         self.minutes = QSpinBox()
         self.minutes.setRange(0, 1440)
         self.minutes.setSuffix(" min")
         self.minutes.setButtonSymbols(QAbstractSpinBox.ButtonSymbols.NoButtons)
-        self.minutes.setAccessibleName("Minutos do temporizador")
+        self.minutes.setAccessibleName(tr("Minutos do temporizador"))
         self.seconds = QSpinBox()
         self.seconds.setRange(0, 59)
         self.seconds.setSuffix(" s")
         self.seconds.setButtonSymbols(QAbstractSpinBox.ButtonSymbols.NoButtons)
-        self.seconds.setAccessibleName("Segundos do temporizador")
+        self.seconds.setAccessibleName(tr("Segundos do temporizador"))
         durations.addWidget(self.minutes)
         durations.addWidget(self.seconds)
         controls.addLayout(durations)
@@ -262,31 +263,31 @@ class ToolsDialog(QDialog):
             self.presets.append(button)
         controls.addLayout(presets)
         controls.addWidget(self.project_timer)
-        self.start_button = QPushButton("Iniciar contagem")
+        self.start_button = QPushButton(tr("Iniciar contagem"))
         self.start_button.setIcon(icon("play", "#ffffff"))
         self.start_button.setProperty("role", "primary")
         self.start_button.clicked.connect(self.start)
         controls.addWidget(self.start_button)
         row = ActionRow()
-        self.pause_button = QPushButton("Pausar")
+        self.pause_button = QPushButton(tr("Pausar"))
         self.pause_button.clicked.connect(self.toggle_pause)
-        self.restart_button = QPushButton("Reiniciar")
+        self.restart_button = QPushButton(tr("Reiniciar"))
         self.restart_button.clicked.connect(self.restart_countdown)
         row.addWidget(self.pause_button)
         row.addWidget(self.restart_button)
         controls.addWidget(row)
-        self.stop_button = QPushButton("Encerrar")
-        self.stop_button.setAccessibleName("Encerrar temporizador")
-        self.stop_button.setToolTip("Cancelar a contagem atual e liberar a escolha de outro intervalo.")
+        self.stop_button = QPushButton(tr("Encerrar"))
+        self.stop_button.setAccessibleName(tr("Encerrar temporizador"))
+        self.stop_button.setToolTip(tr("Cancelar a contagem atual e liberar a escolha de outro intervalo."))
         self.stop_button.clicked.connect(self.stop_countdown)
         controls.addWidget(self.stop_button)
         controls.addStretch()
         body.addWidget(controls_widget, 2)
         content.addWidget(body)
-        self.timer_label = label("Pronto", "muted")
+        self.timer_label = label(tr("Pronto"), "muted")
         content.addWidget(self.timer_label)
         layout.addWidget(panel)
-        note = label("O R2 avisa quando terminar. A contagem continua com o mascote oculto; sair da aplicação encerra o temporizador.", "muted")
+        note = label(tr("O R2 avisa quando terminar. A contagem continua com o mascote oculto; sair da aplicação encerra o temporizador."), "muted")
         note.setWordWrap(True)
         layout.addWidget(note)
         layout.addStretch()
@@ -298,9 +299,9 @@ class ToolsDialog(QDialog):
         layout.setContentsMargins(0, 16, 0, 0)
         layout.setSpacing(16)
         self.metric_labels, self.metric_bars = {}, {}
-        for key, title, description in (("cpu", "Processador", "Uso atual da CPU"),
-                                         ("ram", "Memória", "RAM em uso"),
-                                         ("battery", "Bateria", "Carga disponível, quando houver bateria")):
+        for key, title, description in (("cpu", tr("Processador"), tr("Uso atual da CPU")),
+                                         ("ram", tr("Memória"), tr("RAM em uso")),
+                                         ("battery", tr("Bateria"), tr("Carga disponível, quando houver bateria"))):
             panel, content = card()
             row = QHBoxLayout()
             row.addWidget(label(title))
@@ -330,7 +331,7 @@ class ToolsDialog(QDialog):
     def start(self):
         seconds = self.selected_duration()
         if not 1 <= seconds <= 86400:
-            self.completion.setText("Escolha um intervalo entre 1 segundo e 24 horas.")
+            self.completion.setText(tr("Escolha um intervalo entre 1 segundo e 24 horas."))
             return
         if self.focus is None:
             self.countdown.start(seconds)
@@ -338,7 +339,7 @@ class ToolsDialog(QDialog):
                                report=self.completion.setText) is None:
             return
         self.duration_selected.emit(seconds)
-        self.completion.setText(f"Seu tempo está correndo. Pode deixar que {getattr(self, 'character_name', 'R2')} avisa.")
+        self.completion.setText(tr("Seu tempo está correndo. Pode deixar que {0} avisa.", getattr(self, 'character_name', 'R2')))
 
     def has_focus_session(self):
         return self.focus is not None and self.focus.session is not None
@@ -355,12 +356,12 @@ class ToolsDialog(QDialog):
         if self.has_focus_session():
             return
         self.countdown.stop()
-        self.completion.setText("Temporizador encerrado. Escolha outro intervalo para iniciar uma nova contagem.")
+        self.completion.setText(tr("Temporizador encerrado. Escolha outro intervalo para iniciar uma nova contagem."))
 
     def completed(self, run_id):
         if self.has_focus_session() or self.countdown.run_id != run_id:
             return
-        self.completion.setText(f"✓ Temporizador #{run_id} concluído. Seu intervalo chegou ao fim.")
+        self.completion.setText(tr("✓ Temporizador #{0} concluído. Seu intervalo chegou ao fim.", run_id))
 
     def restart_countdown(self):
         if not self.has_focus_session():
@@ -379,18 +380,18 @@ class ToolsDialog(QDialog):
         remaining = self.selected_duration() if state == TimerState.STOPPED else self.countdown.remaining
         self.dial.value = remaining
         self.dial.total = self.selected_duration() if state == TimerState.STOPPED else self.countdown.duration
-        self.dial.status = {TimerState.STOPPED: "PRONTO", TimerState.RUNNING: "EM CONTAGEM",
-                            TimerState.PAUSED: "PAUSADO", TimerState.COMPLETED: "CONCLUÍDO"}[state]
+        self.dial.status = {TimerState.STOPPED: tr("PRONTO"), TimerState.RUNNING: tr("EM CONTAGEM"),
+                            TimerState.PAUSED: tr("PAUSADO"), TimerState.COMPLETED: tr("CONCLUÍDO")}[state]
         if self.isVisible():
             self.dial.update()
-        description = ("Sessão na página Foco" if focus_active else f"{state.value} · {timer_text(remaining)}")
+        description = (tr("Sessão na página Foco") if focus_active else f"{tr(state.value)} · {timer_text(remaining)}")
         self.timer_label.setText(description)
         self.timer_summary.setText(description)
         active = state in {TimerState.RUNNING, TimerState.PAUSED}
         self.start_button.setEnabled(not active)
         self.pause_button.setEnabled(active)
         self.stop_button.setEnabled(active)
-        self.pause_button.setText("Continuar" if state == TimerState.PAUSED else "Pausar")
+        self.pause_button.setText(tr("Continuar") if state == TimerState.PAUSED else tr("Pausar"))
         self.restart_button.setEnabled(state != TimerState.STOPPED)
         for control in (self.minutes, self.seconds, *self.presets):
             control.setEnabled(not active)
@@ -400,11 +401,11 @@ class ToolsDialog(QDialog):
             self.battery = values["battery"]
         values = values | {"battery": self.battery}
         for key, value in values.items():
-            self.metric_labels[key].setText(("Não disponível" if key == "battery" else "Aguardando…") if value is None else f"{value:.0f}%")
+            self.metric_labels[key].setText((tr("Não disponível") if key == "battery" else tr("Aguardando…")) if value is None else f"{value:.0f}%")
             self.metric_bars[key].setValue(0 if value is None else round(value))
         cpu = "—" if values["cpu"] is None else f"{values['cpu']:.0f}%"
         ram = "—" if values["ram"] is None else f"{values['ram']:.0f}%"
-        self.metrics.setText(f"CPU {cpu}\nMemória {ram}")
+        self.metrics.setText(tr("CPU {0}\nMemória {1}", cpu, ram))
 
     def page_changed(self, index):
         if not hasattr(self, "clock_timer") or not self.isVisible():

@@ -4,6 +4,7 @@ from PySide6.QtCore import QUrl
 from PySide6.QtGui import QDesktopServices
 
 from .launcher import local_path
+from ..core.language import tr
 
 ALLOWED = {".txt", ".pdf", ".png", ".jpg", ".jpeg", ".wav", ".mp3"}
 
@@ -14,7 +15,7 @@ def validate_location(raw: str, kind: str) -> Path:
         return path
     if kind == "file" and path.is_file() and path.suffix.lower() in ALLOWED:
         return path
-    raise ValueError("Destino indisponível ou tipo de arquivo não permitido.")
+    raise ValueError(tr("Destino indisponível ou tipo de arquivo não permitido."))
 
 
 def open_location(raw: str, kind: str, opener=None) -> bool:

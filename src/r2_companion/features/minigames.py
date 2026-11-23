@@ -7,6 +7,7 @@ from uuid import uuid4
 
 from PySide6.QtCore import QBuffer, QByteArray, QIODevice, QSize, Qt, QUrl
 from PySide6.QtGui import QDesktopServices, QImage, QImageReader
+from ..core.language import tr
 
 
 @dataclass(frozen=True)
@@ -35,10 +36,10 @@ GAME_ID = re.compile(r"[a-f0-9]{32}")
 
 def game_url(value):
     if not isinstance(value, str) or not value or len(value) > MAX_URL:
-        raise ValueError("Informe um endereço HTTPS válido, sem credenciais.")
+        raise ValueError(tr("Informe um endereço HTTPS válido, sem credenciais."))
     url = QUrl(value.strip(), QUrl.ParsingMode.StrictMode)
     if not url.isValid() or url.scheme() != "https" or not url.host().strip(".") or "@" in url.authority():
-        raise ValueError("Informe um endereço HTTPS válido, sem credenciais.")
+        raise ValueError(tr("Informe um endereço HTTPS válido, sem credenciais."))
     return url
 
 
@@ -50,22 +51,22 @@ def _field(value, limit, error, *, required=False):
 
 def validate_entries(entries):
     if not isinstance(entries, dict):
-        raise ValueError("Catálogo pessoal inválido.")
+        raise ValueError(tr("Catálogo pessoal inválido."))
     for identifier, entry in entries.items():
         if not isinstance(identifier, str) or not GAME_ID.fullmatch(identifier) or not isinstance(entry, dict):
-            raise ValueError("Entrada de minigame inválida.")
-        _field(entry.get("name"), MAX_NAME, "Informe um nome válido.", required=True)
-        _field(entry.get("description", ""), MAX_DESCRIPTION, "Descrição inválida.")
+            raise ValueError(tr("Entrada de minigame inválida."))
+        _field(entry.get("name"), MAX_NAME, tr("Informe um nome válido."), required=True)
+        _field(entry.get("description", ""), MAX_DESCRIPTION, tr("Descrição inválida."))
         game_url(entry.get("url"))
-        _field(entry.get("glyph", "play"), 24, "Ícone inválido.")
-        _field(entry.get("thumbnail", ""), MAX_THUMBNAIL, "Miniatura inválida.")
+        _field(entry.get("glyph", "play"), 24, tr("Ícone inválido."))
+        _field(entry.get("thumbnail", ""), MAX_THUMBNAIL, tr("Miniatura inválida."))
 
 
 def new_entry(name, url, description, glyph, thumbnail):
     return {
-        "name": _field(name, MAX_NAME, "Informe o nome do minigame.", required=True),
+        "name": _field(name, MAX_NAME, tr("Informe o nome do minigame."), required=True),
         "url": game_url(url).toString(QUrl.ComponentFormattingOption.FullyEncoded),
-        "description": _field(description, MAX_DESCRIPTION, "Descrição muito longa."),
+        "description": _field(description, MAX_DESCRIPTION, tr("Descrição muito longa.")),
         "glyph": glyph,
         "thumbnail": thumbnail,
     }
@@ -81,7 +82,7 @@ def save_game(store, game, entry):
     key = game.id if game else uuid4().hex
     entries = store.data["minigames"]["entries"]
     if game is not None and key not in entries:
-        raise ValueError("O minigame foi removido. Abra o catálogo novamente.")
+        raise ValueError(tr("O minigame foi removido. Abra o catálogo novamente."))
     if entry is None:
         del entries[key]
     else:
@@ -96,14 +97,14 @@ def load_thumbnail(path):
     except OSError:
         within_limit = False
     if not within_limit:
-        raise ValueError("Escolha uma imagem PNG ou JPEG de até 16 MiB.")
+        raise ValueError(tr("Escolha uma imagem PNG ou JPEG de até 16 MiB."))
     reader = QImageReader(str(file))
     reader.setDecideFormatFromContent(True)
     size = reader.size()
     if reader.format().data() not in (b"png", b"jpeg") or not size.isValid():
-        raise ValueError("A imagem deve estar no formato PNG ou JPEG.")
+        raise ValueError(tr("A imagem deve estar no formato PNG ou JPEG."))
     if size.width() * size.height() > MAX_IMAGE_PIXELS:
-        raise ValueError("A imagem excede o limite de 16 megapixels.")
+        raise ValueError(tr("A imagem excede o limite de 16 megapixels."))
     size.scale(QSize(THUMBNAIL_EDGE, THUMBNAIL_EDGE), Qt.AspectRatioMode.KeepAspectRatio)
     reader.setAutoTransform(True)
     reader.setScaledSize(size)
@@ -111,7 +112,7 @@ def load_thumbnail(path):
     output = QBuffer()
     output.open(QIODevice.OpenModeFlag.WriteOnly)
     if image.isNull() or not image.save(output, "PNG"):
-        raise ValueError("Não foi possível ler a imagem.")
+        raise ValueError(tr("Não foi possível ler a imagem."))
     return b64encode(bytes(output.data())).decode("ascii")
 
 
@@ -134,5 +135,5 @@ def thumbnail_image(value):
 def open_game(game_id, opener=None, games=GAMES):
     game = next((game for game in games if game.id == game_id), None)
     if game is None:
-        raise ValueError("Minigame desconhecido.")
+        raise ValueError(tr("Minigame desconhecido."))
     return (opener or QDesktopServices.openUrl)(game_url(game.url))

@@ -19,6 +19,7 @@ from ..pet.personality import apply_profile
 from ..pet.scenes import CATALOG, SCENE_LABELS, scene_clips
 from ..pet.state import State
 from .theme import ActionRow, apply_character_name, apply_theme, configure_form, form_row, header, label
+from ..core.language import tr
 
 ANIMATION_NAMES = {"IDLE": "Repouso", "BLINK": "Piscar", "LOOK_AROUND": "Observar", "WALK": "Locomoção",
                    "HAPPY": "Felicidade", "CURIOUS": "Curiosidade", "SLEEP": "Sono", "INTERACT": "Interação",
@@ -49,7 +50,7 @@ class PreviewCanvas(QWidget):
         self.roll_timer = QTimer(self)
         self.roll_timer.setInterval(33)
         self.roll_timer.timeout.connect(self.roll)
-        self.setAccessibleName("Prévia independente do personagem")
+        self.setAccessibleName(tr("Prévia independente do personagem"))
 
     def set_frame(self, frame):
         self.frame = frame
@@ -142,9 +143,9 @@ class DroidStudio(QDialog):
         self.scroll_area.setWidget(content)
         self.layout_main = QVBoxLayout(content)
         self.layout_main.setContentsMargins(14, 20, 14, 20)
-        self.layout_main.addWidget(header(title, "Explore a identidade e as animações de cada companheiro."))
+        self.layout_main.addWidget(header(title, tr("Explore a identidade e as animações de cada companheiro.")))
         self.selector = QComboBox()
-        self.selector.setAccessibleName("Personagem para visualizar")
+        self.selector.setAccessibleName(tr("Personagem para visualizar"))
         self.selector.setMaxVisibleItems(7)
         for profile in self.registry.profiles.values():
             self.selector.addItem(profile.name, profile.id)
@@ -163,22 +164,22 @@ class DroidStudio(QDialog):
         column = QVBoxLayout(animation_controls)
         column.setContentsMargins(0, 0, 0, 0)
         self.category = QComboBox()
-        self.category.setAccessibleName("Categoria das animações")
+        self.category.setAccessibleName(tr("Categoria das animações"))
         column.addWidget(self.category)
         self.animations = QListWidget()
-        self.animations.setAccessibleName("Animações do personagem")
+        self.animations.setAccessibleName(tr("Animações do personagem"))
         column.addWidget(self.animations, 1)
         self.frame_variant = QComboBox()
-        self.frame_variant.setAccessibleName("Frame ou variação da animação")
+        self.frame_variant.setAccessibleName(tr("Frame ou variação da animação"))
         column.addWidget(self.frame_variant)
         row.addWidget(animation_controls, 2)
         self.layout_main.addWidget(row, 1)
         controls = ActionRow()
-        self.repeat = QCheckBox("Repetir sequência")
+        self.repeat = QCheckBox(tr("Repetir sequência"))
         self.repeat.setChecked(True)
         controls.addWidget(self.repeat)
-        for title, callback in (("Anterior", lambda: self.step(-1)), ("Reproduzir", self.play),
-                                ("Parar", self.stop), ("Próxima", lambda: self.step(1))):
+        for title, callback in ((tr("Anterior"), lambda: self.step(-1)), (tr("Reproduzir"), self.play),
+                                (tr("Parar"), self.stop), (tr("Próxima"), lambda: self.step(1))):
             button = QPushButton(title)
             button.clicked.connect(callback)
             controls.addWidget(button)
@@ -205,23 +206,23 @@ class DroidStudio(QDialog):
             profile = self.registry.get(self.selector.currentData())
             clips = load_profile_clips(profile)
         except (OSError, ValueError, KeyError, TypeError) as error:
-            self.status.setText(f"Prévia indisponível: {error}")
+            self.status.setText(tr("Prévia indisponível: {0}", error))
             return
         self.profile, self.clips = profile, clips
         self.preview.configure_movement(profile)
         self.droid_preview_theme = profile.theme
         self.animation.clips = clips
         self.name.setText(profile.name)
-        self.description.setText(profile.description)
-        self.equipped.setText(f"EQUIPADO: {self.registry.active.name}  /  PRÉVIA: {profile.name}")
+        self.description.setText(tr(profile.description))
+        self.equipped.setText(tr("EQUIPADO: {0}  /  PRÉVIA: {1}", self.registry.active.name, profile.name))
         self.status.setText(profile.art_status)
         self.category.blockSignals(True)
         self.category.clear()
-        self.category.addItem("Todas as categorias", "")
+        self.category.addItem(tr("Todas as categorias"), "")
         if profile.id in CATALOG:
-            self.category.addItem("Cenas do personagem", "scenes")
+            self.category.addItem(tr("Cenas do personagem"), "scenes")
         for category in sorted(set(profile.animations.values())):
-            self.category.addItem(category, category)
+            self.category.addItem(tr(category), category)
         self.category.blockSignals(False)
         self.filter_animations()
         self.profile_loaded()
@@ -248,16 +249,16 @@ class DroidStudio(QDialog):
             self.animations.clear()
             if category == "scenes":
                 for key, scene in CATALOG[self.profile.id].items():
-                    item = QListWidgetItem(SCENE_LABELS[key])
+                    item = QListWidgetItem(tr(SCENE_LABELS[key]))
                     item.setData(Qt.ItemDataRole.UserRole, key)
-                    item.setToolTip(" → ".join(ANIMATION_NAMES[state.value] for state, _ in scene.steps))
+                    item.setToolTip(" → ".join(tr(ANIMATION_NAMES[state.value]) for state, _ in scene.steps))
                     self.animations.addItem(item)
             else:
                 for state, group in self.profile.animations.items():
                     if not category or group == category:
-                        item = QListWidgetItem(ANIMATION_NAMES.get(state.value, state.value))
+                        item = QListWidgetItem(tr(ANIMATION_NAMES.get(state.value, state.value)))
                         item.setData(Qt.ItemDataRole.UserRole, state)
-                        item.setToolTip(f"{state.value} · {len(self.clips[state].frames)} frames · {group}")
+                        item.setToolTip(f"{state.value} · {len(self.clips[state].frames)} frames · {tr(group)}")
                         self.animations.addItem(item)
             self.animations.setCurrentRow(0)
         self.animation_selected()
@@ -266,7 +267,7 @@ class DroidStudio(QDialog):
         item = self.animations.currentItem()
         self.frame_variant.blockSignals(True)
         self.frame_variant.clear()
-        self.frame_variant.addItem("Sequência completa", -1)
+        self.frame_variant.addItem(tr("Sequência completa"), -1)
         is_scene = self.category.currentData() == "scenes"
         self.frame_variant.setEnabled(not is_scene)
         if item is not None and not is_scene:
@@ -381,9 +382,9 @@ class DroidGarage(DroidStudio):
         self.form = QFormLayout(self.form_widget)
         configure_form(self.form)
         self.personality = QComboBox()
-        for name, key in (("Personalizado", "custom"), ("Calmo", "calm"), ("Curioso", "curious"), ("Comunicativo", "talkative")):
+        for name, key in ((tr("Personalizado"), "custom"), (tr("Calmo"), "calm"), (tr("Curioso"), "curious"), (tr("Comunicativo"), "talkative")):
             self.personality.addItem(name, key)
-        form_row(self.form, "Personalidade individual", self.personality)
+        form_row(self.form, tr("Personalidade individual"), self.personality)
         self.personality.currentIndexChanged.connect(self.personality_changed)
         self.layout_main.addWidget(self.form_widget)
         theme_form = QFormLayout()
@@ -391,13 +392,13 @@ class DroidGarage(DroidStudio):
         self.theme_choice = QComboBox()
         self.theme_choice.setSizeAdjustPolicy(QComboBox.SizeAdjustPolicy.AdjustToMinimumContentsLengthWithIcon)
         self.theme_choice.setMinimumContentsLength(15)
-        self.theme_choice.addItem("Usar tema original", None)
+        self.theme_choice.addItem(tr("Usar tema original"), None)
         for profile in self.registry.profiles.values():
             self.theme_choice.addItem(f"{profile.theme.name} · {profile.name}", profile.id)
         self.theme_choice.setAccessibleDescription(
-            "Vale para o personagem selecionado na Garage. Confirme com Salvar tema.")
-        form_row(theme_form, "Tema da interface", self.theme_choice)
-        self.save_theme_button = QPushButton("Salvar tema")
+            tr("Vale para o personagem selecionado na Garage. Confirme com Salvar tema."))
+        form_row(theme_form, tr("Tema da interface"), self.theme_choice)
+        self.save_theme_button = QPushButton(tr("Salvar tema"))
         self.save_theme_button.clicked.connect(self.save_theme)
         theme_form.addRow(self.save_theme_button)
         self.theme_status = label("", "muted")
@@ -407,14 +408,14 @@ class DroidGarage(DroidStudio):
         self.theme_choice.currentIndexChanged.connect(self.preview_theme)
         self.unavailable_theme_index = None
         row = ActionRow()
-        self.reset_button = QPushButton("Restaurar padrão individual")
+        self.reset_button = QPushButton(tr("Restaurar padrão individual"))
         self.reset_button.clicked.connect(self.restore_defaults)
         row.addWidget(self.reset_button)
-        self.voice_button = QPushButton("Testar vocalização")
+        self.voice_button = QPushButton(tr("Testar vocalização"))
         self.voice_button.clicked.connect(self.test_voice)
         row.addWidget(self.voice_button)
-        self.equip_button = QPushButton("Equipar e salvar")
-        self.equip_button.setAccessibleDescription("Equipe este personagem e salve sua personalização.")
+        self.equip_button = QPushButton(tr("Equipar e salvar"))
+        self.equip_button.setAccessibleDescription(tr("Equipe este personagem e salve sua personalização."))
         self.equip_button.setProperty("role", "primary")
         self.equip_button.clicked.connect(self.equip)
         row.addWidget(self.equip_button)
@@ -436,7 +437,7 @@ class DroidGarage(DroidStudio):
             index = self.theme_choice.findData(saved) if saved is not None else 0
             if index < 0:
                 index = self.theme_choice.count()
-                self.theme_choice.addItem(f"Tema indisponível · {saved}", saved)
+                self.theme_choice.addItem(tr("Tema indisponível · {0}", saved), saved)
                 self.theme_choice.model().item(index).setEnabled(False)
                 self.unavailable_theme_index = index
             self.theme_choice.setCurrentIndex(index)
@@ -449,13 +450,13 @@ class DroidGarage(DroidStudio):
         selected = self.theme_choice.currentData()
         effective = resolve_theme(self.registry, self.profile, saved)
         preview = resolve_theme(self.registry, self.profile, selected)
-        status = f"Tema em uso para {self.profile.name}: {effective.name}."
+        status = tr("Tema em uso para {0}: {1}.", self.profile.name, effective.name)
         if saved is not None and saved not in self.registry.profiles:
-            status += " A escolha salva está indisponível. O tema original está em uso."
+            status += tr(" A escolha salva está indisponível. O tema original está em uso.")
         if store.read_only:
-            status += " Preferência somente leitura."
+            status += tr(" Preferência somente leitura.")
         elif selected != saved:
-            status += f" Prévia: {preview.name}."
+            status += tr(" Prévia: {0}.", preview.name)
         self.theme_status.setText(status)
         self.save_theme_button.setEnabled(not store.read_only and selected != saved)
         if self.droid_preview_theme != preview:
@@ -474,10 +475,10 @@ class DroidGarage(DroidStudio):
             return
         if saved:
             self.load_theme_choice()
-            self.theme_status.setText(f"Tema salvo para {self.profile.name}: {self.droid_preview_theme.name}.")
+            self.theme_status.setText(tr("Tema salvo para {0}: {1}.", self.profile.name, self.droid_preview_theme.name))
         else:
             self.preview_theme()
-            self.theme_status.setText(self.theme_status.text() + " Não foi possível salvar a escolha.")
+            self.theme_status.setText(self.theme_status.text() + tr(" Não foi possível salvar a escolha."))
 
     def render_preferences(self):
         self.personality.blockSignals(True)
@@ -533,14 +534,14 @@ class DroidGarage(DroidStudio):
     def test_voice(self):
         try:
             played = self.companion.audio.preview(self.profile.audio, "voice", "greeting", -1, self.preferences.audio)
-            self.status.setText("Vocalização iniciada." if played else "Som indisponível: verifique master, silêncio, categoria e intervalo na Central de Áudio.")
+            self.status.setText(tr("Vocalização iniciada.") if played else tr("Som indisponível: verifique master, silêncio, categoria e intervalo na Central de Áudio."))
         except (OSError, ValueError, RuntimeError) as error:
             self.status.setText(str(error))
 
     def equip(self):
         if self.companion.equip_droid(self.profile.id, self.preferences):
-            self.equipped.setText(f"EQUIPADO: {self.profile.name}")
-            self.status.setText("Personagem equipado e preferências salvas.")
+            self.equipped.setText(tr("EQUIPADO: {0}", self.profile.name))
+            self.status.setText(tr("Personagem equipado e preferências salvas."))
         else:
             self.status.setText(self.companion.droid_error)
 
@@ -554,7 +555,7 @@ class AudioCenter(QDialog):
         super().__init__()
         self.companion = companion
         self.profile = None
-        self.setWindowTitle("Central de Áudio · R2 Companion")
+        self.setWindowTitle(tr("Central de Áudio · R2 Companion"))
         self.resize(700, 660)
         apply_theme(self)
         outer = QVBoxLayout(self)
@@ -565,48 +566,48 @@ class AudioCenter(QDialog):
         content = QWidget()
         self.scroll_area.setWidget(content)
         layout = QVBoxLayout(content)
-        layout.addWidget(header("Central de Áudio", "Compare vozes e salve preferências individuais."))
+        layout.addWidget(header(tr("Central de Áudio"), tr("Compare vozes e salve preferências individuais.")))
         self.selector = QComboBox()
-        self.selector.setAccessibleName("Personagem para testar e editar o áudio")
+        self.selector.setAccessibleName(tr("Personagem para testar e editar o áudio"))
         for profile in companion.droids.profiles.values():
             self.selector.addItem(profile.name, profile.id)
         layout.addWidget(self.selector)
-        self.master = QCheckBox("Habilitar áudio")
-        self.master.setAccessibleDescription("Esta opção vale para todos os personagens.")
+        self.master = QCheckBox(tr("Habilitar áudio"))
+        self.master.setAccessibleDescription(tr("Esta opção vale para todos os personagens."))
         self.master.setChecked(companion.store.settings.sound_enabled)
         layout.addWidget(self.master)
-        self.mute = QCheckBox("Silenciar este personagem")
+        self.mute = QCheckBox(tr("Silenciar este personagem"))
         layout.addWidget(self.mute)
         form = QFormLayout()
         configure_form(form)
         self.volume = QSpinBox()
         self.volume.setRange(0, 100)
         self.volume.setSuffix(" %")
-        form_row(form, "Volume individual", self.volume)
+        form_row(form, tr("Volume individual"), self.volume)
         layout.addLayout(form)
         self.catalog = QListWidget()
-        self.catalog.setAccessibleName("Frases e efeitos sonoros")
+        self.catalog.setAccessibleName(tr("Frases e efeitos sonoros"))
         layout.addWidget(self.catalog, 1)
         variant_form = QFormLayout()
         configure_form(variant_form)
         self.variant = QComboBox()
         self.variant.setSizeAdjustPolicy(QComboBox.SizeAdjustPolicy.AdjustToMinimumContentsLengthWithIcon)
         self.variant.setMinimumContentsLength(12)
-        self.variant.addItem("Todas as variantes", -1)
-        form_row(variant_form, "Variante da frase", self.variant)
+        self.variant.addItem(tr("Todas as variantes"), -1)
+        form_row(variant_form, tr("Variante da frase"), self.variant)
         layout.addLayout(variant_form)
         self.categories = {}
         row = ActionRow()
-        for category, title in (("idle", "Espontâneo"), ("movement", "Movimento"), ("reactions", "Reações"), ("sleep", "Sono"), ("notifications", "Avisos")):
+        for category, title in (("idle", tr("Espontâneo")), ("movement", tr("Movimento")), ("reactions", tr("Reações")), ("sleep", tr("Sono")), ("notifications", tr("Avisos"))):
             control = QCheckBox(title)
             self.categories[category] = control
             row.addWidget(control)
         layout.addWidget(row)
-        self.status = label("As prévias respeitam master, mute ativo, tela cheia, silêncio e cooldowns.", "muted")
+        self.status = label(tr("As prévias respeitam master, mute ativo, tela cheia, silêncio e cooldowns."), "muted")
         self.status.setWordWrap(True)
         layout.addWidget(self.status)
         row = ActionRow()
-        for title, callback in (("Testar selecionado", self.test_selected), ("Parar áudio", companion.audio.stop), ("Salvar preferências", self.save)):
+        for title, callback in ((tr("Testar selecionado"), self.test_selected), (tr("Parar áudio"), companion.audio.stop), (tr("Salvar preferências"), self.save)):
             button = QPushButton(title)
             button.clicked.connect(callback)
             row.addWidget(button)
@@ -639,7 +640,7 @@ class AudioCenter(QDialog):
 
     def update_variants(self, *_):
         self.variant.clear()
-        self.variant.addItem("Todas as variantes", -1)
+        self.variant.addItem(tr("Todas as variantes"), -1)
         item = self.catalog.currentItem()
         if item is None:
             return
@@ -662,7 +663,7 @@ class AudioCenter(QDialog):
         kind, name = item.data(Qt.ItemDataRole.UserRole)
         try:
             played = self.companion.audio.preview(self.profile.audio, kind, name, self.variant.currentData(), self.draft_audio())
-            self.status.setText("Reprodução iniciada." if played else "Prévia bloqueada ou carregando. Confira master salvo, mute, categoria, contexto e cooldown.")
+            self.status.setText(tr("Reprodução iniciada.") if played else tr("Prévia bloqueada ou carregando. Confira master salvo, mute, categoria, contexto e cooldown."))
         except (OSError, ValueError, RuntimeError) as error:
             self.status.setText(str(error))
 
@@ -675,7 +676,7 @@ class AudioCenter(QDialog):
         if settings.active_droid == self.profile.id:
             settings.audio = deepcopy(preferences.audio)
         self.companion.store.apply(settings)
-        self.status.setText("Preferências salvas." if self.companion.store.flush() else "Preferências aplicadas nesta sessão; falha ao gravar.")
+        self.status.setText(tr("Preferências salvas.") if self.companion.store.flush() else tr("Preferências aplicadas nesta sessão; falha ao gravar."))
 
     def hideEvent(self, event):
         self.companion.audio.clear_preview()

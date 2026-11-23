@@ -6,6 +6,7 @@ from ..pet.positioning import clamp
 from .theme import label
 from ..droids.themes import styled
 from .window_layers import present_surface
+from ..core.language import tr
 
 
 class Bubble(QFrame):
@@ -24,7 +25,7 @@ class Bubble(QFrame):
         layout = QVBoxLayout(self)
         layout.setContentsMargins(16, 12, 16, 14)
         layout.setSpacing(7)
-        layout.addWidget(label("● R2 / TRANSMISSÃO", "eyebrow"))
+        layout.addWidget(label(tr("● R2 / TRANSMISSÃO"), "eyebrow"))
         self.message = label("")
         self.message.setProperty("characterLiteral", True)
         self.message.setWordWrap(True)

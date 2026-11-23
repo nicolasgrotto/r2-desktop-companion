@@ -5,6 +5,7 @@ import sys
 
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QKeySequence
+from ..core.language import tr
 
 
 DEFAULT_SHORTCUT = "Ctrl+Alt+R"
@@ -24,23 +25,23 @@ else:
 
 def hotkey_codes(shortcut):
     if not isinstance(shortcut, str) or len(shortcut) > 64:
-        raise ValueError("Combinação inválida.")
+        raise ValueError(tr("Combinação inválida."))
     sequence = QKeySequence.fromString(shortcut, QKeySequence.SequenceFormat.PortableText)
     if sequence.count() != 1:
-        raise ValueError("Escolha uma única combinação de teclas.")
+        raise ValueError(tr("Escolha uma única combinação de teclas."))
     combo = sequence[0]
     modifiers = combo.keyboardModifiers()
     keys = Qt.KeyboardModifier
     allowed = (keys.ControlModifier | keys.AltModifier | keys.ShiftModifier)
     if modifiers & ~allowed or not modifiers & (keys.ControlModifier | keys.AltModifier):
-        raise ValueError("Use Ctrl ou Alt, com Shift opcional.")
+        raise ValueError(tr("Use Ctrl ou Alt, com Shift opcional."))
     key = combo.key()
     if Qt.Key.Key_A <= key <= Qt.Key.Key_Z or Qt.Key.Key_0 <= key <= Qt.Key.Key_9:
         virtual = int(key)
     elif Qt.Key.Key_F1 <= key <= Qt.Key.Key_F11:
         virtual = 0x70 + key - Qt.Key.Key_F1
     else:
-        raise ValueError("Use uma letra, um número ou F1 a F11.")
+        raise ValueError(tr("Use uma letra, um número ou F1 a F11."))
     mask = sum(bit for flag, bit in ((keys.AltModifier, 1), (keys.ControlModifier, 2), (keys.ShiftModifier, 4))
                if modifiers & flag)
     return mask, virtual
@@ -60,9 +61,9 @@ class GlobalHotkey:
         if enabled:
             identifier = HOTKEY_IDS[1] if previous and previous[0] == HOTKEY_IDS[0] else HOTKEY_IDS[0]
             if self.register_key is None:
-                raise ValueError("Atalho global disponível apenas no Windows.")
+                raise ValueError(tr("Atalho global disponível apenas no Windows."))
             if not self.register_key(None, identifier, codes[0] | 0x4000, codes[1]):
-                raise ValueError("O Windows não aceitou a combinação. Ela pode estar em uso.")
+                raise ValueError(tr("O Windows não aceitou a combinação. Ela pode estar em uso."))
             candidate = identifier, codes
         saved = False
         try:
