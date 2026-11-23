@@ -3,19 +3,18 @@
 Mascote desktop local para Windows 10/11, em Python/PySide6. Robô branco e azul com
 janela transparente, animações por atlas/PNG e peças articuladas.
 **Não utiliza IA, backend, modelos locais ou telemetria.** O mascote funciona
-offline; somente o atualizador manual consulta o GitHub por solicitação do usuário.
+offline. O atualizador consulta o GitHub quando solicitado, e os minigames
+abrem no navegador padrão.
 
 Os personagens usam arte original em pixels; os recursos dos modelos anteriores
 permanecem preservados.
 O Companion é independente do casemod e não executa nem altera seus scripts de som.
 
-**Versão 1.2.2:** a preferência de sobrepor janelas é respeitada durante o sono,
-o superaquecimento e as animações, incluindo efeitos, projeções e balões.
-A Droid Garage reúne sete companheiros. Lumo equilibra-se em
-uma roda, Vigia flutua com sensores e manipuladores independentes, Pico caminha
-com pernas articuladas e cabeça binocular expressiva, e Tranco usa tração própria
-e braços retráteis. Sono, projeção do timer e ferramentas continuam disponíveis.
-Novidades no [changelog](packaging/docs/CHANGELOG.md).
+**Candidata 1.3.0.** Inclui sessões de foco, controles opcionais de mídia do
+Windows, busca de ações por teclado, temas por droide, minigames pessoais e
+interface em Português (Brasil) ou English. A Droid Garage reúne sete
+companheiros. A candidata local foi exercitada no Windows 10 22H2 x64.
+[Notas da versão](packaging/docs/release-notes/v1.3.0.md) · [Changelog](packaging/docs/CHANGELOG.md)
 
 A reação por CPU exige **90%**, com leitura a cada 15 segundos e intervalo mínimo
 de cinco minutos. Requer reações do sistema habilitadas, autonomia disponível e
@@ -43,8 +42,6 @@ Documentação do casemod: [docs](https://github.com/nicolasgrotto/R2-D2-Casemod
 
 ## Executar pelo código
 
-Notas da release: [Changelog](packaging/docs/CHANGELOG.md) e [1.2.2](packaging/docs/release-notes/v1.2.2.md).
-
 Requer Python 3.12+ x64. Combinação exercitada: Python 3.13.12 e Qt/PySide6 6.10.2
 no Windows 10 22H2. Abra PowerShell na raiz deste repositório:
 
@@ -66,9 +63,13 @@ Para isolar os dados dentro do projeto:
 
 - Clique esquerdo: reação, fala e roda de ações essenciais. Na primeira camada, use o centro para fechar; nas demais, ele retorna à camada anterior. Esc ou × fecham a roda; clicar fora também fecha. Arraste com o botão esquerdo para reposicionar — o balão acompanha o personagem.
 - Botão direito: Interagir, Aplicativos, Atalhos, Ferramentas, Configurações e Sair.
-- Na roda, Ferramentas abre uma segunda camada com Central de ferramentas, Relógio, Temporizador, Sistema, Tarefas e Anotações.
+- Na roda, Foco e Música têm acessos próprios. Ferramentas abre a segunda camada com Central de ferramentas, Relógio, Temporizador, Sistema, Tarefas, Anotações, Minigames e Diagnóstico.
 - Ferramentas: relógio/data em destaque, temporizador com minutos/segundos e atalhos de 1/5/25 minutos, CPU/RAM e bateria quando disponível.
-- Ferramentas → Minigames: catálogo com Duel of Fates. Jogar abre `https://nicolasgrotto.github.io/duel-of-fates/` via QDesktopServices/QUrl no navegador padrão. Não há navegador incorporado, WebEngine ou download do jogo pelo Companion. Para ampliar o catálogo, acrescente um Minigame em `features/minigames.py`.
+- Em **Ferramentas → Minigames**, jogue Duel of Fates ou cadastre um minigame pessoal com endereço HTTPS, nome, descrição e um ícone predefinido ou uma imagem PNG/JPEG. O Companion guarda uma miniatura local. **Jogar** abre o navegador padrão.
+- Em **Foco**, escolha uma duração e, se desejar, associe uma tarefa à sessão. Você pode pausar, retomar ou cancelar e ativar o cartão de projeção. Uma sessão que estava em andamento ao sair volta pausada.
+- Em **Música**, ative a integração se quiser ver a mídia publicada pelos players do Windows. Escolha entre seguir a sessão atual ou fixar uma sessão. Reprodução, pausa e troca de faixa aparecem conforme o que o player oferece. A cobertura integrada foi com provedores de teste nativos do Windows 10. Windows 11 e players comerciais seguem sem validação da candidata.
+- Em **Configurações → Preferências**, selecione **Idioma / Language**, clique em **Salvar idioma** e reinicie para trocar entre Português (Brasil) e English.
+- Abra **Buscar ações** pela bandeja ou pelo menu do mascote. Nas preferências, ative opcionalmente o atalho global **Ctrl+Alt+R** ou escolha outra combinação. O Companion informa se a combinação estiver ocupada.
 - Ferramentas → Diagnóstico: mostra personagem, versão, sistema, CPU, memória, bateria e áudio sob demanda. A página possui rolagem e a central permanece dentro da tela.
 - Segure o botão esquerdo sobre a cabeça por 650 ms para fazer carinho. Arrastar cancela o carinho; a reação não abre a roda de ações.
 - Tarefas: adicionar, concluir, reabrir, filtrar pendentes e excluir. Notas: criar, editar, excluir e copiar, com salvamento automático local. **Desfazer exclusão** restaura a última tarefa ou nota excluída nesta sessão. Ambas também estão no menu de contexto.
@@ -143,6 +144,9 @@ Tarefas e notas ficam em `tools.json`, com backup e recuperação separados da
 configuração. Os limites são 500 tarefas, 100 notas, 50.000 caracteres por nota e
 8 MiB no documento completo. Um erro de gravação permanece visível nas ferramentas.
 Atualizações do executável não substituem esses arquivos.
+Presença, acessibilidade, idioma, temas de interface, sessão de foco, atalhos
+globais e minigames pessoais ficam em `companion_state.json`. As escolhas da
+1.3 voltam a valer ao reabrir a candidata depois de usar a 1.2.2.
 
 Iniciar com o Windows começa desmarcado. Por segurança, fica indisponível durante
 execução pelo Python e em builds ainda dentro de `dist`, `build`, `temp` ou `tmp`.
@@ -205,12 +209,10 @@ e usa uma release fictícia apenas para validar a interface. O roteiro
 encerramento, backup e reinício com executáveis e transporte local de teste.
 Os relatórios ficam em pastas `.runtime-*`, sem alterar os dados normais.
 
-O ensaio `tools/verify_post_update.py --data-dir .runtime-upgrade-121` usa o build
-real anterior em `dist/1.1.1/R2Companion` e o ZIP atual. Abre ferramentas e Garage,
-atualiza em cópia isolada, testa a roda no primeiro reinício e compara com abertura
-direta. `--legacy-updater` exercita o instalador anterior; `--fail-startup` injeta
-uma falha local para verificar a recuperação. Esses ensaios gráficos devem rodar
-separadamente, depois da suíte Qt, para evitar disputa de foco entre testes.
+O ensaio de pós-atualização da candidata usa a base 1.2.2 em uma cópia isolada.
+Use `--legacy-updater` para executar o instalador do pacote anterior e
+`--fail-startup` para verificar a recuperação após uma falha de partida.
+Execute os ensaios gráficos separadamente para evitar disputa de foco entre testes.
 
 Para conferir os painéis novos e a reprodução Qt com dados isolados, execute
 `tools\verify_features.py` pelo mesmo Python do ambiente virtual. Esse ensaio
@@ -222,32 +224,29 @@ em cópias locais; requer também o build anterior preservado em dist/1.1.1.
 ## Gerar o executável
 
 ```powershell
-.\.venv\Scripts\python.exe tools\build_windows.py
-.\dist\1.2.2\R2Companion\R2Companion.exe
+.\.venv\Scripts\python.exe tools\build_windows.py --artifact-label v13-local-review
+.\dist\1.3.0-v13-local-review\R2Companion\R2Companion.exe
 ```
 
 O build é Windows x64, one-folder, sem console e sem solicitação de elevação.
 O script mantém o cache do empacotador no projeto. Distribua **toda a pasta**
-`dist\1.2.2\R2Companion`, incluindo `_internal`, assets, `release.json` e licenças.
-O ZIP e SHA-256 são gerados em `dist\R2Companion-Windows-x64.zip` e `.zip.sha256`.
-Para validar uma candidata preservando esses artefatos, use
-`tools\build_windows.py --artifact-label garage-120-rc1`; o rótulo separa
-a pasta, o ZIP e o checksum. `verify_package.py --artifact-label` e os ensaios
-de atualização com `--archive` aceitam esses pacotes locais sem publicá-los.
-Ao testar a candidata com verify_post_update.py, use também
-`--require-navigation-trace`: o verificador aguarda a conclusão registrada do
-smoke antes de iniciar seu próprio fluxo de cliques, inclusive com o instalador
-legado sem confirmação de inicialização.
-Não copie somente o EXE. O spec inclui Qt Multimedia, seus plugins e dependências;
-exclui QML/Quick/Test e outros módulos não utilizados.
+`dist\1.3.0-v13-local-review\R2Companion`, incluindo `_internal`, assets, `release.json` e licenças.
+O rótulo identifica também o ZIP e seu checksum, preservando os artefatos anteriores.
+Use um rótulo novo para cada candidata. `tools/verify_package.py --artifact-label`
+verifica o ZIP extraído nos dois idiomas. Passe `--previous-version 1.2.2`,
+`--previous-install` com a pasta extraída do ZIP oficial e `--archive` com o ZIP
+da candidata para ensaiar a atualização com `tools/verify_post_update.py`.
+O pacote inclui Qt Multimedia para os efeitos sonoros e as projeções WinRT
+necessárias à integração opcional de mídia.
 O executável não tem assinatura digital nesta entrega. Antes de publicação,
-o proprietário deve definir a licença do projeto/arte e revisar as obrigações
-das bibliotecas incluídas em [THIRD_PARTY_NOTICES.md](packaging/docs/THIRD_PARTY_NOTICES.md).
+o proprietário deve concluir a aprovação artística, definir a licença do projeto
+e da arte e revisar as obrigações das bibliotecas incluídas.
+[Avisos de terceiros](packaging/docs/THIRD_PARTY_NOTICES.md)
 
 Diagnóstico do executável, sem usar o diretório normal de dados:
 
 ```powershell
-.\dist\1.2.2\R2Companion\R2Companion.exe --data-dir .runtime-exe --smoke-test
+.\dist\1.3.0-v13-local-review\R2Companion\R2Companion.exe --data-dir .runtime-exe --smoke-test
 ```
 
 Se não abrir, consulte `companion.log` no diretório escolhido. Configuração inválida

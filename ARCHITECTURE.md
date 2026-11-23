@@ -75,9 +75,10 @@ Companion.navigation_actions fornece os mesmos callbacks para roda e menu de
 contexto. Cada QAction tem identificador em data e referências fortes mantidas
 pelo menu. O argumento checked não substitui os destinos capturados.
 
-A roda possui seis entradas: Garage, Ferramentas, Minigames, Autodiagnóstico,
-Projetar e Configurações. Ferramentas abre central ou página específica;
-Configurações inclui preferências, áudio, atualização, favoritos e autonomia.
+A roda possui seis entradas para Garage, Foco, Música, Ferramentas, Projetar e
+Configurações. Ferramentas abre a central ou uma página específica, incluindo
+Minigames e Diagnóstico. Configurações inclui preferências, áudio, atualização,
+favoritos e autonomia.
 O centro retorna pelo histórico; na raiz, fecha. Escape, ×, clique externo e
 inatividade fecham e restauram a raiz. A desativação da janela é confirmada após
 80 ms para tolerar eventos transitórios de foco do Windows.
@@ -191,6 +192,14 @@ recuperação de corrupção e proteção de schema futuro. Campos antigos desco
 são ignorados pela leitura sem remover catálogos de recursos. ProductivityStore
 reutiliza escrita atômica em tools.json, com backup e limites próprios.
 
+`CompanionStateStore` preserva os dados exclusivos da 1.3 em
+`companion_state.json`, com schema, backup e leitura protegida. O mesmo lock do
+`ConfigStore` governa as gravações. A 1.2.2 pode gravar `config.json` mantendo o
+documento complementar intacto. Temas de interface usam um mapa por ID de
+droide, e o catálogo pessoal guarda links HTTPS e miniaturas PNG limitadas.
+`core/language.py` aplica a preferência de idioma antes da criação das janelas
+e carrega o catálogo English de `assets/translations/en.json`.
+
 Os IDs persistidos anteriores continuam válidos. Os novos IDs são `lumo`, `vigia`,
 `pico` e `tranco`. A versão da aplicação não participa da escolha do personagem;
 não há migração destrutiva de preferências na expansão. Se os recursos do perfil
@@ -203,6 +212,11 @@ Contagem regressiva usa deadline e run ID; continua oculta ou em sono.
 Countdown.stop interrompe o
 timer, zera deadline/restante e emite changed sem completed. O botão Encerrar
 libera a edição e a projeção do timer é removida pelo fluxo já existente.
+A sessão de foco tem seu próprio ciclo e checkpoint. A restauração carrega a
+contagem pausada e preserva a referência da tarefa quando ela ainda existe.
+O worker opcional de mídia usa GSMTC via WinRT para publicar snapshots na
+thread Qt. Comandos são vinculados à sessão exibida e às capacidades anunciadas
+pelo player. O encerramento libera o worker, o registro de atalhos e os timers.
 Gates de arraste, menu, roda, configurações, ocultação e sessão suspendem autonomia.
 Tela cheia respeita o modo salvo e o canto manual. ContextReactions solicita ações
 ao controlador e não captura tela nem registra teclas. Shutdown idempotente para
@@ -217,10 +231,13 @@ console.
 
 `tools/build_windows.py` usa a versão de pyproject.toml, PyInstaller one-folder,
 manifesto asInvoker e assets existentes. Empacota script de atualização, metadata,
-plugins Qt Multimedia e licenças. Gera ZIP e SHA-256; pastas por versão preservam
-builds anteriores. Testes incluem Qt, integração Windows, persistência e segurança
+Qt Multimedia, projeções WinRT e licenças. O rótulo da candidata identifica a
+pasta, o ZIP e o SHA-256. Testes incluem Qt, integração Windows, persistência e segurança
 do instalador. `tools/verify_navigation.py` captura os temas e a navegação;
 `tools/verify_update_center.py` testa a instalação real com transporte local.
+`tools/verify_package.py` abre o EXE extraído em dois perfis de idioma com
+PATH restrito. `tools/verify_post_update.py --previous-version 1.2.2` exercita o
+instalador, a recuperação e a continuidade de dados usando os executáveis reais.
 
 README e este documento são as referências principais da raiz. Changelog, notas
 de versão e avisos de terceiros públicos ficam em packaging/docs. Auditorias,

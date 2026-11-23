@@ -1,5 +1,17 @@
 # Changelog
 
+## 1.3.0 · candidata local
+
+- Sessões de foco com pausa, projeção e vínculo opcional a tarefas. Uma sessão ativa volta pausada após reiniciar.
+- Integração opcional com sessões de mídia publicadas pelo Windows, seleção de player e controles conforme suas capacidades.
+- Busca de ações com navegação por teclado e atalho global configurável.
+- Preferência de idioma em Português (Brasil) ou English. A mudança entra em vigor ao reiniciar.
+- Temas de interface por droide, redução de movimento e opções de escala para os painéis.
+- Minigames pessoais com links HTTPS e miniaturas importadas de PNG ou JPEG.
+- Preservação de tarefas, notas e preferências ao alternar entre a candidata e a 1.2.2.
+
+[Notas da candidata](release-notes/v1.3.0.md).
+
 ## 1.2.2
 
 - A opção de sobrepor janelas passa a valer para o droide, os símbolos Z, a fumaça, as projeções, os balões e a roda de acesso rápido.

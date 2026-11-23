@@ -23,7 +23,7 @@ from .features.focus import FocusPhase, FocusSessionService
 from .features.productivity import ProductivityStore
 from .features.data_transfer import DataTransfer
 from .features.projections import ProjectionModel
-from .features.minigames import open_game
+from .features.minigames import open_game, thumbnail_image
 from .features.diagnostics import collect_diagnostics
 from .pet.animation import AnimationManager, load_clips
 from .pet.behavior import BehaviorManager
@@ -62,7 +62,7 @@ from .droids.controller import DroidController
 from .droids.movement import create_movement
 from .droids.visuals import load_profile_clips
 from .droids.themes import resolve_theme, theme_manager
-from .core.language import activate_language, tr
+from .core.language import activate_language, active_language, tr
 
 ASSETS = Path(__file__).resolve().parent / "assets"
 log = logging.getLogger(__name__)
@@ -1316,6 +1316,7 @@ def main(argv=None) -> int:
                 accepted = companion.equip_droid(identifier)
                 companion.window.grab().save(str(directory / f"droid-{identifier}.png"))
                 droid_checks.append({"id": identifier, "accepted": accepted, "error": companion.droid_error,
+                                     "interface_theme": theme_manager().active.name,
                                      "diagnostics": companion.droid_diagnostics()})
                 QTimer.singleShot(0, lambda: check_next_droid(index + 1))
             elif args.smoke_navigation:
@@ -1333,16 +1334,24 @@ def main(argv=None) -> int:
                       "geometry": companion.window.geometry().getRect()}
             report["droids"] = droid_checks
             report["version"] = __version__
+            report["interface_language"] = active_language()
+            report["tools_title"] = companion.tools.windowTitle()
             report["navigation"] = navigation_checks
             report["active_droid"] = companion.profile.id
             report["media_status"] = companion.media.view.status
+            personal_games = companion.tools.minigames_page.personal
+            report["personal_minigames"] = len(personal_games)
+            report["personal_minigame_thumbnails"] = sum(
+                not thumbnail_image(game.thumbnail).isNull() for game in personal_games if game.thumbnail)
             effects = companion.audio.all_effects()
             report["audio_effects"] = len(effects)
             report["audio_loaded_effects"] = sum(effect.isLoaded() for effect in effects)
             report["audio_errors"] = sum(effect.status().name == "Error" for effect in effects)
             report["audio_output_available"] = companion.audio.available()
             companion.window.grab().save(str(directory / "smoke.png"))
+            worker = companion.media._worker
             companion.shutdown()
+            report["media_worker_after_shutdown"] = bool(worker and worker.is_alive())
             report["movement_timer_after_shutdown"] = bool(getattr(companion.positioning.movement, "timer", None)
                                                           and companion.positioning.movement.timer.isActive())
             report["active_timers_after_shutdown"] = sum(t.isActive() for t in

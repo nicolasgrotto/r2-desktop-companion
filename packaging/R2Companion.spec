@@ -28,9 +28,14 @@ if python_license.is_file():
 
 a = Analysis([str(root / "run_companion.py")], pathex=[str(root / "src")],
              binaries=[], datas=data, hiddenimports=[],
-             excludes=["PySide6.QtQml", "PySide6.QtQuick",
+             excludes=["PySide6.QtQml", "PySide6.QtQuick", "PySide6.QtMultimediaWidgets",
                        "PySide6.QtTest", "PySide6.QtSvg", "tkinter", "pytest"],
              noarchive=False)
+# QtGui's optional virtual keyboard plugin pulls in the QML and Quick runtimes.
+# The companion uses the Windows platform plugin for keyboard input.
+unused_qt_binaries = {"qtvirtualkeyboardplugin.dll", "qt6virtualkeyboard.dll", "qt6qml.dll",
+                      "qt6qmlmeta.dll", "qt6qmlmodels.dll", "qt6qmlworkerscript.dll", "qt6quick.dll"}
+a.binaries = [item for item in a.binaries if Path(item[0]).name.lower() not in unused_qt_binaries]
 pyz = PYZ(a.pure)
 exe = EXE(pyz, a.scripts, [], exclude_binaries=True, name="R2Companion",
           debug=False, bootloader_ignore_signals=False, strip=False, upx=False,
