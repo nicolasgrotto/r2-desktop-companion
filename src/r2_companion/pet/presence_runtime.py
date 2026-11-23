@@ -114,13 +114,18 @@ class PresenceRuntime:
 
     def update_controls(self):
         c = self.companion
+        summary = self.decision.reason_text
+        if self.decision.reason == "transient":
+            summary = self.policy.evaluate(replace(self.context, transient_gates=frozenset())).reason_text
         if c.menu is not None and hasattr(c.menu, "presence_actions"):
             for mode, action in c.menu.presence_actions.items():
                 action.setChecked(mode == self.context.manual_mode)
-            c.menu.presence_status.setText(self.decision.reason_text)
+            c.menu.presence_status.setText(summary)
+            if hasattr(c.menu, "status_summary"):
+                c.menu.status_summary.setText(summary)
         if c.settings_dialog is not None:
             dialog = c.settings_dialog
-            dialog.presence_status.setText(self.decision.reason_text)
+            dialog.presence_status.setText(summary)
             if dialog.presence_mode.currentData() == dialog.presence_original:
                 dialog.presence_original = self.context.manual_mode.value
                 dialog.presence_mode.setCurrentIndex(dialog.presence_mode.findData(dialog.presence_original))

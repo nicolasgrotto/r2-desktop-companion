@@ -21,7 +21,7 @@ class SettingsDialog(QDialog):
     accessibility_applied = Signal(int, bool)
 
     def __init__(self, settings: Settings, startup_available: bool, startup_enabled: bool, startup_status: str,
-                 droid_profile=None, *, ui_scale=100):
+                 droid_profile=None, *, ui_scale=100, shortcut_settings=None):
         super().__init__()
         self.setWindowTitle("Configurações · R2 Companion")
         self.resize(720, 740)
@@ -67,6 +67,8 @@ class SettingsDialog(QDialog):
         self.ui_scale.setCurrentIndex(self.ui_scale.findData(ui_scale))
         self.ui_scale.setAccessibleDescription("Ajusta textos e controles da interface. O tamanho do mascote tem seu próprio ajuste.")
         form_row(form, "Escala da interface", self.ui_scale)
+        if shortcut_settings is not None:
+            form.addRow(shortcut_settings)
         self.scale = QSpinBox()
         self.scale.setRange(64, 256)
         self.scale.setValue(settings.visual_scale)

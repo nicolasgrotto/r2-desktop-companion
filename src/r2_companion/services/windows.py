@@ -187,6 +187,7 @@ def foreground_window_rect(pet_handle, screen):
 class SessionSignals(QObject):
     suspended = Signal(bool)
     ending = Signal()
+    hotkey = Signal(int, int)
 
 
 class SessionEvents(QAbstractNativeEventFilter):
@@ -213,6 +214,8 @@ class SessionEvents(QAbstractNativeEventFilter):
                     self.signals.suspended.emit(False)
             elif msg.message == 0x0016 and msg.wParam:
                 self.signals.ending.emit()
+            elif msg.message == 0x0312 and not msg.hWnd:
+                self.signals.hotkey.emit(msg.wParam, msg.lParam)
         return False, 0
 
     def close(self) -> None:

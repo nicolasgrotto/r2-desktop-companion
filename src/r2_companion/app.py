@@ -35,6 +35,7 @@ from .pet.state import State
 from .pet.window import PetWindow
 from .services.audio import AudioService
 from .services.media import MediaService
+from .services.hotkeys import GlobalHotkey
 from .services.storage import ConfigStore
 from .services.companion_state import CompanionStateStore
 from .pet.presence_runtime import PresenceRuntime
@@ -50,7 +51,7 @@ from .ui.context_menu import create_menu
 from .ui.settings import SettingsDialog
 from .ui.tools import ToolsDialog, timer_text
 from .ui.media import music_projection
-from .ui.actions import ActionSearch
+from .ui.actions import ActionSearch, FirstSteps, ShortcutSettings
 from .ui.tray import Tray
 from .ui.radial import RadialMenu
 from .ui.targets import LaunchpadDialog
@@ -211,6 +212,14 @@ class Companion(QObject):
         self.actions = ActionRegistry(self.action_callbacks(), restrictions)
         self.radial.registry = self.actions
         self.action_search = ActionSearch(self.actions, self.dispatch_action)
+        self.first_steps = FirstSteps(self.tools, self.actions, self.dispatch_action, self.dismiss_first_steps)
+        self.first_steps_dismissed = None
+        self.hotkey = GlobalHotkey()
+        self.hotkey_preference = None
+        self.hotkey_status = "Atalho desativado."
+        self.session_events.signals.hotkey.connect(self.on_hotkey, Qt.ConnectionType.QueuedConnection)
+        self.companion_state.changed.connect(self.apply_discovery_preferences)
+        self.apply_discovery_preferences(self.companion_state.data)
         self.focus.changed.connect(self.presence.update_focus)
         self.focus.changed.connect(self.react_to_focus)
         self.focus.changed.connect(self.update_focus_projection)
@@ -616,6 +625,7 @@ class Companion(QObject):
                    "project_clock": lambda: self.project_tool("clock"),
                    "project_date": lambda: self.project_tool("date"),
                    "project_stop": self.end_projection, "search_actions": self.show_action_search,
+                   "first_steps": self.show_first_steps,
                    "interact": self.interact, "show": self.show_pet, "hide": self.hide_pet,
                    "restore": self.restore_position, "pass_through": self.toggle_pass_through,
                    "exit": self.shutdown}
@@ -646,6 +656,62 @@ class Companion(QObject):
         fit_dialog(self.action_search, self.window)
         self.present_dialog(self.action_search)
         self.action_search.activateWindow()
+
+    def show_first_steps(self):
+        self.first_steps.panel.show()
+        self.show_tools_page("clock")
+        self.tools.pages["clock"].ensureWidgetVisible(self.first_steps.panel)
+
+    def dismiss_first_steps(self):
+        if self.companion_state.save_action_preferences("onboarding", {"dismissed": True}):
+            self.first_steps.panel.hide()
+        else:
+            self.first_steps.status.setText("Não foi possível gravar a dispensa da ajuda.")
+
+    def apply_discovery_preferences(self, document):
+        if self.closed:
+            return
+        dismissed = document["onboarding"]["dismissed"]
+        if dismissed != self.first_steps_dismissed:
+            self.first_steps_dismissed = dismissed
+            self.first_steps.panel.setVisible(not dismissed)
+        action = document["actions"]
+        preference = action["global_shortcut_enabled"], action["global_shortcut"]
+        if preference != self.hotkey_preference:
+            self.hotkey_preference = preference
+            self.configure_hotkey(*preference, persist=False)
+
+    def configure_hotkey(self, enabled, shortcut, *, persist=True):
+        previous = self.hotkey_preference
+        if not enabled and not shortcut:
+            shortcut = previous[1]
+        preference = enabled, shortcut
+
+        def save():
+            if not persist:
+                return True
+            self.hotkey_preference = preference
+            return self.companion_state.save_action_preferences("actions", {
+                "global_shortcut_enabled": enabled, "global_shortcut": shortcut,
+            })
+
+        try:
+            accepted = self.hotkey.configure(enabled, shortcut, save)
+            status = (f"Atalho ativo · {shortcut}" if enabled else "Atalho desativado.") if accepted else (
+                "Não foi possível gravar. O atalho anterior foi preservado.")
+        except ValueError as error:
+            accepted = False
+            status = str(error)
+            if self.hotkey.active:
+                status += " O atalho anterior continua ativo."
+        if not accepted:
+            self.hotkey_preference = previous
+        self.hotkey_status = status
+        return status
+
+    def on_hotkey(self, identifier, payload):
+        if not self.closed and not self.session_hidden and self.hotkey.matches(identifier, payload):
+            self.dispatch_action("search_actions")
 
     def dispatch_action(self, action):
         self.radial.hide()
@@ -933,8 +999,9 @@ class Companion(QObject):
             status = "Registro indisponível ou conflitante; outros registros serão preservados."
         if not self.startup.available:
             status = "Para inicialização automática, copie a versão empacotada para um local estável fora de dist/build."
+        shortcut = ShortcutSettings(*self.hotkey_preference, self.hotkey_status, self.configure_hotkey)
         dialog = SettingsDialog(self.store.settings, self.startup.available, enabled, status, self.profile,
-                                ui_scale=theme_manager().ui_scale)
+                                ui_scale=theme_manager().ui_scale, shortcut_settings=shortcut)
         dialog.presence_original = self.presence.context.manual_mode.value
         dialog.presence_mode.setCurrentIndex(dialog.presence_mode.findData(dialog.presence_original))
         dialog.presence_applied.connect(self.presence.select_mode)
@@ -1049,6 +1116,7 @@ class Companion(QObject):
             return
         self.positioning.settle()
         self.closed = True
+        self.hotkey.close()
         self.media.close()
         self.action_search.close()
         self.radial.record("shutdown_started")

@@ -14,6 +14,7 @@ from PySide6.QtCore import QObject, QTimer, Signal
 
 from ..core.config import FutureSchemaError
 from ..features.minigames import validate_entries
+from .hotkeys import DEFAULT_SHORTCUT
 from .storage import ConfigStore
 
 log = logging.getLogger(__name__)
@@ -30,7 +31,7 @@ def default_document():
         "media": {"enabled": False},
         "focus": {"session": None},
         "onboarding": {"dismissed": False},
-        "actions": {"global_shortcut_enabled": False},
+        "actions": {"global_shortcut_enabled": False, "global_shortcut": DEFAULT_SHORTCUT},
         "minigames": {"entries": {}},
     }
 
@@ -97,6 +98,9 @@ def validate_document(raw):
             if type(result[group][field]) is not bool:
                 raise ValueError("Preferência booleana inválida.")
         overrides = result["appearance"]["theme_overrides"]
+        shortcut = result["actions"]["global_shortcut"]
+        if not isinstance(shortcut, str) or not 1 <= len(shortcut) <= 64:
+            raise ValueError("Preferência de atalho inválida.")
         if not isinstance(overrides, dict) or len(overrides) > 100:
             raise ValueError("Preferências de tema inválidas.")
         for identifier, theme in overrides.items():
@@ -241,6 +245,11 @@ class CompanionStateStore(QObject):
     def save_minigames(self, entries):
         candidate = self.data
         candidate["minigames"]["entries"] = entries
+        return self._save_candidate(candidate)
+
+    def save_action_preferences(self, group, values):
+        candidate = self.data
+        candidate[group].update(values)
         return self._save_candidate(candidate)
 
     def _save_candidate(self, candidate):

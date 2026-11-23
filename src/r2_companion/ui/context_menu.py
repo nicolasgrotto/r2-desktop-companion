@@ -36,6 +36,10 @@ def create_menu(parent, actions: dict, settings, screens, tray_available: bool, 
     add(menu, "interact", "Interagir")
     if "search_actions" in actions:
         add(menu, "search_actions")
+    if "first_steps" in actions:
+        add(menu, "first_steps")
+        menu.status_summary = menu.addAction("Livre")
+        menu.status_summary.setEnabled(False)
     if "presence_mode" in actions:
         presence = submenu("Modo de presença")
         group = QActionGroup(presence)

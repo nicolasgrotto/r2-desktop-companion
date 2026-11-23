@@ -38,6 +38,7 @@ ACTIONS = {action.id: action for action in (
     Action("explore", "Explorar", "explore", "Pedir ao droide para explorar o desktop."),
     Action("pause", "Pausar autonomia", "pause", "Alternar a autonomia do droide."),
     Action("search_actions", "Buscar ações", "search"),
+    Action("first_steps", "Primeiros passos", "system", "Consultar a ajuda inicial do Companion."),
     Action("interact", "Interagir", "play", "Interagir com o droide."),
     Action("show", "Mostrar mascote", "apps", "Trazer o droide de volta ao desktop."),
     Action("hide", "Ocultar mascote", "apps", "Ocultar o droide no desktop."),
