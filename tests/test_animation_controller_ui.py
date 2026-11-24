@@ -16,6 +16,7 @@ from r2_companion.pet.state import State
 from r2_companion.services.storage import ConfigStore
 from r2_companion.core.config import Shortcut, Target
 from r2_companion.ui.context_menu import create_menu
+from test_media_service import FakeBackend, until
 
 
 @pytest.fixture
@@ -188,17 +189,24 @@ def companion(qapp, native_desktop, tmp_path, monkeypatch):
 
 def test_media_preference_owns_native_service_lifetime(companion, qapp):
     assert companion.media.view.status == "disabled"
+    backends = []
+
+    def new_backend():
+        backend = FakeBackend()
+        backends.append(backend)
+        return backend
+
+    companion.media._factory = new_backend
     companion.companion_state.update("media", {"enabled": True})
-    for _ in range(250):
-        if companion.media.view.status != "connecting":
-            break
-        QTest.qWait(20)
-    assert companion.media.view.status == "ready"
+    until(qapp, lambda: companion.media.view.status == "ready")
     companion.companion_state.update("media", {"enabled": False})
+    assert backends[0].closed
     assert companion.media.view.status == "disabled"
     companion.companion_state.update("media", {"enabled": True})
+    until(qapp, lambda: companion.media.view.status == "ready")
     companion.shutdown()
     qapp.processEvents()
+    assert len(backends) == 2 and backends[1].closed
     assert companion.media.view.status == "disabled"
 
 

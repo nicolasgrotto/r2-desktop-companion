@@ -11,6 +11,7 @@ pytestmark = pytest.mark.qt
 @pytest.fixture
 def suite(pytester, monkeypatch):
     monkeypatch.setenv("QT_QPA_PLATFORM", "offscreen")
+    monkeypatch.setenv("PYTHONIOENCODING", "utf-8")
     pytester.makeconftest(Path(__file__).with_name("conftest.py").read_text(encoding="utf-8"))
     pytester.makeini("""[pytest]
 addopts = --strict-markers

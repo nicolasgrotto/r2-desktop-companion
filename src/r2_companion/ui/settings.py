@@ -46,7 +46,7 @@ class SettingsDialog(QDialog):
         general_layout = QVBoxLayout(general)
         general_layout.setContentsMargins(0, 16, 0, 0)
         panel, panel_layout = card()
-        panel_layout.setContentsMargins(12, 16, 12, 16)
+        panel_layout.setContentsMargins(4, 16, 4, 16)
         panel_layout.addWidget(label(tr("PERSONALIDADE E PRESENÇA"), "eyebrow"))
         form = QFormLayout()
         form.setSpacing(12)
@@ -126,7 +126,7 @@ class SettingsDialog(QDialog):
         self.sleep.setSingleStep(0.5)
         self.sleep.setDecimals(1)
         self.sleep.setButtonSymbols(QAbstractSpinBox.ButtonSymbols.NoButtons)
-        self.sleep.setSuffix(tr(" min sem atividade"))
+        self.sleep.setSuffix(tr(" min"))
         self.sleep.setValue(settings.behavior.sleep_seconds / 60)
         form_row(form, tr("Entrar em repouso após"), self.sleep)
         self.controls = {}
