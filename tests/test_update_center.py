@@ -7,6 +7,7 @@ from types import SimpleNamespace
 import pytest
 from PySide6.QtTest import QTest
 
+from r2_companion.core.language import tr
 from r2_companion.services.update_client import ASSET, REPOSITORY, check_release, download_release, validate_release, version_tuple
 from r2_companion.ui.updates import UpdateCenter
 from test_updates import ps, quote, installation, release, mock_release, REPOSITORY as FIXTURE_REPOSITORY
@@ -68,12 +69,40 @@ def test_download_detects_corruption_truncation_excess_and_cancellation(tmp_path
         download_release(result, tmp_path / "cancel", lambda *a: None, lambda *a: None, cancelled=lambda: True, opener=valid)
 
 
-def wait_for_worker(dialog):
+def wait_for_worker(dialog, *, state=None):
     for _ in range(100):
         QTest.qWait(10)
-        if dialog.worker is None:
+        if dialog.worker is None and (state is None or dialog.state == state):
             return
     pytest.fail("Update worker did not finish")
+
+
+def test_update_window_paints_checking_before_its_first_query(qapp, tmp_path):
+    raw, _ = response()
+    painted_states, calls = [], []
+
+    class TrackedCenter(UpdateCenter):
+        def paintEvent(self, event):
+            super().paintEvent(event)
+            painted_states.append((self.state, self.status.text()))
+
+    def client(repository):
+        calls.append((repository, tuple(painted_states)))
+        return validate_release(raw, repository)
+
+    dialog = TrackedCenter(tmp_path, client=client)
+    try:
+        qapp.processEvents()
+        assert not calls and dialog.worker is None
+        dialog.show()
+        wait_for_worker(dialog, state="available")
+        assert len(calls) == 1
+        repository, frames_before_query = calls[0]
+        assert repository == REPOSITORY
+        assert frames_before_query[0] == ("checking", tr("Verificando atualizações…"))
+    finally:
+        wait_for_worker(dialog)
+        dialog.close()
 
 
 def test_update_window_checks_async_shows_notes_and_retries_without_native_dialog(qapp, tmp_path):
@@ -84,8 +113,7 @@ def test_update_window_checks_async_shows_notes_and_retries_without_native_dialo
         if len(calls) == 1:
             raise ValueError("Conexão indisponível")
         return validate_release(raw, repository)
-    dialog = UpdateCenter(tmp_path, client=client)
-    dialog.startup.stop()
+    dialog = UpdateCenter(tmp_path, client=client, auto_check=False)
     try:
         dialog.check()
         assert dialog.state == "checking" and dialog.progress.minimum() == dialog.progress.maximum() == 0
@@ -106,8 +134,7 @@ def test_update_window_checks_async_shows_notes_and_retries_without_native_dialo
 
 def test_update_window_current_and_failed_installer_show_honest_states(qapp, tmp_path):
     raw, _ = response(version="0.0.1")
-    dialog = UpdateCenter(tmp_path)
-    dialog.startup.stop()
+    dialog = UpdateCenter(tmp_path, auto_check=False)
     try:
         dialog.checked(validate_release(raw, REPOSITORY))
         assert dialog.state == "current"

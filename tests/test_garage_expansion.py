@@ -345,8 +345,7 @@ def test_invalid_rig_cannot_replace_working_character(qapp, registry, tmp_path, 
 def test_update_center_displays_saved_rig_without_resetting_selection(pet, identifier):
     assert pet.equip_droid(identifier)
     before = pet.store.path.read_bytes()
-    center = UpdateCenter(pet.store.directory, client=lambda repo: None)
-    center.startup.stop()
+    center = UpdateCenter(pet.store.directory, auto_check=False)
     try:
         center.set_state("idle", "Prévia local", "")
         assert center.theme_watcher.last_id == identifier

@@ -37,8 +37,7 @@ def main():
     companion.desktop_timer.stop()
     companion.awareness.timer.stop()
     companion.greeting_timer.stop()
-    updates = UpdateCenter(store.directory, client=lambda repo: None)
-    updates.startup.stop()
+    updates = UpdateCenter(store.directory, auto_check=False)
     updates.set_state("idle", "Prévia local", "Sem consulta de rede neste ensaio.")
     process = psutil.Process()
     report = {"profiles": {}, "switches": [], "callback_errors": [], "physical_audibility_verified": False}

@@ -184,8 +184,7 @@ def test_open_update_center_restyles_its_controls_without_reloading_the_droid(qa
     manager = theme_manager()
     previous, original_scale = manager.active, manager.ui_scale
     save(tmp_path, "r2_default")
-    center = UpdateCenter(tmp_path)
-    center.startup.stop()
+    center = UpdateCenter(tmp_path, auto_check=False)
     center.show()
     try:
         clips = center.animation.clips

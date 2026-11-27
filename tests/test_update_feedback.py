@@ -14,8 +14,7 @@ from test_update_center import response, wait_for_worker
 
 @pytest.fixture
 def center(qapp, native_desktop, tmp_path):
-    dialog = UpdateCenter(tmp_path)
-    dialog.startup.stop()
+    dialog = UpdateCenter(tmp_path, auto_check=False)
     dialog.show()
     QTest.qWait(30)
     yield dialog
@@ -166,7 +165,6 @@ def test_failed_handoff_keeps_original_visible_and_allows_recovery(center, tmp_p
 
 def test_successor_waits_for_ack_before_installing(center, tmp_path, monkeypatch):
     center.ready_file = tmp_path / "ready.json"
-    center.startup.timeout.disconnect()
     installs = []
     monkeypatch.setattr(center, "install_prepared", lambda path: installs.append(path))
     center.resume_install(tmp_path)

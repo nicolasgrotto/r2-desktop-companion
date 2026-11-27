@@ -36,8 +36,7 @@ def main():
            "body": "Novidades de uma release de teste\n\nMelhorias de personalidade e novas interações.",
            "assets": [{"name": name, "size": 100, "browser_download_url": f"https://github.com/{REPOSITORY}/releases/download/v1.2.0/{name}"}
                       for name in (ASSET, ASSET + ".sha256")]}
-    updates = UpdateCenter(store.directory, client=lambda repository: validate_release(raw, repository))
-    updates.startup.stop()
+    updates = UpdateCenter(store.directory, client=lambda repository: validate_release(raw, repository), auto_check=False)
 
     def minigames():
         pet.show_tools_page(pet.tools.tabs.indexOf(pet.tools.minigames_page))

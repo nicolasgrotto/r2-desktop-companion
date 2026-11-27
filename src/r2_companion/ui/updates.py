@@ -64,7 +64,8 @@ BUSY_STATES = {"checking", "download", "integrity", "preparing", "handoff", "ins
 
 
 class UpdateCenter(QDialog):
-    def __init__(self, directory, install=None, owner_pid=0, owner_started=0, resume=None, client=check_release, ready_file=None):
+    def __init__(self, directory, install=None, owner_pid=0, owner_started=0, resume=None,
+                 client=check_release, ready_file=None, *, auto_check=True):
         super().__init__()
         self.setWindowTitle(tr("Central de atualizações · R2 Companion"))
         self.setWindowFlag(Qt.WindowType.WindowStaysOnTopHint, True)
@@ -151,8 +152,13 @@ class UpdateCenter(QDialog):
         self.handoff_timer.timeout.connect(self.poll_handoff)
         self.startup = QTimer(self)
         self.startup.setSingleShot(True)
-        self.startup.timeout.connect(lambda: self.resume_install(Path(resume)) if resume else self.check())
-        self.startup.start(0)
+        self.initial_check_pending = auto_check and not resume
+        if resume:
+            self.startup.timeout.connect(lambda: self.resume_install(Path(resume)))
+            self.startup.start(0)
+        elif self.initial_check_pending:
+            self.startup.timeout.connect(self.query_release)
+            self.show_checking()
 
     def use_profile(self, profile):
         try:
@@ -242,9 +248,15 @@ class UpdateCenter(QDialog):
     def check(self):
         if self.operation_active():
             return
+        self.show_checking()
+        self.query_release()
+
+    def show_checking(self):
         self.package_label.clear()
         self.notes.hide()
         self.set_state("checking", tr("Verificando atualizações…"), tr("Consultando a última release estável no GitHub."))
+
+    def query_release(self):
         self.start_worker(lambda worker: self.client(self.metadata["repository"]), self.checked)
 
     def checked(self, release):
@@ -431,6 +443,9 @@ class UpdateCenter(QDialog):
     def paintEvent(self, event):
         super().paintEvent(event)
         self.presented = True
+        if self.initial_check_pending and self.isVisible():
+            self.initial_check_pending = False
+            self.startup.start(0)
 
     def reject(self):
         self.close()

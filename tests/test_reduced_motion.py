@@ -37,8 +37,7 @@ def test_motion_preference_in_settings_and_update_center(pet):
     dialog.reduced_motion.setChecked(True)
     dialog.apply(True)
     assert pet.presence.context.reduced_motion and pet.companion_state.flush()
-    center = UpdateCenter(pet.store.directory)
-    center.startup.stop()
+    center = UpdateCenter(pet.store.directory, auto_check=False)
     try:
         center.set_state("checking", "Verificando", "")
         assert not center.animation.timer.isActive() and center.progress.isHidden()

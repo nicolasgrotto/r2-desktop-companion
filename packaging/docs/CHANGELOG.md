@@ -2,6 +2,12 @@
 
 [Português (Brasil)](CHANGELOG-pt-br.md)
 
+## 1.3.1
+
+- Update Center opens with **Checking for updates…** and then checks GitHub in the background.
+
+[Release notes](release-notes/v1.3.1.md)
+
 ## 1.3.0
 
 ### Added

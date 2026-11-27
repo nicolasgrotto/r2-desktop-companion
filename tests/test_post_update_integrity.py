@@ -126,8 +126,7 @@ def test_update_lifecycle_preserves_all_droids_and_rebuilds_working_navigation(q
 
 
 def test_installer_exit_without_terminal_status_cannot_announce_success(qapp, tmp_path):
-    dialog = UpdateCenter(tmp_path)
-    dialog.startup.stop()
+    dialog = UpdateCenter(tmp_path, auto_check=False)
     dialog.install = tmp_path
     (tmp_path / "release.json").write_text(json.dumps({
         "schema_version": 1, "repository": "owner/companion", "version": __version__}))

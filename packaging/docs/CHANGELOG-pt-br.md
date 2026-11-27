@@ -2,6 +2,12 @@
 
 [English](CHANGELOG.md)
 
+## 1.3.1
+
+- A Central de atualizações abre com **Verificando atualizações…** e então consulta o GitHub em segundo plano.
+
+[Notas da versão](release-notes/v1.3.1-pt-br.md)
+
 ## 1.3.0
 
 ### Adições

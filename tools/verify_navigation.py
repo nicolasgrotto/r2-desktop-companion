@@ -35,8 +35,7 @@ def main():
     pet.desktop_timer.stop()
     pet.idle_timer.stop()
     pet.awareness.timer.stop()
-    updates = UpdateCenter(directory)
-    updates.startup.stop()
+    updates = UpdateCenter(directory, auto_check=False)
     report = {"version": __version__, "profiles": {}, "callback_errors": [], "physical_validation": False}
     sys.excepthook = lambda kind, value, trace: report["callback_errors"].append(str(value))
     def capture(name, widget):
